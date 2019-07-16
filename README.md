@@ -1,6 +1,6 @@
-# AzDevBase
+# Querchy
 
-A general purpose seed project base
+Query and Cache
 
 Run `npm install`
 
