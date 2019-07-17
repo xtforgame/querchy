@@ -15,7 +15,7 @@ import {
   CancelTokenSource,
 } from '../../interfaces';
 
-import AxiosObservable from '../../utils/AxiosObservable';
+import AxiosObservable from '../utils/AxiosObservable';
 
 export default class AxiosRunner<
   Input extends Action = QcAction,

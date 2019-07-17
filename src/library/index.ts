@@ -1,7 +1,6 @@
 import { Epic, createEpicMiddleware } from 'pure-epic';
-import { Observable, ObservableInput } from 'rxjs';
-import axios from 'axios';
-import { mergeMap, filter } from 'rxjs/operators';
+import { ObservableInput } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import AxiosRunner from './query-runners/AxiosRunner';
 
 import {
@@ -35,7 +34,7 @@ export default function echo(data : any, err : any) {
       dispatch: (action) => {
         // console.log('action :', action);
         epicMiddlewareCb(() => {})(action);
-        if (action.type === 'CANCEL') {
+        if (action.type === 'CANCEL' || action.type === 'SUCCESS') {
           resolve(data);
         }
       },
@@ -43,6 +42,6 @@ export default function echo(data : any, err : any) {
     });
     epicMiddleware.run(rootEpic);
     epicMiddlewareCb(() => {})({ type: 'FIRST' });
-    epicMiddlewareCb(() => {})({ type: 'CANCEL' });
+    // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
   });
 }

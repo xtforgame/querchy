@@ -17,6 +17,8 @@ export interface QcStore<ActionType extends Action, StateType> {
 
 export type QcDependencies = any;
 
+// ============
+
 export interface Canceler {
   (message?: string): void;
 }
