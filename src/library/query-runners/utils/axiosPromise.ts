@@ -35,12 +35,12 @@ export default <Config extends AxiosRequestConfig>(request : Config, op : Option
     const next = getMiddlewaresHandler(
       [
         ...requestMiddlewares,
-        (req, { options }) => axios({
+        (req, { options }) => axios.request({
           ...req,
           cancelToken: axiosCancelTokenSource.token,
         }),
       ],
-      [request, { options: op }]
+      [request, { options: op }],
     );
     return next();
   })
@@ -50,15 +50,14 @@ export default <Config extends AxiosRequestConfig>(request : Config, op : Option
         ...responseMiddlewares,
         res => Promise.resolve(res),
       ],
-      [response, { request, options: op }]
+      [response, { request, options: op }],
     );
     return Promise.resolve()
     .then<any>(next)
     .then(
-      res => res
-       || Promise.reject(new ErrorFromMiddleware(
-         `Malformed Response: ${res}, please check you response middlewares`
-        )),
+      res => res || Promise.reject(new ErrorFromMiddleware(
+        `Malformed Response: ${res}, please check you response middlewares`
+      )),
     )
     .catch(error => Promise.reject(new ErrorFromMiddleware(error)));
   })

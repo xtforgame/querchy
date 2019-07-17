@@ -1,23 +1,12 @@
 import { Action, State, ActionsObservable, StateObservable } from 'pure-epic';
 import { Observable } from 'rxjs';
 
-export type QcAction = {
-  type: string;
-  [s : string] : any;
-};
-
-export type QcState = {
-  xxx: number;
-};
-
-export interface QcStore<ActionType extends Action, StateType> {
-  dispatch(action : ActionType) : any;
-  getState() : StateType;
-}
-
-export type QcDependencies = any;
-
-// ============
+import {
+  QcAction,
+  QcState,
+  QcDependencies,
+  RunnerType,
+} from '~/common/interfaces';
 
 export interface Canceler {
   (message?: string): void;
@@ -27,8 +16,6 @@ export interface CancelTokenSource {
   token: any;
   cancel: Canceler;
 }
-
-// ====================
 
 export type RunnerRunOption<
   Input extends Action = QcAction,
@@ -57,5 +44,6 @@ export type QueryRunner<
   StateType extends State = QcState,
   Dependencies = QcDependencies,
 > = {
+  type: RunnerType;
   handle: RunnerRun<Input, Output, StateType, Dependencies>,
 };

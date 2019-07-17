@@ -7,13 +7,24 @@ import {
   QcAction,
   QcState,
   QcStore,
+  RunnerType,
+} from '~/common/interfaces';
+
+import {
+  ModelMap,
+  QueryCreatorMap,
+  QuerchyDefinition,
   QcDependencies,
+  RequestConfig,
+} from '~/core/interfaces';
+
+import {
   RunnerRun,
   RunnerRunOption,
   QueryRunner,
   Canceler,
   CancelTokenSource,
-} from '../../interfaces';
+} from '~/query-runners/interfaces';
 
 import AxiosObservable from '../utils/AxiosObservable';
 
@@ -21,35 +32,70 @@ export default class AxiosRunner<
   Input extends Action = QcAction,
   Output extends Input = Input,
   StateType extends State = QcState,
-  Dependencies = QcDependencies,
+
+  ModelMapType extends ModelMap = ModelMap,
+  QueryCreatorMapType extends QueryCreatorMap<ModelMap> = QueryCreatorMap<ModelMap>,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    ModelMapType, QueryCreatorMapType> = QuerchyDefinition<ModelMapType, QueryCreatorMapType
+  >,
+
+  Dependencies extends QcDependencies<
+    ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
+  > = QcDependencies<ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
 > implements QueryRunner<Input, Output, StateType, Dependencies> {
+  type : RunnerType;
   axiosObservable : any;
 
   constructor() {
+    this.type = 'axios';
     this.axiosObservable = AxiosObservable();
   }
 
   handle : RunnerRun<Input, Output, StateType, Dependencies> = (
-    action, { store$, action$ },
+    action, { store$, action$, dependencies },
   ) => {
-    console.log('store :', store$.value);
+    const createSuccessAction = () => ({ type: `${action.type}_SUCCESS` });
+    const createErrorAction = () => ({ type: `${action.type}_ERROR` });
+    const createCancelAction = () => ({ type: `${action.type}_CANCEL` });
+
+    // console.log('action :', action);
+    // console.log('store :', store$.value);
+    // console.log('dependencies :', dependencies);
+
+    const queryCreator = dependencies!.querchyDef.queryCreators[action.type];
+    if (!queryCreator) {
+      return [createErrorAction()];
+    }
+
+    let requestConfig : RequestConfig;
+    try {
+      requestConfig = queryCreator.buildRequestConfig(this.type);
+    } catch (error) {
+      return [createErrorAction()];
+    }
+
+    const {
+      rawConfig,
+      method,
+      url,
+      headers,
+      query,
+      body,
+    } = requestConfig;
+
     const source = axios.CancelToken.source();
     return this.axiosObservable(
-      {
-        method: 'post',
-        url: 'https://httpbin.org/post',
-        headers: {},
-        data: {
-          dataKey1: 1,
-        },
-        params: {
-          queryKey1: 1,
-        },
+      rawConfig || {
+        method,
+        url,
+        headers: { ...headers },
+        data: body,
+        params: query,
       },
       {
-        success: () => ({ type: 'SUCCESS' }),
-        error: () => ({ type: 'ERROR' }),
-        cancel: () => ({ type: 'CANCEL' }),
+        success: createSuccessAction,
+        error: createErrorAction,
+        cancel: createCancelAction,
       },
       {
         axiosCancelTokenSource: source,
