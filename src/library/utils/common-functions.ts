@@ -1,11 +1,14 @@
-export function defaultToPromiseFunc(_, value) {
-  return Promise.resolve(value);
+export function defaultToPromiseFunc(prev, curr, index, array) {
+  return Promise.resolve(curr);
 }
 
 export function toSeqPromise(inArray, toPrmiseFunc = defaultToPromiseFunc) {
-  return inArray.reduce((prev, curr, index, array) => prev.then(
-    () => toPrmiseFunc(prev, curr, index, array)
-  ), Promise.resolve());
+  return inArray.reduce(
+    (prev, curr, index, array) => prev.then(
+      () => toPrmiseFunc(prev, curr, index, array),
+    ),
+    Promise.resolve(),
+  );
 }
 
 export function promiseWait(waitMillisec) {

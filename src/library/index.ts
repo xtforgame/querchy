@@ -1,23 +1,15 @@
-import { Epic, ActionsObservable, Action, createEpicMiddleware } from 'pure-epic';
+import { Epic, createEpicMiddleware } from 'pure-epic';
 import { Observable, ObservableInput } from 'rxjs';
 import axios from 'axios';
 import { mergeMap, filter } from 'rxjs/operators';
+import AxiosRunner from './query-runners/AxiosRunner';
 
-import AxiosObservable from './utils/AxiosObservable';
-
-export type QcAction = {
-  type: string;
-  [s : string] : any;
-};
-
-export type QcState = {
-  xxx: number;
-};
-
-export interface QcStore<ActionType extends Action, StateType> {
-  dispatch(action : ActionType) : any;
-  getState() : StateType;
-}
+import {
+  QcAction,
+  QcState,
+  QcStore,
+  QcDependencies,
+} from './interfaces';
 
 export default function echo(data : any, err : any) {
   return new Promise((resolve, reject) => {
@@ -25,44 +17,16 @@ export default function echo(data : any, err : any) {
       return reject(err);
     }
 
-    const axiosObservable = AxiosObservable(axios, Observable);
+    const runner = new AxiosRunner<QcAction, QcAction, QcState, QcDependencies>();
 
-    const rootEpic : Epic<QcAction, QcAction, QcState> = (
-      action$, store$,
+    const rootEpic : Epic<QcAction, QcAction, QcState, QcDependencies> = (
+      action$, store$, dependencies, ...args
     ) => action$.ofType('FIRST')
     .pipe(
       mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        console.log('store :', store$.value);
-        const source = axios.CancelToken.source();
-        return axiosObservable(
-          {
-            method: 'post',
-            url: 'https://httpbin.org/post',
-            headers: {},
-            data: {
-              dataKey1: 1,
-            },
-            params: {
-              queryKey1: 1,
-            },
-          },
-          {
-            success: () => ({ type: 'SUCCESS' }),
-            error: () => ({ type: 'ERROR' }),
-            cancel: () => ({ type: 'CANCEL' }),
-          },
-          {
-            axiosCancelTokenSource: source,
-            cancelStream$: action$.pipe(
-              filter<QcAction>((cancelAction) => {
-                if (cancelAction.type !== 'CANCEL') {
-                  return false;
-                }
-                return true;
-              }),
-            ),
-          },
-        );
+        return runner.handle(action, {
+          action$, store$, dependencies, args,
+        });
       }),
     );
 
