@@ -8,6 +8,7 @@ import {
 } from '~/common/interfaces';
 
 import {
+  CommonConfig,
   ModelMap,
   QueryCreatorMap,
   QuerchyDefinition,
@@ -27,19 +28,22 @@ export type RunnerRunOption<
   Input extends Action = QcAction,
   StateType extends State = QcState,
 
-  ModelMapType extends ModelMap = ModelMap,
-  QueryCreatorMapType extends QueryCreatorMap<ModelMap> = QueryCreatorMap<ModelMap>,
+  CommonConfigType extends CommonConfig = CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   QuerchyDefinitionType extends QuerchyDefinition<
-    ModelMapType, QueryCreatorMapType> = QuerchyDefinition<ModelMapType, QueryCreatorMapType
-  >,
+    CommonConfigType, ModelMapType, QueryCreatorMapType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
-  Dependencies extends QcDependencies<
-    ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
-  > = QcDependencies<ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
+  ExtraDependencies = any,
 > = {
   action$: ActionsObservable<Input>;
   store$: StateObservable<StateType>;
-  dependencies?: Dependencies;
+  dependencies?: QcDependencies<
+    CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, ExtraDependencies
+  >;
   args: any[];
 };
 
@@ -48,19 +52,26 @@ export type RunnerRun<
   Output extends Input = Input,
   StateType extends State = QcState,
 
-  ModelMapType extends ModelMap = ModelMap,
-  QueryCreatorMapType extends QueryCreatorMap<ModelMap> = QueryCreatorMap<ModelMap>,
+  CommonConfigType extends CommonConfig = CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   QuerchyDefinitionType extends QuerchyDefinition<
-    ModelMapType, QueryCreatorMapType> = QuerchyDefinition<ModelMapType, QueryCreatorMapType
-  >,
+    CommonConfigType, ModelMapType, QueryCreatorMapType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
-  Dependencies extends QcDependencies<
-    ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
-  > = QcDependencies<ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
+  ExtraDependencies = any,
 > = (
   action: Input,
   options: RunnerRunOption<
-    Input, StateType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, Dependencies
+    Input,
+    StateType,
+    CommonConfigType,
+    ModelMapType,
+    QueryCreatorMapType,
+    QuerchyDefinitionType,
+    ExtraDependencies
   >,
 ) => Observable<Output>;
 
@@ -69,18 +80,26 @@ export type QueryRunner<
   Output extends Input = Input,
   StateType extends State = QcState,
 
-  ModelMapType extends ModelMap = ModelMap,
-  QueryCreatorMapType extends QueryCreatorMap<ModelMap> = QueryCreatorMap<ModelMap>,
+  CommonConfigType extends CommonConfig = CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   QuerchyDefinitionType extends QuerchyDefinition<
-    ModelMapType, QueryCreatorMapType> = QuerchyDefinition<ModelMapType, QueryCreatorMapType
-  >,
+    CommonConfigType, ModelMapType, QueryCreatorMapType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
-  Dependencies extends QcDependencies<
-    ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
-  > = QcDependencies<ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
+  ExtraDependencies = any,
 > = {
   type: RunnerType;
   handle: RunnerRun<
-    Input, Output, StateType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, Dependencies
+    Input,
+    Output,
+    StateType,
+    CommonConfigType,
+    ModelMapType,
+    QueryCreatorMapType,
+    QuerchyDefinitionType,
+    ExtraDependencies
   >,
 };

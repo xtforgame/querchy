@@ -12,7 +12,7 @@ export default (data : any, err : any) => {
         },
         models: {},
         queryCreators: {
-          'XX/FIRST': {
+          first: {
             buildRequestConfig: (runnerType: string, commonConfig) => ({
               method: 'post',
               url: 'https://httpbin.org/post',

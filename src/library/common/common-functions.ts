@@ -17,9 +17,9 @@ export function promiseWait(waitMillisec) {
   });
 }
 
-const toCamel = str => str.replace(/_([a-z])/g, g => g[1].toUpperCase());
-const toUnderscore = str => str.replace(/([A-Z])/g, g => `_${g.toLowerCase()}`);
-const capitalizeFirstLetter = str => (str.charAt(0).toUpperCase() + str.slice(1));
+const toCamel = (str : string) : string => str.replace(/_([a-z])/g, g => g[1].toUpperCase());
+const toUnderscore = (str : string) : string => str.replace(/([A-Z])/g, g => `_${g.toLowerCase()}`);
+const capitalizeFirstLetter = (str : string) : string => (str.charAt(0).toUpperCase() + str.slice(1));
 
 export {
   toCamel,

@@ -4,6 +4,7 @@ import {
 
 export type CommonConfig = {
   queryPrefix?: string;
+  getActionTypeName?: (queryPrefix: string, queryName: string) => string;
   [s : string] : any;
 };
 
@@ -51,5 +52,6 @@ export type QcDependencies<
   QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
   ExtraDependencies = any,
 > = ExtraDependencies & {
+  queryCreatorMap : QueryCreatorMap<CommonConfigType, ModelMapType>;
   querchyDef : QuerchyDefinitionType;
 };

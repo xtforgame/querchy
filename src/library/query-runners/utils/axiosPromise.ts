@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, CancelTokenSource } from 'axios';
-import { promiseWait } from './common-functions';
+import { promiseWait } from '~/common/common-functions';
 import getMiddlewaresHandler from './getMiddlewaresHandler';
 
 class ErrorFromMiddleware {

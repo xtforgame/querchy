@@ -43,11 +43,16 @@ export default class AxiosRunner<
     CommonConfigType, ModelMapType, QueryCreatorMapType
   > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
-  Dependencies extends QcDependencies<
-    CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
-  > = QcDependencies<CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
+  ExtraDependencies = any,
 > implements QueryRunner<
-  Input, Output, StateType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, Dependencies
+  Input,
+  Output,
+  StateType,
+  CommonConfigType,
+  ModelMapType,
+  QueryCreatorMapType,
+  QuerchyDefinitionType,
+  ExtraDependencies
 > {
   type : RunnerType;
   axiosObservable : any;
@@ -58,7 +63,14 @@ export default class AxiosRunner<
   }
 
   handle : RunnerRun<
-    Input, Output, StateType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, Dependencies
+    Input,
+    Output,
+    StateType,
+    CommonConfigType,
+    ModelMapType,
+    QueryCreatorMapType,
+    QuerchyDefinitionType,
+    ExtraDependencies
   > = (
     action, { store$, action$, dependencies },
   ) => {
@@ -67,14 +79,14 @@ export default class AxiosRunner<
     // console.log('store :', store$.value);
     // console.log('dependencies :', dependencies);
 
-    const { querchyDef } = dependencies!;
+    const { querchyDef, queryCreatorMap } = dependencies!;
     const { commonConfig } = querchyDef;
 
     const createSuccessAction = response => ({ type: `${action.type}_SUCCESS`, response });
     const createErrorAction = error => ({ type: `${action.type}_ERROR`, error });
     const createCancelAction = reason => ({ type: `${action.type}_CANCEL`, reason });
 
-    const queryCreator = querchyDef.queryCreators[action.type];
+    const queryCreator = queryCreatorMap[action.type];
     if (!queryCreator) {
       return [createErrorAction(new Error(`QueryCreator not found: ${action.type}`))];
     }
