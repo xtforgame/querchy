@@ -42,7 +42,9 @@ export default class AxiosRunner<
   Dependencies extends QcDependencies<
     ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
   > = QcDependencies<ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
-> implements QueryRunner<Input, Output, StateType, Dependencies> {
+> implements QueryRunner<
+  Input, Output, StateType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, Dependencies
+> {
   type : RunnerType;
   axiosObservable : any;
 
@@ -51,12 +53,14 @@ export default class AxiosRunner<
     this.axiosObservable = AxiosObservable();
   }
 
-  handle : RunnerRun<Input, Output, StateType, Dependencies> = (
+  handle : RunnerRun<
+    Input, Output, StateType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, Dependencies
+  > = (
     action, { store$, action$, dependencies },
   ) => {
-    const createSuccessAction = () => ({ type: `${action.type}_SUCCESS` });
-    const createErrorAction = () => ({ type: `${action.type}_ERROR` });
-    const createCancelAction = () => ({ type: `${action.type}_CANCEL` });
+    const createSuccessAction = response => ({ type: `${action.type}_SUCCESS`, response });
+    const createErrorAction = error => ({ type: `${action.type}_ERROR`, error });
+    const createCancelAction = reason => ({ type: `${action.type}_CANCEL`, reason });
 
     // console.log('action :', action);
     // console.log('store :', store$.value);
@@ -64,14 +68,14 @@ export default class AxiosRunner<
 
     const queryCreator = dependencies!.querchyDef.queryCreators[action.type];
     if (!queryCreator) {
-      return [createErrorAction()];
+      return [createErrorAction(new Error(`QueryCreator not found: ${action.type}`))];
     }
 
     let requestConfig : RequestConfig;
     try {
       requestConfig = queryCreator.buildRequestConfig(this.type);
     } catch (error) {
-      return [createErrorAction()];
+      return [createErrorAction(error)];
     }
 
     const {
@@ -101,7 +105,7 @@ export default class AxiosRunner<
         axiosCancelTokenSource: source,
         cancelStream$: action$.pipe(
           filter<Input>((cancelAction) => {
-            if (cancelAction.type !== 'CANCEL') {
+            if (cancelAction.type !== `${action.type}_CANCEL`) {
               return false;
             }
             return true;

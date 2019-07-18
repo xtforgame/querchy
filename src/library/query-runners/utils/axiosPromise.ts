@@ -70,7 +70,7 @@ export default <Config extends AxiosRequestConfig>(request : Config, op : Option
         ...errorMiddlewares,
         err => Promise.reject(err),
       ],
-      [error, { request, options: op }]
+      [error, { request, options: op }],
     );
     return Promise.resolve()
     .then(next);

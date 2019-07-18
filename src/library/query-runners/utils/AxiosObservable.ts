@@ -38,9 +38,9 @@ export default <Config extends AxiosRequestConfig>() => (
       observable,
       cancelStream$
         .pipe(
-          map(() => {
+          map((value) => {
             axiosCancelTokenSource.cancel('Operation canceled by the user.');
-            return cancelAction();
+            return cancelAction(value);
           }),
           take(1),
         ),
