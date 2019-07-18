@@ -11,7 +11,8 @@ import {
 const { expect } = chai;
 
 describe('Main Test Cases', () => {
-  describe('Echo Test', () => {
+  describe('Echo Test', function () {
+    this.timeout(5000);
     it('.then()', () => mainFunc(data01)
         .then((result) => {
           expect(result).to.exists;

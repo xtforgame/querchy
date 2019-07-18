@@ -11,6 +11,7 @@ import {
 } from '~/common/interfaces';
 
 import {
+  CommonConfig,
   ModelMap,
   QueryCreatorMap,
   QuerchyDefinition,
@@ -33,15 +34,18 @@ export default class AxiosRunner<
   Output extends Input = Input,
   StateType extends State = QcState,
 
-  ModelMapType extends ModelMap = ModelMap,
-  QueryCreatorMapType extends QueryCreatorMap<ModelMap> = QueryCreatorMap<ModelMap>,
+  CommonConfigType extends CommonConfig = CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   QuerchyDefinitionType extends QuerchyDefinition<
-    ModelMapType, QueryCreatorMapType> = QuerchyDefinition<ModelMapType, QueryCreatorMapType
-  >,
+    CommonConfigType, ModelMapType, QueryCreatorMapType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
   Dependencies extends QcDependencies<
-    ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
-  > = QcDependencies<ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
+    CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType
+  > = QcDependencies<CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType>,
 > implements QueryRunner<
   Input, Output, StateType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, Dependencies
 > {
@@ -58,22 +62,26 @@ export default class AxiosRunner<
   > = (
     action, { store$, action$, dependencies },
   ) => {
-    const createSuccessAction = response => ({ type: `${action.type}_SUCCESS`, response });
-    const createErrorAction = error => ({ type: `${action.type}_ERROR`, error });
-    const createCancelAction = reason => ({ type: `${action.type}_CANCEL`, reason });
 
     // console.log('action :', action);
     // console.log('store :', store$.value);
     // console.log('dependencies :', dependencies);
 
-    const queryCreator = dependencies!.querchyDef.queryCreators[action.type];
+    const { querchyDef } = dependencies!;
+    const { commonConfig } = querchyDef;
+
+    const createSuccessAction = response => ({ type: `${action.type}_SUCCESS`, response });
+    const createErrorAction = error => ({ type: `${action.type}_ERROR`, error });
+    const createCancelAction = reason => ({ type: `${action.type}_CANCEL`, reason });
+
+    const queryCreator = querchyDef.queryCreators[action.type];
     if (!queryCreator) {
       return [createErrorAction(new Error(`QueryCreator not found: ${action.type}`))];
     }
 
     let requestConfig : RequestConfig;
     try {
-      requestConfig = queryCreator.buildRequestConfig(this.type);
+      requestConfig = queryCreator.buildRequestConfig(this.type, commonConfig);
     } catch (error) {
       return [createErrorAction(error)];
     }

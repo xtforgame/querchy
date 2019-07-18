@@ -2,7 +2,12 @@ import {
   RunnerType,
 } from '~/common/interfaces';
 
-export type ModelMap = {
+export type CommonConfig = {
+  queryPrefix?: string;
+  [s : string] : any;
+};
+
+export type ModelMap<CommonConfigType extends CommonConfig> = {
   [s : string] : any;
 };
 
@@ -15,26 +20,36 @@ export type RequestConfig = {
   body?: any;
 };
 
-export type QueryCreatorDefinition<ModelMapType extends ModelMap> = {
-  buildRequestConfig : (runnerType : RunnerType) => RequestConfig;
+export type QueryCreatorDefinition<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = {
+  buildRequestConfig : (runnerType : RunnerType, commonConfig : CommonConfigType) => RequestConfig;
 };
 
-export type QueryCreatorMap<ModelMapType extends ModelMap> = {
-  [s : string] : QueryCreatorDefinition<ModelMapType> | undefined;
+export type QueryCreatorMap<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = {
+  [s : string] : QueryCreatorDefinition<CommonConfigType, ModelMapType> | undefined;
 };
 
 export interface QuerchyDefinition<
-  ModelMapType extends ModelMap,
-  QueryCreatorMapType extends QueryCreatorMap<ModelMap>
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<CommonConfigType, ModelMapType>
 > {
+  commonConfig : CommonConfigType;
   models : ModelMapType;
   queryCreators : QueryCreatorMapType;
 }
 
-export interface QcDependencies<
-  ModelMapType extends ModelMap,
-  QueryCreatorMapType extends QueryCreatorMap<ModelMap>,
-  QuerchyDefinitionType extends QuerchyDefinition<ModelMapType, QueryCreatorMapType>,
-> {
+export type QcDependencies<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<CommonConfigType, ModelMapType>,
+  QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
+  ExtraDependencies = any,
+> = ExtraDependencies & {
   querchyDef : QuerchyDefinitionType;
-}
+};
