@@ -1,8 +1,17 @@
+import { Observable } from 'rxjs';
+import { Action, State } from 'pure-epic';
 import {
   RunnerType,
 } from '~/common/interfaces';
 
+export type SimpleQueryRunner = {
+  type: RunnerType;
+  handle: Function;
+};
+
 export type CommonConfig = {
+  defaultQueryRunner : SimpleQueryRunner,
+  queryRunners?: { [s : string] : SimpleQueryRunner };
   queryPrefix?: string;
   getActionTypeName?: (queryPrefix: string, queryName: string) => string;
   [s : string] : any;
@@ -25,6 +34,7 @@ export type QueryCreatorDefinition<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>
 > = {
+  queryRunner?: string | SimpleQueryRunner,
   buildRequestConfig : (runnerType : RunnerType, commonConfig : CommonConfigType) => RequestConfig;
 };
 
@@ -49,7 +59,9 @@ export type QcDependencies<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<CommonConfigType, ModelMapType>,
-  QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    CommonConfigType, ModelMapType, QueryCreatorMapType
+  >,
   ExtraDependencies = any,
 > = ExtraDependencies & {
   queryCreatorMap : QueryCreatorMap<CommonConfigType, ModelMapType>;

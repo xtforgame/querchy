@@ -54,6 +54,7 @@ export default class Querchy<
         queryPrefix, queryName,
       ) => `${queryPrefix}${toUnderscore(queryName).toUpperCase()}`;
     }
+    commonConfig.queryRunners = commonConfig.queryRunners || {};
     Object.keys(queryCreators)
     .forEach((key) => {
       const newKey = commonConfig.getActionTypeName!(queryPrefix, key);
@@ -62,37 +63,68 @@ export default class Querchy<
     return queryCreatorMap;
   }
 
-  testRun(resolve: Function, data : any) {
-    const runner = new AxiosRunner<
-      QcAction,
-      QcAction,
-      QcState,
+  getAllEpics() : Epic<
+    QcAction,
+    QcAction,
+    QcState,
+    QcDependencies<
       CommonConfigType,
       ModelMapType,
       QueryCreatorMapType,
       QuerchyDefinitionType,
-      ExtraDependencies>();
-    const firstEpic : Epic<
-      QcAction,
-      QcAction,
-      QcState,
-      QcDependencies<
-        CommonConfigType,
-        ModelMapType,
-        QueryCreatorMapType,
-        QuerchyDefinitionType,
-        ExtraDependencies
-      >
-    > = (action$, store$, dependencies, ...args) => action$.ofType('XX/FIRST')
-    .pipe(
-      mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        return runner.handle(action, {
-          action$, store$, dependencies, args,
-        });
+      ExtraDependencies
+    >
+  > {
+    const { queryCreators, commonConfig } = this.querchyDefinition;
+    return combineEpics(
+      ...Object.keys(queryCreators)
+      .map<Epic<
+        QcAction,
+        QcAction,
+        QcState,
+        QcDependencies<
+          CommonConfigType,
+          ModelMapType,
+          QueryCreatorMapType,
+          QuerchyDefinitionType,
+          ExtraDependencies
+        >
+      >>((key) => {
+        // queryCreator!.queryRunner = new AxiosRunner<
+        //   QcAction,
+        //   QcAction,
+        //   QcState,
+        //   CommonConfigType,
+        //   ModelMapType,
+        //   QueryCreatorMapType,
+        //   QuerchyDefinitionType,
+        //   ExtraDependencies>();
+        const queryCreator = queryCreators[key];
+        const { queryRunner } = queryCreator!;
+        let runner : any = queryRunner;
+        if (typeof queryRunner === 'string') {
+          runner = commonConfig.queryRunners![queryRunner];
+        } else if (!queryRunner) {
+          runner = commonConfig.defaultQueryRunner;
+        }
+        if (!runner) {
+          throw new Error(`no runner found: ${key}`);
+        }
+        const actionType = commonConfig.getActionTypeName!(commonConfig.queryPrefix!, key);
+        return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
+        .pipe(
+          mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
+            return runner.handle(action, {
+              action$, store$, dependencies, args,
+            });
+          }),
+        );
       }),
     );
+  }
 
-    const rootEpic = combineEpics(firstEpic);
+  testRun(resolve: Function, data : any) {
+    const rootEpic = this.getAllEpics();
 
     const epicMiddleware = createEpicMiddleware<
       QcAction,
@@ -114,7 +146,7 @@ export default class Querchy<
       dispatch: (action) => {
         // console.log('action :', action);
         epicMiddlewareCb(() => {})(action);
-        if (action.type === 'XX/FIRST_CANCEL' || action.type === 'XX/FIRST_SUCCESS') {
+        if (action.type === 'XX/FIRST_CANCEL' || action.type === 'XX/FIRST_SUCCESS' || action.type === 'XX/FIRST_ERROR') {
           resolve(data);
         }
       },
