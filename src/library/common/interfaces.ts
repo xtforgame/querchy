@@ -7,7 +7,7 @@ export type QcAction = {
 };
 
 export type QcState = {
-  xxx: number;
+  [s : string] : any;
 };
 
 export interface QcStore<ActionType extends Action, StateType> {

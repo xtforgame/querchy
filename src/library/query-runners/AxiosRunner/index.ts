@@ -16,7 +16,8 @@ import {
   QueryCreatorMap,
   QuerchyDefinition,
   QcDependencies,
-  RequestConfig,
+  QcRequestConfig,
+  QcRequestActionCreators,
 } from '~/core/interfaces';
 
 import {
@@ -27,7 +28,7 @@ import {
   CancelTokenSource,
 } from '~/query-runners/interfaces';
 
-import AxiosObservable from '../utils/AxiosObservable';
+import AxiosObservable, { AxiosObservableOptions } from './AxiosObservable';
 
 export default class AxiosRunner<
   Input extends Action = QcAction,
@@ -55,11 +56,15 @@ export default class AxiosRunner<
   ExtraDependencies
 > {
   type : RunnerType;
-  axiosObservable : any;
+  axiosObservable : (
+    axiosRequestConfig : any,
+    actionCreators: Partial<QcRequestActionCreators>,
+    options : AxiosObservableOptions,
+  ) => any;
 
   constructor(a?: AxiosStatic) {
     this.type = 'axios';
-    this.axiosObservable = AxiosObservable(a || axios);
+    this.axiosObservable = AxiosObservable<any, Input>(a || axios);
   }
 
   handle : RunnerRun<
@@ -81,17 +86,31 @@ export default class AxiosRunner<
 
     const { querchyDef, queryCreatorMap } = dependencies!;
     const { commonConfig } = querchyDef;
-
-    const createSuccessAction = response => ({ type: `${action.type}_SUCCESS`, response });
-    const createErrorAction = error => ({ type: `${action.type}_ERROR`, error });
-    const createCancelAction = reason => ({ type: `${action.type}_CANCEL`, reason });
-
     const queryCreator = queryCreatorMap[action.type];
     if (!queryCreator) {
-      return [createErrorAction(new Error(`QueryCreator not found: ${action.type}`))];
+      throw new Error(`QueryCreator not found: ${action.type}`);
     }
 
-    let requestConfig : RequestConfig;
+    const createSuccessAction = (response, responseType) => ({
+      type: `${action.type}_SUCCESS`,
+      response,
+      responseType,
+      options: {},
+    });
+
+    const createErrorAction = (error) => ({
+      type: `${action.type}_ERROR`,
+      error,
+      options: {},
+    });
+
+    const createCancelAction = (reason) => ({
+      type: `${action.type}_CANCEL`,
+      reason,
+      options: {},
+    });
+
+    let requestConfig : QcRequestConfig;
     try {
       requestConfig = queryCreator.buildRequestConfig(this.type, commonConfig);
     } catch (error) {
@@ -99,7 +118,7 @@ export default class AxiosRunner<
     }
 
     const {
-      rawConfig,
+      overwriteConfigs,
       method,
       url,
       headers,
@@ -107,15 +126,18 @@ export default class AxiosRunner<
       body,
     } = requestConfig;
 
+    requestConfig.rawConfigs = {
+      method,
+      url,
+      headers: { ...headers },
+      data: body,
+      params: query,
+      ...overwriteConfigs,
+    };
+
     const source = axios.CancelToken.source();
     return this.axiosObservable(
-      rawConfig || {
-        method,
-        url,
-        headers: { ...headers },
-        data: body,
-        params: query,
-      },
+      requestConfig.rawConfigs,
       {
         success: createSuccessAction,
         error: createErrorAction,

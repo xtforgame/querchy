@@ -1,26 +1,38 @@
-import { AxiosStatic, AxiosRequestConfig, CancelTokenSource } from 'axios';
+import { AxiosStatic, AxiosResponse, AxiosError, AxiosRequestConfig, CancelTokenSource } from 'axios';
+import { Action } from 'pure-epic';
 import { from, of, race, Observable } from 'rxjs';
 import {
   map, take, catchError,
 } from 'rxjs/operators';
 
 import {
-  toNull,
-} from './helper-functions';
+  QcAction,
+} from '~/common/interfaces';
 
-export interface Options {
+import {
+  QcRequestActionCreators,
+} from '~/core/interfaces';
+
+import {
+  toNull,
+} from '../utils/helper-functions';
+
+export interface AxiosObservableOptions {
   cancelStream$?: Observable<any>;
   axiosCancelTokenSource?: CancelTokenSource;
 }
 
-export default <Config extends AxiosRequestConfig>(axios : AxiosStatic) => (
+export default <
+  Config extends AxiosRequestConfig = AxiosRequestConfig,
+  Input extends Action = QcAction,
+>(axios : AxiosStatic) => (
   axiosRequestConfig : Config,
   {
     success: successAction = toNull,
     error: errorAction = toNull,
     cancel: cancelAction = toNull,
-  } = {},
-  options : Options = {},
+  } : Partial<QcRequestActionCreators> = {},
+  options : AxiosObservableOptions = {},
 ) => {
   const {
     cancelStream$,
@@ -33,8 +45,10 @@ export default <Config extends AxiosRequestConfig>(axios : AxiosStatic) => (
     }),
   )
   .pipe(
-    map(successAction),
-    catchError(error => of(errorAction(error))),
+    map<AxiosResponse<any>, any>((response) => {
+      return successAction(response, 'from-request');
+    }),
+    catchError<AxiosError, any>(error => of(errorAction(error))),
   );
 
   if (cancelStream$) {

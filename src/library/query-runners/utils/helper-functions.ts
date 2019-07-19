@@ -1,1 +1,1 @@
-export const toNull = (...args) => ({ type: 'TO_NULL' });
+export const toNull = (...args) : any => ({ type: 'TO_NULL' });
