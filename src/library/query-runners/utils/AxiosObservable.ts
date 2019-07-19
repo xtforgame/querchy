@@ -1,10 +1,9 @@
-import axios, { AxiosRequestConfig, CancelTokenSource } from 'axios';
+import { AxiosStatic, AxiosRequestConfig, CancelTokenSource } from 'axios';
 import { from, of, race, Observable } from 'rxjs';
 import {
   map, take, catchError,
 } from 'rxjs/operators';
 
-import axiosPromise from './axiosPromise';
 import {
   toNull,
 } from './helper-functions';
@@ -14,7 +13,7 @@ export interface Options {
   axiosCancelTokenSource?: CancelTokenSource;
 }
 
-export default <Config extends AxiosRequestConfig>() => (
+export default <Config extends AxiosRequestConfig>(axios : AxiosStatic) => (
   axiosRequestConfig : Config,
   {
     success: successAction = toNull,
@@ -27,7 +26,12 @@ export default <Config extends AxiosRequestConfig>() => (
     cancelStream$,
     axiosCancelTokenSource = axios.CancelToken.source(),
   } = options;
-  const observable = from(axiosPromise(axiosRequestConfig, options))
+  const observable = from(
+    axios.request({
+      ...axiosRequestConfig,
+      cancelToken: axiosCancelTokenSource.token,
+    }),
+  )
   .pipe(
     map(successAction),
     catchError(error => of(errorAction(error))),

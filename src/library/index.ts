@@ -21,7 +21,7 @@ export default (data : any, err : any) => {
             queryRunner: 'xxxx',
             buildRequestConfig: (runnerType: string, commonConfig) => ({
               method: 'post',
-              url: 'https://httpbin.orgxxxx/post',
+              url: 'https://httpbin.org/post',
               query: {
                 queryKey1: 1,
               },

@@ -1,7 +1,6 @@
 import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import AxiosRunner from '~/query-runners/AxiosRunner';
 import { toUnderscore } from '~/common/common-functions';
 
 import {

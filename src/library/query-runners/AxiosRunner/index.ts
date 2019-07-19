@@ -1,6 +1,6 @@
 import { Epic, Action, State, ActionsObservable, StateObservable } from 'pure-epic';
 import { Observable, ObservableInput } from 'rxjs';
-import axios from 'axios';
+import axios, { AxiosStatic } from 'axios';
 import { mergeMap, filter } from 'rxjs/operators';
 
 import {
@@ -57,9 +57,9 @@ export default class AxiosRunner<
   type : RunnerType;
   axiosObservable : any;
 
-  constructor() {
+  constructor(a?: AxiosStatic) {
     this.type = 'axios';
-    this.axiosObservable = AxiosObservable();
+    this.axiosObservable = AxiosObservable(a || axios);
   }
 
   handle : RunnerRun<
