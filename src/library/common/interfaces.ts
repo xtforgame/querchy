@@ -15,4 +15,6 @@ export interface QcStore<ActionType extends Action, StateType> {
   getState() : StateType;
 }
 
+export type QcActionCreator<ActionType extends Action> = (...args : any) => ActionType;
+
 export type RunnerType = string;

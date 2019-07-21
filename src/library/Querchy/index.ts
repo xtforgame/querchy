@@ -7,6 +7,7 @@ import {
   QcAction,
   QcState,
   QcStore,
+  QcActionCreator,
 } from '~/common/interfaces';
 
 import {
@@ -21,16 +22,18 @@ import {
   ReplaceReturnType,
 } from '~/utils/helper-functions';
 
-type ActionCreators<ActionType extends Action, T extends { [s : string] : any }> = {
-  [P in keyof T] : (x : string) => ActionType;
+export type ActionCreators<ActionType extends Action, T extends { [s : string] : any }> = {
+  [P in keyof T] : QcActionCreator<ActionType>;
 } & {
-  [s : string] : (x : string) => ActionType;
+  [s : string] : QcActionCreator<ActionType>;
 };
 
 export default class Querchy<
   ActionType extends Action = QcAction,
   CommonConfigType extends CommonConfig = CommonConfig,
-  ModelMapType extends ModelMap<ActionType, CommonConfigType> = ModelMap<ActionType, CommonConfigType>,
+  ModelMapType extends ModelMap<
+    ActionType, CommonConfigType
+  > = ModelMap<ActionType, CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
     ActionType, CommonConfigType, ModelMapType
   > = QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
