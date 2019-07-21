@@ -3,6 +3,7 @@ import {
   ModelMap,
   QueryCreatorMap,
   QuerchyDefinition,
+  QueryCreatorDefinition,
   QcAction,
   QcState,
 } from './interfaces';
@@ -12,47 +13,12 @@ import AxiosRunner from '~/query-runners/AxiosRunner';
 
 export * from './interfaces';
 
-// https://stackoverflow.com/questions/50011616/typescript-change-function-type-so-that-it-returns-new-value
-type ArgumentTypes<T> = T extends (... args: infer U ) => infer R ? U: never;
-type ReplaceReturnType<T, TNewReturn> = (...a: ArgumentTypes<T>) => TNewReturn;
-type WithOptional = ReplaceReturnType<(n?: number) => string, Promise<string>>;
-
-interface ActionCreators {
-  a: (s : string) => any;
-  [s : string] : (...args) => string;
-}
-
-type Y<T extends { [s : string] : (...args) => string }> = {
-  [P in keyof T] : ReplaceReturnType<T[P], Promise<string>> & {pp : string};
-};
-
-const testx = () => {
-  const wrapActionCreator : (actionCreators : ActionCreators) => Y<ActionCreators> = () => { return <any>null; };
-
-  const x = wrapActionCreator({
-    a: (dd : string) => 's',
-  });
-  x.a.pp = '';
-};
-
-type Y2<T extends { [s : string] : ActionCreators }> = {
-  [P in keyof T] : ReplaceReturnType<T[P]['a'], Promise<string>> & {pp : string};
-};
-
-interface ActionCreatorsx {
-  a: ActionCreators;
-  [s : string] : ActionCreators;
-}
-
-const testxx = () => {
-  const wrapActionCreator : (actionCreatorsx : ActionCreatorsx) => Y2<ActionCreatorsx> = () => { return <any>null; };
-
-  const x = wrapActionCreator({
-    a: {
-      a: (dd : string) => 's',
-    },
-  });
-  x.a('s');
+export type QueryCreatorMapXxxx<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = {
+  first : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
+  postHttpBin : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
 };
 
 export default (data : any, err : any) => {
@@ -61,10 +27,11 @@ export default (data : any, err : any) => {
       return reject(err);
     }
     const querchy = new Querchy<
+      QcAction,
       CommonConfig,
       ModelMap<CommonConfig>,
-      QueryCreatorMap<CommonConfig, ModelMap<CommonConfig>>,
-      QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMap<CommonConfig, ModelMap<CommonConfig>>>,
+      QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>,
+      QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>>,
       any
     >(
       {
@@ -75,8 +42,8 @@ export default (data : any, err : any) => {
             QcState,
             CommonConfig,
             ModelMap<CommonConfig>,
-            QueryCreatorMap<CommonConfig, ModelMap<CommonConfig>>,
-            QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMap<CommonConfig, ModelMap<CommonConfig>>>,
+            QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>,
+            QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>>,
             any
           >(),
           queryRunners: {
@@ -86,8 +53,8 @@ export default (data : any, err : any) => {
               QcState,
               CommonConfig,
               ModelMap<CommonConfig>,
-              QueryCreatorMap<CommonConfig, ModelMap<CommonConfig>>,
-              QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMap<CommonConfig, ModelMap<CommonConfig>>>,
+              QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>,
+              QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>>,
               any
             >(),
           },
@@ -108,9 +75,22 @@ export default (data : any, err : any) => {
               },
             }),
           },
+          postHttpBin: {
+            buildRequestConfig: (runnerType: string, commonConfig) => ({
+              method: 'post',
+              url: 'https://httpbin.org/post',
+              query: {
+                queryKey1: 1,
+              },
+              body: {
+                dataKey1: 1,
+              },
+            }),
+          },
         },
       },
     );
     querchy.testRun(resolve, data);
+    querchy.actions.postHttpBin
   });
 };

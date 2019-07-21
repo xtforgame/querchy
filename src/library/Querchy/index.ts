@@ -1,4 +1,4 @@
-import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
+import { Epic, Action, createEpicMiddleware, combineEpics } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { toUnderscore } from '~/common/common-functions';
@@ -17,7 +17,18 @@ import {
   QcDependencies,
 } from '~/core/interfaces';
 
+import {
+  ReplaceReturnType,
+} from '~/utils/helper-functions';
+
+type Actions<ActionType extends Action, T extends { [s : string] : any }> = {
+  [P in keyof T] : (x : string) => ActionType;
+} & {
+  [s : string] : (x : string) => ActionType;
+};
+
 export default class Querchy<
+  ActionType extends Action = QcAction,
   CommonConfigType extends CommonConfig = CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
@@ -34,6 +45,8 @@ export default class Querchy<
     CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, ExtraDependencies
   >;
 
+  actions: Actions<ActionType, QueryCreatorMapType>;
+
   constructor(querchyDefinition : QuerchyDefinitionType, deps?: ExtraDependencies) {
     this.querchyDefinition = querchyDefinition;
     const queryCreatorMap = this.normalizeQuerchyDefinition();
@@ -42,6 +55,7 @@ export default class Querchy<
       queryCreatorMap,
       querchyDef: this.querchyDefinition,
     };
+    this.actions = <any>{};
   }
 
   normalizeQuerchyDefinition() : QueryCreatorMap<CommonConfigType, ModelMapType> {
@@ -143,16 +157,15 @@ export default class Querchy<
       });
     const epicMiddlewareCb = epicMiddleware({
       dispatch: (action) => {
-        // console.log('action :', action);
         epicMiddlewareCb(() => {})(action);
-        if (action.type === 'XX/FIRST_CANCEL' || action.type === 'XX/FIRST_SUCCESS' || action.type === 'XX/FIRST_ERROR') {
+        if (action.type === 'XX/POST_HTTP_BIN_CANCEL' || action.type === 'XX/POST_HTTP_BIN_SUCCESS' || action.type === 'XX/POST_HTTP_BIN_ERROR') {
           resolve(data);
         }
       },
       getState: () => ({ xxx: 1 }),
     });
     epicMiddleware.run(rootEpic);
-    epicMiddlewareCb(() => {})({ type: 'XX/FIRST' });
+    epicMiddlewareCb(() => {})({ type: 'XX/POST_HTTP_BIN' });
     // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
   }
 }
