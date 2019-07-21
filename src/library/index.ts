@@ -7,6 +7,7 @@ import {
   QueryCreatorDefinition,
   QcAction,
   QcState,
+  QcActionCreator,
 } from './interfaces';
 
 import Querchy from '~/Querchy';
@@ -23,6 +24,13 @@ export type QueryCreatorMapXxxx<
   postHttpBin : QueryCreatorDefinition<Input, CommonConfigType, ModelMapType>;
 };
 
+export interface ExtraActionCreatorsXxxx<
+  ActionType extends Action,
+> {
+  xxxx : (xxx : string, sss : number) => ActionType;
+  [s : string] : QcActionCreator<ActionType>;
+}
+
 export default (data : any, err : any) => {
   return new Promise((resolve, reject) => {
     if (err) {
@@ -34,6 +42,7 @@ export default (data : any, err : any) => {
       ModelMap<QcAction, CommonConfig>,
       QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
       QuerchyDefinition<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
+      ExtraActionCreatorsXxxx<QcAction>,
       any
     >(
       {
@@ -93,6 +102,6 @@ export default (data : any, err : any) => {
       },
     );
     querchy.testRun(resolve, data);
-    // querchy.actionCreators.postHttpBin
+    // querchy.actionCreators.xxxx()
   });
 };

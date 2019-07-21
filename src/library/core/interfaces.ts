@@ -3,6 +3,7 @@ import { Action, State } from 'pure-epic';
 import {
   RunnerType,
   QcAction,
+  QcActionCreator,
 } from '~/common/interfaces';
 
 export type SimpleQueryRunner = {
@@ -104,6 +105,12 @@ export type QueryCreatorMap<
 > = {
   [s : string] : QueryCreatorDefinition<ActionType, CommonConfigType, ModelMapType> | undefined;
 };
+
+export interface ExtraActionCreators<
+  ActionType extends Action,
+> {
+  [s : string] : QcActionCreator<ActionType>;
+}
 
 export interface QuerchyDefinition<
   ActionType extends Action,

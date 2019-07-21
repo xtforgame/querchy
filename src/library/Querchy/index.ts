@@ -14,6 +14,7 @@ import {
   CommonConfig,
   ModelMap,
   QueryCreatorMap,
+  ExtraActionCreators,
   QuerchyDefinition,
   QcDependencies,
 } from '~/core/interfaces';
@@ -22,8 +23,10 @@ import {
   ReplaceReturnType,
 } from '~/utils/helper-functions';
 
-export type ActionCreators<ActionType extends Action, T extends { [s : string] : any }> = {
+export type ActionCreators<ActionType extends Action, T extends { [s : string] : any }, ExtraActionCreatorsType extends ExtraActionCreators<ActionType>> = {
   [P in keyof T] : QcActionCreator<ActionType>;
+} & {
+  [P in keyof ExtraActionCreatorsType] : ExtraActionCreatorsType[P];
 } & {
   [s : string] : QcActionCreator<ActionType>;
 };
@@ -41,6 +44,8 @@ export default class Querchy<
     ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
   > = QuerchyDefinition<ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
+  ExtraActionCreatorsType extends ExtraActionCreators<ActionType> = ExtraActionCreators<ActionType>,
+
   ExtraDependencies = any,
 > {
   querchyDefinition : QuerchyDefinitionType;
@@ -48,7 +53,9 @@ export default class Querchy<
     ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, ExtraDependencies
   >;
 
-  actionCreators: ActionCreators<ActionType, QueryCreatorMapType>;
+  actionCreators: ActionCreators<
+    ActionType, QueryCreatorMapType, ExtraActionCreatorsType
+  >;
 
   constructor(querchyDefinition : QuerchyDefinitionType, deps?: ExtraDependencies) {
     this.querchyDefinition = querchyDefinition;
