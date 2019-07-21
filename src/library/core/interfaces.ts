@@ -18,7 +18,10 @@ export type CommonConfig = {
   [s : string] : any;
 };
 
-export type ModelMap<CommonConfigType extends CommonConfig> = {
+export type ModelMap<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig
+> = {
   [s : string] : any;
 };
 
@@ -84,8 +87,9 @@ export interface QcRequestActionCreators {
 }
 
 export type QueryCreatorDefinition<
+  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<CommonConfigType>
+  ModelMapType extends ModelMap<ActionType, CommonConfigType>
 > = {
   queryRunner?: string | SimpleQueryRunner,
   buildRequestConfig : (
@@ -94,16 +98,18 @@ export type QueryCreatorDefinition<
 };
 
 export type QueryCreatorMap<
+  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<CommonConfigType>
+  ModelMapType extends ModelMap<ActionType, CommonConfigType>
 > = {
-  [s : string] : QueryCreatorDefinition<CommonConfigType, ModelMapType> | undefined;
+  [s : string] : QueryCreatorDefinition<ActionType, CommonConfigType, ModelMapType> | undefined;
 };
 
 export interface QuerchyDefinition<
+  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<CommonConfigType>,
-  QueryCreatorMapType extends QueryCreatorMap<CommonConfigType, ModelMapType>
+  ModelMapType extends ModelMap<ActionType, CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>
 > {
   commonConfig : CommonConfigType;
   models : ModelMapType;
@@ -111,14 +117,15 @@ export interface QuerchyDefinition<
 }
 
 export type QcDependencies<
+  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<CommonConfigType>,
-  QueryCreatorMapType extends QueryCreatorMap<CommonConfigType, ModelMapType>,
+  ModelMapType extends ModelMap<ActionType, CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
   QuerchyDefinitionType extends QuerchyDefinition<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
   >,
   ExtraDependencies = any,
 > = ExtraDependencies & {
-  queryCreatorMap : QueryCreatorMap<CommonConfigType, ModelMapType>;
+  queryCreatorMap : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>;
   querchyDef : QuerchyDefinitionType;
 };

@@ -36,13 +36,13 @@ export default class AxiosRunner<
   StateType extends State = QcState,
 
   CommonConfigType extends CommonConfig = CommonConfig,
-  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
+  ModelMapType extends ModelMap<Input, CommonConfigType> = ModelMap<Input, CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
-    CommonConfigType, ModelMapType
-  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
+    Input, CommonConfigType, ModelMapType
+  > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
   QuerchyDefinitionType extends QuerchyDefinition<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
-  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
   ExtraDependencies = any,
 > implements QueryRunner<

@@ -21,7 +21,7 @@ import {
   ReplaceReturnType,
 } from '~/utils/helper-functions';
 
-type Actions<ActionType extends Action, T extends { [s : string] : any }> = {
+type ActionCreators<ActionType extends Action, T extends { [s : string] : any }> = {
   [P in keyof T] : (x : string) => ActionType;
 } & {
   [s : string] : (x : string) => ActionType;
@@ -30,22 +30,22 @@ type Actions<ActionType extends Action, T extends { [s : string] : any }> = {
 export default class Querchy<
   ActionType extends Action = QcAction,
   CommonConfigType extends CommonConfig = CommonConfig,
-  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
+  ModelMapType extends ModelMap<ActionType, CommonConfigType> = ModelMap<ActionType, CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
-    CommonConfigType, ModelMapType
-  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
+    ActionType, CommonConfigType, ModelMapType
+  > = QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
   QuerchyDefinitionType extends QuerchyDefinition<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
-  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType>,
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
+  > = QuerchyDefinition<ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType>,
 
   ExtraDependencies = any,
 > {
   querchyDefinition : QuerchyDefinitionType;
   deps : QcDependencies<
-    CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, ExtraDependencies
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, ExtraDependencies
   >;
 
-  actions: Actions<ActionType, QueryCreatorMapType>;
+  actionCreators: ActionCreators<ActionType, QueryCreatorMapType>;
 
   constructor(querchyDefinition : QuerchyDefinitionType, deps?: ExtraDependencies) {
     this.querchyDefinition = querchyDefinition;
@@ -55,11 +55,11 @@ export default class Querchy<
       queryCreatorMap,
       querchyDef: this.querchyDefinition,
     };
-    this.actions = <any>{};
+    this.actionCreators = <any>{};
   }
 
-  normalizeQuerchyDefinition() : QueryCreatorMap<CommonConfigType, ModelMapType> {
-    const queryCreatorMap : QueryCreatorMap<CommonConfigType, ModelMapType> = {};
+  normalizeQuerchyDefinition() : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> {
+    const queryCreatorMap : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> = {};
     const { queryPrefix = '' } = this.querchyDefinition.commonConfig;
     const { queryCreators, commonConfig } = this.querchyDefinition;
     if (!commonConfig.getActionTypeName) {
@@ -81,6 +81,7 @@ export default class Querchy<
     QcAction,
     QcState,
     QcDependencies<
+      QcAction,
       CommonConfigType,
       ModelMapType,
       QueryCreatorMapType,
@@ -96,6 +97,7 @@ export default class Querchy<
         QcAction,
         QcState,
         QcDependencies<
+          QcAction,
           CommonConfigType,
           ModelMapType,
           QueryCreatorMapType,
@@ -147,6 +149,7 @@ export default class Querchy<
         QcState
       >,
       QcDependencies<
+        QcAction,
         CommonConfigType,
         ModelMapType,
         QueryCreatorMapType,

@@ -1,3 +1,4 @@
+import { Action } from 'pure-epic';
 import {
   CommonConfig,
   ModelMap,
@@ -14,11 +15,12 @@ import AxiosRunner from '~/query-runners/AxiosRunner';
 export * from './interfaces';
 
 export type QueryCreatorMapXxxx<
+  Input extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<CommonConfigType>
+  ModelMapType extends ModelMap<Input, CommonConfigType>
 > = {
-  first : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
-  postHttpBin : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
+  first : QueryCreatorDefinition<Input, CommonConfigType, ModelMapType>;
+  postHttpBin : QueryCreatorDefinition<Input, CommonConfigType, ModelMapType>;
 };
 
 export default (data : any, err : any) => {
@@ -29,9 +31,9 @@ export default (data : any, err : any) => {
     const querchy = new Querchy<
       QcAction,
       CommonConfig,
-      ModelMap<CommonConfig>,
-      QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>,
-      QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>>,
+      ModelMap<QcAction, CommonConfig>,
+      QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+      QuerchyDefinition<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
       any
     >(
       {
@@ -41,9 +43,9 @@ export default (data : any, err : any) => {
             QcAction,
             QcState,
             CommonConfig,
-            ModelMap<CommonConfig>,
-            QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>,
-            QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>>,
+            ModelMap<QcAction, CommonConfig>,
+            QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+            QuerchyDefinition<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
             any
           >(),
           queryRunners: {
@@ -52,9 +54,9 @@ export default (data : any, err : any) => {
               QcAction,
               QcState,
               CommonConfig,
-              ModelMap<CommonConfig>,
-              QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>,
-              QuerchyDefinition<CommonConfig, ModelMap<CommonConfig>, QueryCreatorMapXxxx<CommonConfig, ModelMap<CommonConfig>>>,
+              ModelMap<QcAction, CommonConfig>,
+              QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+              QuerchyDefinition<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
               any
             >(),
           },
@@ -91,6 +93,6 @@ export default (data : any, err : any) => {
       },
     );
     querchy.testRun(resolve, data);
-    querchy.actions.postHttpBin
+    // querchy.actionCreators.postHttpBin
   });
 };
