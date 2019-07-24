@@ -17,13 +17,18 @@ import {
   ExtraActionCreators,
   QuerchyDefinition,
   QcDependencies,
+  INIT_FUNC,
 } from '~/core/interfaces';
 
 import {
   ReplaceReturnType,
 } from '~/utils/helper-functions';
 
-export type ActionCreators<ActionType extends Action, T extends { [s : string] : any }, ExtraActionCreatorsType extends ExtraActionCreators<ActionType>> = {
+export type ActionCreators<
+  ActionType extends Action,
+  T extends { [s : string] : any },
+  ExtraActionCreatorsType
+> = {
   [P in keyof T] : QcActionCreator<ActionType>;
 } & {
   [P in keyof ExtraActionCreatorsType] : ExtraActionCreatorsType[P];
@@ -40,24 +45,31 @@ export default class Querchy<
   QueryCreatorMapType extends QueryCreatorMap<
     ActionType, CommonConfigType, ModelMapType
   > = QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
-  QuerchyDefinitionType extends QuerchyDefinition<
+  ExtraActionCreatorsType extends ExtraActionCreators<
     ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
-  > = QuerchyDefinition<ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType>,
+  > = ExtraActionCreators<
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
+  >,
 
-  ExtraActionCreatorsType extends ExtraActionCreators<ActionType> = ExtraActionCreators<ActionType>,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > {
   querchyDefinition : QuerchyDefinitionType;
   deps : QcDependencies<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, ExtraDependencies
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
   >;
 
   actionCreators: ActionCreators<
     ActionType, QueryCreatorMapType, ExtraActionCreatorsType
   >;
 
-  constructor(querchyDefinition : QuerchyDefinitionType, deps?: ExtraDependencies) {
+  constructor(
+    querchyDefinition : QuerchyDefinitionType,
+    deps?: ExtraDependencies
+  ) {
     this.querchyDefinition = querchyDefinition;
     const queryCreatorMap = this.normalizeQuerchyDefinition();
     this.deps = {
@@ -83,6 +95,7 @@ export default class Querchy<
       const newKey = commonConfig.getActionTypeName!(queryPrefix, key);
       queryCreatorMap[newKey] = queryCreators[key];
     });
+    this.querchyDefinition.extraActionCreators = this.querchyDefinition.extraActionCreators || <any>{ [INIT_FUNC] : () => {} };
     return queryCreatorMap;
   }
 
@@ -95,6 +108,7 @@ export default class Querchy<
       CommonConfigType,
       ModelMapType,
       QueryCreatorMapType,
+      ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
     >
@@ -111,6 +125,7 @@ export default class Querchy<
           CommonConfigType,
           ModelMapType,
           QueryCreatorMapType,
+          ExtraActionCreatorsType,
           QuerchyDefinitionType,
           ExtraDependencies
         >
@@ -163,6 +178,7 @@ export default class Querchy<
         CommonConfigType,
         ModelMapType,
         QueryCreatorMapType,
+        ExtraActionCreatorsType,
         QuerchyDefinitionType,
         ExtraDependencies
       >>({

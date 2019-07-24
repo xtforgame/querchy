@@ -106,21 +106,22 @@ export type QueryCreatorMap<
   [s : string] : QueryCreatorDefinition<ActionType, CommonConfigType, ModelMapType> | undefined;
 };
 
-export interface ExtraActionCreators<
-  ActionType extends Action,
-> {
-  [s : string] : QcActionCreator<ActionType>;
-}
-
 export interface QuerchyDefinition<
   ActionType extends Action,
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<ActionType, CommonConfigType>,
-  QueryCreatorMapType extends QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>
+  QueryCreatorMapType extends QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
+  ExtraActionCreatorsType extends ExtraActionCreators<
+    ActionType,
+    CommonConfigType,
+    ModelMapType,
+    QueryCreatorMapType
+  >,
 > {
   commonConfig : CommonConfigType;
   models : ModelMapType;
   queryCreators : QueryCreatorMapType;
+  extraActionCreators?: ExtraActionCreatorsType;
 }
 
 export type QcDependencies<
@@ -128,11 +129,33 @@ export type QcDependencies<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<ActionType, CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
+  ExtraActionCreatorsType extends ExtraActionCreators<
+    ActionType,
+    CommonConfigType,
+    ModelMapType,
+    QueryCreatorMapType
+  >,
   QuerchyDefinitionType extends QuerchyDefinition<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
   >,
   ExtraDependencies = any,
 > = ExtraDependencies & {
   queryCreatorMap : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>;
   querchyDef : QuerchyDefinitionType;
 };
+
+export const INIT_FUNC = Symbol('init');
+
+export interface ExtraActionCreators<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<
+    ActionType, CommonConfigType
+  >,
+  QueryCreatorMapType extends QueryCreatorMap<
+    ActionType, CommonConfigType, ModelMapType
+  >,
+> {
+  [INIT_FUNC] : (x: any) => void;
+  [s : string] : QcActionCreator<ActionType>;
+}

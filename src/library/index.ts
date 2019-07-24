@@ -8,6 +8,7 @@ import {
   QcAction,
   QcState,
   QcActionCreator,
+  INIT_FUNC,
 } from './interfaces';
 
 import Querchy from '~/Querchy';
@@ -15,7 +16,7 @@ import AxiosRunner from '~/query-runners/AxiosRunner';
 
 export * from './interfaces';
 
-export type QueryCreatorMapXxxx<
+export type QcQueryCreatorMap<
   Input extends Action,
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<Input, CommonConfigType>
@@ -24,11 +25,27 @@ export type QueryCreatorMapXxxx<
   postHttpBin : QueryCreatorDefinition<Input, CommonConfigType, ModelMapType>;
 };
 
-export interface ExtraActionCreatorsXxxx<
+export class QcExtraActionCreators<
   ActionType extends Action,
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<
+    ActionType, CommonConfigType
+  >,
+  QueryCreatorMapType extends QueryCreatorMap<
+    ActionType, CommonConfigType, ModelMapType
+  >,
 > {
-  xxxx : (xxx : string, sss : number) => ActionType;
+  [INIT_FUNC] : (x : any) => void;
   [s : string] : QcActionCreator<ActionType>;
+
+  constructor() {
+    this[INIT_FUNC] = () => {
+      console.log('constructor()');
+    };
+  }
+  xxxx = (xxx : string, sss : number) : ActionType => {
+    return <ActionType>{ type: 'xxxx' };
+  }
 }
 
 export default (data : any, err : any) => {
@@ -40,9 +57,22 @@ export default (data : any, err : any) => {
       QcAction,
       CommonConfig,
       ModelMap<QcAction, CommonConfig>,
-      QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
-      QuerchyDefinition<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
-      ExtraActionCreatorsXxxx<QcAction>,
+      QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+      QcExtraActionCreators<
+        QcAction,
+        CommonConfig,
+        ModelMap<QcAction, CommonConfig>,
+        QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>
+      >,
+      QuerchyDefinition<
+        QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+        QcExtraActionCreators<
+          QcAction,
+          CommonConfig,
+          ModelMap<QcAction, CommonConfig>,
+          QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>
+        >
+      >,
       any
     >(
       {
@@ -53,8 +83,12 @@ export default (data : any, err : any) => {
             QcState,
             CommonConfig,
             ModelMap<QcAction, CommonConfig>,
-            QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
-            QuerchyDefinition<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
+            QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+            QcExtraActionCreators<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
+            QuerchyDefinition<
+              QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+              QcExtraActionCreators<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>
+            >,
             any
           >(),
           queryRunners: {
@@ -64,8 +98,12 @@ export default (data : any, err : any) => {
               QcState,
               CommonConfig,
               ModelMap<QcAction, CommonConfig>,
-              QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
-              QuerchyDefinition<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QueryCreatorMapXxxx<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
+              QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+              QcExtraActionCreators<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>,
+              QuerchyDefinition<
+                QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>,
+                QcExtraActionCreators<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>
+              >,
               any
             >(),
           },
@@ -99,9 +137,10 @@ export default (data : any, err : any) => {
             }),
           },
         },
+        extraActionCreators: new QcExtraActionCreators<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>, QcQueryCreatorMap<QcAction, CommonConfig, ModelMap<QcAction, CommonConfig>>>(),
       },
     );
     querchy.testRun(resolve, data);
-    // querchy.actionCreators.xxxx()
+    // querchy.actionCreators.xxxx
   });
 };

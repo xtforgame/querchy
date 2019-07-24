@@ -13,6 +13,7 @@ import {
   QueryCreatorMap,
   QuerchyDefinition,
   QcDependencies,
+  ExtraActionCreators,
 } from '~/core/interfaces';
 
 export interface Canceler {
@@ -33,16 +34,21 @@ export type RunnerRunOption<
   QueryCreatorMapType extends QueryCreatorMap<
     Input, CommonConfigType, ModelMapType
   > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
-  QuerchyDefinitionType extends QuerchyDefinition<
+  ExtraActionCreatorsType extends ExtraActionCreators<
     Input, CommonConfigType, ModelMapType, QueryCreatorMapType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType>,
+  > = ExtraActionCreators<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+  >,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > = {
   action$: ActionsObservable<Input>;
   store$: StateObservable<StateType>;
   dependencies?: QcDependencies<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, QuerchyDefinitionType, ExtraDependencies
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
   >;
   args: any[];
 };
@@ -57,9 +63,14 @@ export type RunnerRun<
   QueryCreatorMapType extends QueryCreatorMap<
     Input, CommonConfigType, ModelMapType
   > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
-  QuerchyDefinitionType extends QuerchyDefinition<
+  ExtraActionCreatorsType extends ExtraActionCreators<
     Input, CommonConfigType, ModelMapType, QueryCreatorMapType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType>,
+  > = ExtraActionCreators<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+  >,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > = (
@@ -70,6 +81,7 @@ export type RunnerRun<
     CommonConfigType,
     ModelMapType,
     QueryCreatorMapType,
+    ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependencies
   >,
@@ -85,9 +97,14 @@ export type QueryRunner<
   QueryCreatorMapType extends QueryCreatorMap<
     Input, CommonConfigType, ModelMapType
   > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
-  QuerchyDefinitionType extends QuerchyDefinition<
+  ExtraActionCreatorsType extends ExtraActionCreators<
     Input, CommonConfigType, ModelMapType, QueryCreatorMapType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType>,
+  > = ExtraActionCreators<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+  >,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > = {
@@ -99,6 +116,7 @@ export type QueryRunner<
     CommonConfigType,
     ModelMapType,
     QueryCreatorMapType,
+    ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependencies
   >,

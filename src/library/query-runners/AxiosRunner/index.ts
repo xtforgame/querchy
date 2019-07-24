@@ -18,6 +18,7 @@ import {
   QcDependencies,
   QcRequestConfig,
   QcRequestActionCreators,
+  ExtraActionCreators,
 } from '~/core/interfaces';
 
 import {
@@ -40,9 +41,14 @@ export default class AxiosRunner<
   QueryCreatorMapType extends QueryCreatorMap<
     Input, CommonConfigType, ModelMapType
   > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
-  QuerchyDefinitionType extends QuerchyDefinition<
+  ExtraActionCreatorsType extends ExtraActionCreators<
     Input, CommonConfigType, ModelMapType, QueryCreatorMapType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType>,
+  > = ExtraActionCreators<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+  >,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > implements QueryRunner<
@@ -52,6 +58,7 @@ export default class AxiosRunner<
   CommonConfigType,
   ModelMapType,
   QueryCreatorMapType,
+  ExtraActionCreatorsType,
   QuerchyDefinitionType,
   ExtraDependencies
 > {
@@ -74,6 +81,7 @@ export default class AxiosRunner<
     CommonConfigType,
     ModelMapType,
     QueryCreatorMapType,
+    ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependencies
   > = (
