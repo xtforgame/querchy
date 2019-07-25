@@ -10,6 +10,8 @@ import {
   QcState,
   QcActionCreator,
   INIT_FUNC,
+  InitFunctionKeyType,
+  ActionCreatorsInitFunction,
 } from './interfaces';
 
 import Querchy from '~/Querchy';
@@ -44,7 +46,7 @@ export class QcExtraActionCreators<
     ActionType, CommonConfigType, ModelMapType
   >,
 > {
-  [INIT_FUNC] : (x : any) => void;
+  [INIT_FUNC] : ActionCreatorsInitFunction;
   [s : string] : QcActionCreator<ActionType>;
 
   constructor() {
@@ -119,7 +121,9 @@ export default (data : any, err : any) => {
           queryPrefix: 'XX/',
         },
         models: {
-          httpBinReses: {},
+          httpBinReses: {
+            actions: {},
+          },
         },
         queryCreators: {
           first: {
@@ -152,6 +156,6 @@ export default (data : any, err : any) => {
       },
     );
     querchy.testRun(resolve, data);
-    // querchy.actionCreators.xxxx
+    querchy.actionCreatorSets.httpBinReses.
   });
 };

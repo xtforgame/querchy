@@ -19,10 +19,19 @@ export type CommonConfig = {
   [s : string] : any;
 };
 
+export type ResourceModelActions<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig
+> = {
+  get?: (s: string) => ActionType,
+  update?: (s: string) => ActionType,
+};
+
 export type ResourceModel<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
+  actions: ResourceModelActions<ActionType, CommonConfigType>,
 };
 
 export type ModelMap<
@@ -151,6 +160,8 @@ export type QcDependencies<
 };
 
 export const INIT_FUNC = Symbol('init');
+export type InitFunctionKeyType = typeof INIT_FUNC;
+export type ActionCreatorsInitFunction = (x: any) => void;
 
 export interface ExtraActionCreators<
   ActionType extends Action,
@@ -162,6 +173,6 @@ export interface ExtraActionCreators<
     ActionType, CommonConfigType, ModelMapType
   >,
 > {
-  [INIT_FUNC] : (x: any) => void;
+  [INIT_FUNC] : ActionCreatorsInitFunction;
   [s : string] : QcActionCreator<ActionType>;
 }

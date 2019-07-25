@@ -12,28 +12,53 @@ import {
 
 import {
   CommonConfig,
+  ResourceModel,
+  ResourceModelActions,
   ModelMap,
   QueryCreatorMap,
   ExtraActionCreators,
   QuerchyDefinition,
   QcDependencies,
   INIT_FUNC,
+  InitFunctionKeyType,
 } from '~/core/interfaces';
 
 import {
   ReplaceReturnType,
 } from '~/utils/helper-functions';
 
-export type ActionCreators<
+export type ModelActionCreators<
   ActionType extends Action,
-  T extends { [s : string] : any },
-  ExtraActionCreatorsType
+  CommonConfigType extends CommonConfig,
+  T extends Required<ResourceModelActions<ActionType, CommonConfigType>>
 > = {
   [P in keyof T] : QcActionCreator<ActionType>;
+} & {
+  [s : string] : QcActionCreator<ActionType>;
+};
+
+export type ModelActionCreatorSet<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig,
+  T extends ModelMap<ActionType, CommonConfigType>,
+  ExtraActionCreatorsType
+> = {
+  [P in keyof T] : Required<T[P]['actions']>;
 } & {
   [P in keyof ExtraActionCreatorsType] : ExtraActionCreatorsType[P];
 } & {
   [s : string] : QcActionCreator<ActionType>;
+};
+
+export type ActionCreatorSets<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig,
+  T extends ModelMap<ActionType, CommonConfigType>,
+  ExtraActionCreatorSetsType
+> = ModelActionCreatorSet<ActionType, CommonConfigType, T, {}> & {
+  extra : ExtraActionCreatorSetsType;
+} & {
+  [s : string] : { [s : string] : QcActionCreator<ActionType> };
 };
 
 export default class Querchy<
@@ -62,8 +87,13 @@ export default class Querchy<
     ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
   >;
 
-  actionCreators: ActionCreators<
-    ActionType, QueryCreatorMapType, ExtraActionCreatorsType
+  actionCreatorSets: ActionCreatorSets<
+    ActionType,
+    CommonConfigType,
+    ModelMapType,
+    ModelActionCreatorSet<
+      ActionType, CommonConfigType, {}, ExtraActionCreatorsType
+    >
   >;
 
   constructor(
@@ -77,7 +107,7 @@ export default class Querchy<
       queryCreatorMap,
       querchyDef: this.querchyDefinition,
     };
-    this.actionCreators = <any>{};
+    this.actionCreatorSets = <any>{};
   }
 
   normalizeQuerchyDefinition() : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> {
