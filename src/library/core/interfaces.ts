@@ -19,11 +19,17 @@ export type CommonConfig = {
   [s : string] : any;
 };
 
+export type ResourceModel<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig
+> = {
+};
+
 export type ModelMap<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
-  [s : string] : any;
+  [s : string] : ResourceModel<ActionType, CommonConfigType>;
 };
 
 export type QcRequestConfig = {
@@ -94,7 +100,7 @@ export type QueryCreatorDefinition<
 > = {
   queryRunner?: string | SimpleQueryRunner,
   buildRequestConfig : (
-    runnerType : RunnerType, commonConfig : CommonConfigType,
+    action: ActionType, runnerType : RunnerType, commonConfig : CommonConfigType,
   ) => QcRequestConfig;
 };
 

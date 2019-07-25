@@ -100,11 +100,11 @@ export default class Querchy<
   }
 
   getAllEpics() : Epic<
-    QcAction,
-    QcAction,
+    ActionType,
+    ActionType,
     QcState,
     QcDependencies<
-      QcAction,
+      ActionType,
       CommonConfigType,
       ModelMapType,
       QueryCreatorMapType,
@@ -117,11 +117,11 @@ export default class Querchy<
     return combineEpics(
       ...Object.keys(queryCreators)
       .map<Epic<
-        QcAction,
-        QcAction,
+        ActionType,
+        ActionType,
         QcState,
         QcDependencies<
-          QcAction,
+          ActionType,
           CommonConfigType,
           ModelMapType,
           QueryCreatorMapType,
@@ -131,8 +131,8 @@ export default class Querchy<
         >
       >>((key) => {
         // queryCreator!.queryRunner = new AxiosRunner<
-        //   QcAction,
-        //   QcAction,
+        //   ActionType,
+        //   ActionType,
         //   QcState,
         //   CommonConfigType,
         //   ModelMapType,
@@ -153,7 +153,7 @@ export default class Querchy<
         const actionType = commonConfig.getActionTypeName!(commonConfig.queryPrefix!, key);
         return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
         .pipe(
-          mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
+          mergeMap<ActionType, ObservableInput<ActionType>>((action) => {
             return runner.handle(action, {
               action$, store$, dependencies, args,
             });
@@ -167,14 +167,14 @@ export default class Querchy<
     const rootEpic = this.getAllEpics();
 
     const epicMiddleware = createEpicMiddleware<
-      QcAction,
+      ActionType,
       QcState,
       QcStore<
-        QcAction,
+        ActionType,
         QcState
       >,
       QcDependencies<
-        QcAction,
+        ActionType,
         CommonConfigType,
         ModelMapType,
         QueryCreatorMapType,
@@ -194,7 +194,7 @@ export default class Querchy<
       getState: () => ({ xxx: 1 }),
     });
     epicMiddleware.run(rootEpic);
-    epicMiddlewareCb(() => {})({ type: 'XX/POST_HTTP_BIN' });
+    epicMiddlewareCb(() => {})(<ActionType>{ type: 'XX/POST_HTTP_BIN' });
     // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
   }
 }

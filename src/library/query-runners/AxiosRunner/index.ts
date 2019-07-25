@@ -120,7 +120,7 @@ export default class AxiosRunner<
 
     let requestConfig : QcRequestConfig;
     try {
-      requestConfig = queryCreator.buildRequestConfig(this.type, commonConfig);
+      requestConfig = queryCreator.buildRequestConfig(action, this.type, commonConfig);
     } catch (error) {
       return [createErrorAction(error)];
     }
