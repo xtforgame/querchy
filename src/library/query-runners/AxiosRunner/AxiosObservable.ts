@@ -1,5 +1,4 @@
 import { AxiosStatic, AxiosResponse, AxiosError, AxiosRequestConfig, CancelTokenSource } from 'axios';
-import { Action } from 'pure-epic';
 import { from, of, race, Observable } from 'rxjs';
 import {
   map, take, catchError,
@@ -24,7 +23,6 @@ export interface AxiosObservableOptions {
 
 export default <
   Config extends AxiosRequestConfig = AxiosRequestConfig,
-  Input extends Action = QcAction,
 >(axios : AxiosStatic) => (
   axiosRequestConfig : Config,
   {

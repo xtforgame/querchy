@@ -1,5 +1,3 @@
-import { Observable } from 'rxjs';
-import { Action, State } from 'pure-epic';
 import {
   RunnerType,
   QcAction,
@@ -192,7 +190,6 @@ export type ResourceModelActionTypes = {
 };
 
 export type ResourceModel<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
   actionTypes?: ResourceModelActionTypes,
@@ -200,10 +197,9 @@ export type ResourceModel<
 };
 
 export type ModelMap<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
-  [s : string] : ResourceModel<ActionType, CommonConfigType>;
+  [s : string] : ResourceModel<CommonConfigType>;
 };
 
 export type QcRequestConfig = {
@@ -254,31 +250,27 @@ export interface QcRequestActionCreators {
 // ====================
 
 export type QueryCreatorDefinition<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<ActionType, CommonConfigType>
+  ModelMapType extends ModelMap<CommonConfigType>
 > = {
   queryRunner?: string | SimpleQueryRunner,
   buildRequestConfig : (
-    action: ActionType, runnerType : RunnerType, commonConfig : CommonConfigType,
+    action: QcAction, runnerType : RunnerType, commonConfig : CommonConfigType,
   ) => QcRequestConfig;
 };
 
 export type QueryCreatorMap<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<ActionType, CommonConfigType>
+  ModelMapType extends ModelMap<CommonConfigType>
 > = {
-  [s : string] : QueryCreatorDefinition<ActionType, CommonConfigType, ModelMapType> | undefined;
+  [s : string] : QueryCreatorDefinition<CommonConfigType, ModelMapType> | undefined;
 };
 
 export interface QuerchyDefinition<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<ActionType, CommonConfigType>,
-  QueryCreatorMapType extends QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    ActionType,
     CommonConfigType,
     ModelMapType,
     QueryCreatorMapType
@@ -291,22 +283,20 @@ export interface QuerchyDefinition<
 }
 
 export type QcDependencies<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  ModelMapType extends ModelMap<ActionType, CommonConfigType>,
-  QueryCreatorMapType extends QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  QueryCreatorMapType extends QueryCreatorMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    ActionType,
     CommonConfigType,
     ModelMapType,
     QueryCreatorMapType
   >,
   QuerchyDefinitionType extends QuerchyDefinition<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
   >,
   ExtraDependencies = any,
 > = ExtraDependencies & {
-  queryCreatorMap : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>;
+  queryCreatorMap : QueryCreatorMap<CommonConfigType, ModelMapType>;
   querchyDef : QuerchyDefinitionType;
 };
 
@@ -315,50 +305,46 @@ export type InitFunctionKeyType = typeof INIT_FUNC;
 export type ActionCreatorsInitFunction = (x: any) => void;
 
 export interface ExtraActionCreators<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<
-    ActionType, CommonConfigType
+    CommonConfigType
   >,
   QueryCreatorMapType extends QueryCreatorMap<
-    ActionType, CommonConfigType, ModelMapType
+    CommonConfigType, ModelMapType
   >,
 > {
   [INIT_FUNC] : ActionCreatorsInitFunction;
-  [s : string] : QcActionCreator<ActionType>;
+  [s : string] : QcActionCreator;
 }
 
 
 // ==========
 
 export type ModelActionCreators<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
   T extends Required<ResourceModelActions>
 > = {
-  [P in keyof T] : QcActionCreator<ActionType>;
+  [P in keyof T] : QcActionCreator;
 } & {
-  [s : string] : QcActionCreator<ActionType>;
+  [s : string] : QcActionCreator;
 };
 
 export type ModelActionCreatorSet<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<ActionType, CommonConfigType>,
+  T extends ModelMap<CommonConfigType>,
   ExtraActionCreatorsType
 > = {
   [P in keyof T] : Required<T[P]>['actions'];
 } & {
   [P in keyof ExtraActionCreatorsType] : ExtraActionCreatorsType[P];
 } & {
-  [s : string] : QcActionCreator<ActionType>;
+  [s : string] : QcActionCreator;
 };
 
 export type ActionCreatorSets<
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<ActionType, CommonConfigType>,
+  T extends ModelMap<CommonConfigType>,
   ExtraActionCreatorSetsType
-> = ModelActionCreatorSet<ActionType, CommonConfigType, T, {}> & {
+> = ModelActionCreatorSet<CommonConfigType, T, {}> & {
   extra : ExtraActionCreatorSetsType;
 };

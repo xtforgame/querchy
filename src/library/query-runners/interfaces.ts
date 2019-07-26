@@ -1,4 +1,4 @@
-import { Action, State, ActionsObservable, StateObservable } from 'pure-epic';
+import { State, ActionsObservable, StateObservable } from 'pure-epic';
 import { Observable } from 'rxjs';
 
 import {
@@ -28,59 +28,55 @@ export interface CancelTokenSource {
 }
 
 export type RunnerRunOption<
-  Input extends Action = QcAction,
   StateType extends State = QcState,
 
   CommonConfigType extends CommonConfig = CommonConfig,
-  ModelMapType extends ModelMap<Input, CommonConfigType> = ModelMap<Input, CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
-    Input, CommonConfigType, ModelMapType
-  > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   > = ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   >,
   QuerchyDefinitionType extends QuerchyDefinition<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > = {
-  action$: ActionsObservable<Input>;
+  action$: ActionsObservable<QcAction>;
   store$: StateObservable<StateType>;
   dependencies?: QcDependencies<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
   >;
   args: any[];
 };
 
 export type RunnerRun<
-  Input extends Action = QcAction,
-  Output extends Input = Input,
   StateType extends State = QcState,
 
   CommonConfigType extends CommonConfig = CommonConfig,
-  ModelMapType extends ModelMap<Input, CommonConfigType> = ModelMap<Input, CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
-    Input, CommonConfigType, ModelMapType
-  > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   > = ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   >,
   QuerchyDefinitionType extends QuerchyDefinition<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > = (
-  action: Input & {
-    actionCreator: StartActionCreatorWithProps<Input, CommonConfigType, Function>,
+  action: QcAction & {
+    actionCreator: StartActionCreatorWithProps<Function>,
   },
   options: RunnerRunOption<
-    Input,
     StateType,
     CommonConfigType,
     ModelMapType,
@@ -89,33 +85,29 @@ export type RunnerRun<
     QuerchyDefinitionType,
     ExtraDependencies
   >,
-) => Observable<Output>;
+) => Observable<QcAction>;
 
 export type QueryRunner<
-  Input extends Action = QcAction,
-  Output extends Input = Input,
   StateType extends State = QcState,
 
   CommonConfigType extends CommonConfig = CommonConfig,
-  ModelMapType extends ModelMap<Input, CommonConfigType> = ModelMap<Input, CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
-    Input, CommonConfigType, ModelMapType
-  > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   > = ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   >,
   QuerchyDefinitionType extends QuerchyDefinition<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > = {
   type: RunnerType;
   handle: RunnerRun<
-    Input,
-    Output,
     StateType,
     CommonConfigType,
     ModelMapType,

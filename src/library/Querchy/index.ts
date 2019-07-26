@@ -1,4 +1,4 @@
-import { Epic, Action, createEpicMiddleware, combineEpics } from 'pure-epic';
+import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { toUnderscore } from '~/common/common-functions';
@@ -40,39 +40,37 @@ import {
 } from './actionCreatorHelpers';
 
 export default class Querchy<
-  ActionType extends Action = QcAction,
   CommonConfigType extends CommonConfig = CommonConfig,
   ModelMapType extends ModelMap<
-    ActionType, CommonConfigType
-  > = ModelMap<ActionType, CommonConfigType>,
+    CommonConfigType
+  > = ModelMap<CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
-    ActionType, CommonConfigType, ModelMapType
-  > = QueryCreatorMap<ActionType, CommonConfigType, ModelMapType>,
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   > = ExtraActionCreators<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   >,
 
   QuerchyDefinitionType extends QuerchyDefinition<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
   > = QuerchyDefinition<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
   >,
 
   ExtraDependencies = any,
 > {
   querchyDefinition : QuerchyDefinitionType;
   deps : QcDependencies<
-    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
   >;
 
   actionCreatorSets: ActionCreatorSets<
-    ActionType,
     CommonConfigType,
     ModelMapType,
     ModelActionCreatorSet<
-      ActionType, CommonConfigType, {}, ExtraActionCreatorsType
+      CommonConfigType, {}, ExtraActionCreatorsType
     >
   >;
 
@@ -90,8 +88,8 @@ export default class Querchy<
     };
   }
 
-  normalizeQuerchyDefinition() : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> {
-    const queryCreatorMap : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> = {};
+  normalizeQuerchyDefinition() : QueryCreatorMap<CommonConfigType, ModelMapType> {
+    const queryCreatorMap : QueryCreatorMap<CommonConfigType, ModelMapType> = {};
     const { queryPrefix = '' } = this.querchyDefinition.commonConfig;
     const { queryCreators, commonConfig, models } = this.querchyDefinition;
 
@@ -116,18 +114,17 @@ export default class Querchy<
     Object.keys(models)
     .forEach((key) => {
       models[key].actionTypes = createModelActionTypes(key, commonConfig);
-      models[key].actions = createModelActions(key, models[key].actionTypes!, commonConfig);
+      models[key].actions = createModelActions(key, models[key].actionTypes!);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
     });
     return queryCreatorMap;
   }
 
   getAllEpics() : Epic<
-    ActionType,
-    ActionType,
+    QcAction,
+    QcAction,
     QcState,
     QcDependencies<
-      ActionType,
       CommonConfigType,
       ModelMapType,
       QueryCreatorMapType,
@@ -140,11 +137,10 @@ export default class Querchy<
     return combineEpics(
       ...Object.keys(queryCreators)
       .map<Epic<
-        ActionType,
-        ActionType,
+        QcAction,
+        QcAction,
         QcState,
         QcDependencies<
-          ActionType,
           CommonConfigType,
           ModelMapType,
           QueryCreatorMapType,
@@ -154,8 +150,6 @@ export default class Querchy<
         >
       >>((key) => {
         // queryCreator!.queryRunner = new AxiosRunner<
-        //   ActionType,
-        //   ActionType,
         //   QcState,
         //   CommonConfigType,
         //   ModelMapType,
@@ -176,7 +170,7 @@ export default class Querchy<
         const actionType = commonConfig.getActionTypeName!(commonConfig.queryPrefix!, key);
         return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
         .pipe(
-          mergeMap<ActionType, ObservableInput<ActionType>>((action) => {
+          mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
             return runner.handle(action, {
               action$, store$, dependencies, args,
             });
@@ -190,14 +184,10 @@ export default class Querchy<
     const rootEpic = this.getAllEpics();
 
     const epicMiddleware = createEpicMiddleware<
-      ActionType,
+      QcAction,
       QcState,
-      QcStore<
-        ActionType,
-        QcState
-      >,
+      QcStore<QcState>,
       QcDependencies<
-        ActionType,
         CommonConfigType,
         ModelMapType,
         QueryCreatorMapType,
@@ -231,7 +221,7 @@ export default class Querchy<
       getState: () => ({ xxx: 1 }),
     });
     epicMiddleware.run(rootEpic);
-    epicMiddlewareCb(() => {})(<ActionType><any>this.actionCreatorSets.httpBinRes.create({}));
+    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.create({}));
     // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
     // const readAction = this.actionCreatorSets.httpBinRes.read('ss');

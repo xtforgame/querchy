@@ -1,15 +1,3 @@
-import { Epic, Action, createEpicMiddleware, combineEpics } from 'pure-epic';
-import { ObservableInput } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
-import { toUnderscore } from '~/common/common-functions';
-
-import {
-  QcAction,
-  QcState,
-  QcStore,
-  QcActionCreator,
-} from '~/common/interfaces';
-
 import {
   CrudType,
   CrudSubType,
@@ -35,7 +23,6 @@ import {
 } from '~/core/interfaces';
 
 export const createModelActionTypes = <
-  ActionType extends Action,
   CommonConfigType extends CommonConfig,
 >(modelName : string, commonConfig : CommonConfigType) : ResourceModelActionTypes => {
   const { queryPrefix = '' } = commonConfig;
@@ -48,13 +35,10 @@ export const createModelActionTypes = <
 };
 
 const createModelCrudAction = <
-  ActionType extends Action,
-  CommonConfigType extends CommonConfig,
   StartActionCreatorType,
 >(
   modelName : string,
   actionTypes : ResourceModelActionTypes,
-  commonConfig : CommonConfigType,
   crudType: CrudType,
   start : StartActionCreatorType,
 ) : ActionCreatorWithProps<
@@ -120,20 +104,14 @@ const createModelCrudAction = <
   return startFunc;
 };
 
-export const createModelActions = <
-  ActionType extends Action,
-  CommonConfigType extends CommonConfig,
->(
+export const createModelActions = (
   modelName : string,
   actionTypes : ResourceModelActionTypes,
-  commonConfig : CommonConfigType,
 ) : ResourceModelActions => {
   const createFunc = createModelCrudAction<
-    ActionType,
-    CommonConfigType,
     ModelActionCreatorCreate
   >(
-    modelName, actionTypes, commonConfig, 'create',
+    modelName, actionTypes, 'create',
     (data, options?) => ({
       type: actionTypes['create'],
       actionCreator: createFunc,
@@ -147,11 +125,9 @@ export const createModelActions = <
   );
 
   const readFunc = createModelCrudAction<
-    ActionType,
-    CommonConfigType,
     ModelActionCreatorRead
   >(
-    modelName, actionTypes, commonConfig, 'read',
+    modelName, actionTypes, 'read',
     (resourceId, options?) => ({
       type: actionTypes['read'],
       actionCreator: readFunc,
@@ -165,11 +141,9 @@ export const createModelActions = <
   );
 
   const updateFunc = createModelCrudAction<
-    ActionType,
-    CommonConfigType,
     ModelActionCreatorUpdate
   >(
-    modelName, actionTypes, commonConfig, 'update',
+    modelName, actionTypes, 'update',
     (resourceId, data, options?) => ({
       type: actionTypes['update'],
       actionCreator: updateFunc,
@@ -184,11 +158,9 @@ export const createModelActions = <
   );
 
   const deleteFunc = createModelCrudAction<
-    ActionType,
-    CommonConfigType,
     ModelActionCreatorDelete
   >(
-    modelName, actionTypes, commonConfig, 'delete',
+    modelName, actionTypes, 'delete',
     (resourceId, options?) => ({
       type: actionTypes['delete'],
       actionCreator: deleteFunc,

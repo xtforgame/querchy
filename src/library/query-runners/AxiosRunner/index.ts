@@ -1,4 +1,4 @@
-import { Epic, Action, State, ActionsObservable, StateObservable } from 'pure-epic';
+import { State } from 'pure-epic';
 import { Observable, ObservableInput } from 'rxjs';
 import axios, { AxiosStatic } from 'axios';
 import { mergeMap, filter } from 'rxjs/operators';
@@ -32,28 +32,24 @@ import {
 import AxiosObservable, { AxiosObservableOptions } from './AxiosObservable';
 
 export default class AxiosRunner<
-  Input extends Action = QcAction,
-  Output extends Input = Input,
   StateType extends State = QcState,
 
   CommonConfigType extends CommonConfig = CommonConfig,
-  ModelMapType extends ModelMap<Input, CommonConfigType> = ModelMap<Input, CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
   QueryCreatorMapType extends QueryCreatorMap<
-    Input, CommonConfigType, ModelMapType
-  > = QueryCreatorMap<Input, CommonConfigType, ModelMapType>,
+    CommonConfigType, ModelMapType
+  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   > = ExtraActionCreators<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryCreatorMapType
   >,
   QuerchyDefinitionType extends QuerchyDefinition<
-    Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
-  > = QuerchyDefinition<Input, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
+    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > implements QueryRunner<
-  Input,
-  Output,
   StateType,
   CommonConfigType,
   ModelMapType,
@@ -71,12 +67,10 @@ export default class AxiosRunner<
 
   constructor(a?: AxiosStatic) {
     this.type = 'axios';
-    this.axiosObservable = AxiosObservable<any, Input>(a || axios);
+    this.axiosObservable = AxiosObservable<any>(a || axios);
   }
 
   handle : RunnerRun<
-    Input,
-    Output,
     StateType,
     CommonConfigType,
     ModelMapType,
@@ -141,7 +135,7 @@ export default class AxiosRunner<
       {
         axiosCancelTokenSource: source,
         cancelStream$: action$.pipe(
-          filter<Input>((cancelAction) => {
+          filter<QcAction>((cancelAction) => {
             if (cancelAction.type !== cancelActionType) {
               return false;
             }
