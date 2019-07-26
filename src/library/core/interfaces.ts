@@ -23,15 +23,15 @@ export type ResourceModelActions<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
-  get?: (s: string) => ActionType,
-  update?: (s: string) => ActionType,
+  get: (s: string) => ActionType,
+  update: (s: string) => ActionType,
 };
 
 export type ResourceModel<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
-  actions: ResourceModelActions<ActionType, CommonConfigType>,
+  actions?: ResourceModelActions<ActionType, CommonConfigType>,
 };
 
 export type ModelMap<

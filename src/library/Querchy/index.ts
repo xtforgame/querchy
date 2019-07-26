@@ -43,7 +43,7 @@ export type ModelActionCreatorSet<
   T extends ModelMap<ActionType, CommonConfigType>,
   ExtraActionCreatorsType
 > = {
-  [P in keyof T] : Required<T[P]['actions']>;
+  [P in keyof T] : Required<T[P]>['actions'];
 } & {
   [P in keyof ExtraActionCreatorsType] : ExtraActionCreatorsType[P];
 } & {

@@ -54,6 +54,7 @@ export class QcExtraActionCreators<
       console.log('constructor()');
     };
   }
+
   xxxx = (xxx : string, sss : number) : ActionType => {
     return <ActionType>{ type: 'xxxx' };
   }
@@ -122,7 +123,6 @@ export default (data : any, err : any) => {
         },
         models: {
           httpBinReses: {
-            actions: {},
           },
         },
         queryCreators: {
@@ -156,6 +156,6 @@ export default (data : any, err : any) => {
       },
     );
     querchy.testRun(resolve, data);
-    querchy.actionCreatorSets.httpBinReses.
+    // querchy.actionCreatorSets.httpBinReses.
   });
 };
