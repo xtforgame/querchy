@@ -22,43 +22,20 @@ import {
   QcDependencies,
   INIT_FUNC,
   InitFunctionKeyType,
+
+  ModelActionCreators,
+  ModelActionCreatorSet,
+  ActionCreatorSets,
 } from '~/core/interfaces';
 
 import {
   ReplaceReturnType,
 } from '~/utils/helper-functions';
 
-export type ModelActionCreators<
-  ActionType extends Action,
-  CommonConfigType extends CommonConfig,
-  T extends Required<ResourceModelActions<ActionType, CommonConfigType>>
-> = {
-  [P in keyof T] : QcActionCreator<ActionType>;
-} & {
-  [s : string] : QcActionCreator<ActionType>;
-};
-
-export type ModelActionCreatorSet<
-  ActionType extends Action,
-  CommonConfigType extends CommonConfig,
-  T extends ModelMap<ActionType, CommonConfigType>,
-  ExtraActionCreatorsType
-> = {
-  [P in keyof T] : Required<T[P]>['actions'];
-} & {
-  [P in keyof ExtraActionCreatorsType] : ExtraActionCreatorsType[P];
-} & {
-  [s : string] : QcActionCreator<ActionType>;
-};
-
-export type ActionCreatorSets<
-  ActionType extends Action,
-  CommonConfigType extends CommonConfig,
-  T extends ModelMap<ActionType, CommonConfigType>,
-  ExtraActionCreatorSetsType
-> = ModelActionCreatorSet<ActionType, CommonConfigType, T, {}> & {
-  extra : ExtraActionCreatorSetsType;
-};
+import {
+  createModelActionTypes,
+  createModelActions,
+} from './actionCreatorHelpers';
 
 export default class Querchy<
   ActionType extends Action = QcAction,
@@ -111,66 +88,6 @@ export default class Querchy<
     };
   }
 
-  createModelActionTypes(modelName : string, commonConfig : CommonConfigType) : ResourceModelActionTypes<ActionType, CommonConfigType> {
-    const { queryPrefix = '' } = this.querchyDefinition.commonConfig;
-    return {
-      create: commonConfig.getActionTypeName!(queryPrefix, `create_${modelName}`),
-      read: commonConfig.getActionTypeName!(queryPrefix, `read_${modelName}`),
-      update: commonConfig.getActionTypeName!(queryPrefix, `update_${modelName}`),
-      delete: commonConfig.getActionTypeName!(queryPrefix, `delete_${modelName}`),
-    };
-  }
-
-  createModelActions(modelName : string, actionTypes : ResourceModelActionTypes<ActionType, CommonConfigType>, commonConfig : CommonConfigType) : ResourceModelActions<ActionType, CommonConfigType> {
-    return {
-      create: Object.assign(
-        (data, options?) => (<ActionType><any>{
-          type: actionTypes.create,
-          modelName,
-          actionTypes,
-          crudType: 'create',
-          data,
-          options,
-        }),
-        { actionType: actionTypes.create },
-      ),
-      read: Object.assign(
-        (resourceId, options?) => (<ActionType><any>{
-          type: actionTypes.read,
-          modelName,
-          actionTypes,
-          crudType: 'read',
-          id: resourceId,
-          options,
-        }),
-        { actionType: actionTypes.read },
-      ),
-      update: Object.assign(
-        (resourceId, data, options?) => (<ActionType><any>{
-          type: actionTypes.update,
-          modelName,
-          actionTypes,
-          crudType: 'update',
-          id: resourceId,
-          data,
-          options,
-        }),
-        { actionType: actionTypes.update },
-      ),
-      delete: Object.assign(
-        (resourceId, options?) => (<ActionType><any>{
-          type: actionTypes.delete,
-          modelName,
-          actionTypes,
-          crudType: 'delete',
-          id: resourceId,
-          options,
-        }),
-        { actionType: actionTypes.delete },
-      ),
-    };
-  }
-
   normalizeQuerchyDefinition() : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> {
     const queryCreatorMap : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> = {};
     const { queryPrefix = '' } = this.querchyDefinition.commonConfig;
@@ -196,8 +113,8 @@ export default class Querchy<
     this.actionCreatorSets.extra = this.querchyDefinition.extraActionCreators!;
     Object.keys(models)
     .forEach((key) => {
-      models[key].actionTypes = this.createModelActionTypes(key, commonConfig);
-      models[key].actions = this.createModelActions(key, models[key].actionTypes!, commonConfig);
+      models[key].actionTypes = createModelActionTypes(key, commonConfig);
+      models[key].actions = createModelActions(key, models[key].actionTypes!, commonConfig);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
     });
     return queryCreatorMap;
