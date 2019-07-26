@@ -23,7 +23,7 @@ export type QcModelMap<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
-  httpBinReses: ResourceModel<ActionType, CommonConfigType>;
+  httpBinRes: ResourceModel<ActionType, CommonConfigType>;
   // [s : string] : any;
 };
 
@@ -33,7 +33,7 @@ export type QcQueryCreatorMap<
   ModelMapType extends ModelMap<Input, CommonConfigType>
 > = {
   first : QueryCreatorDefinition<Input, CommonConfigType, ModelMapType>;
-  postHttpBin : QueryCreatorDefinition<Input, CommonConfigType, ModelMapType>;
+  createHttpBinRes : QueryCreatorDefinition<Input, CommonConfigType, ModelMapType>;
 };
 
 export class QcExtraActionCreators<
@@ -122,7 +122,7 @@ export default (data : any, err : any) => {
           queryPrefix: 'XX/',
         },
         models: {
-          httpBinReses: {
+          httpBinRes: {
           },
         },
         queryCreators: {
@@ -139,7 +139,7 @@ export default (data : any, err : any) => {
               },
             }),
           },
-          postHttpBin: {
+          createHttpBinRes: {
             buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
               method: 'post',
               url: 'https://httpbin.org/post',
@@ -156,6 +156,5 @@ export default (data : any, err : any) => {
       },
     );
     querchy.testRun(resolve, data);
-    // querchy.actionCreatorSets.httpBinReses.
   });
 };

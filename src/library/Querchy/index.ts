@@ -13,6 +13,7 @@ import {
 import {
   CommonConfig,
   ResourceModel,
+  ResourceModelActionTypes,
   ResourceModelActions,
   ModelMap,
   QueryCreatorMap,
@@ -57,8 +58,6 @@ export type ActionCreatorSets<
   ExtraActionCreatorSetsType
 > = ModelActionCreatorSet<ActionType, CommonConfigType, T, {}> & {
   extra : ExtraActionCreatorSetsType;
-} & {
-  [s : string] : { [s : string] : QcActionCreator<ActionType> };
 };
 
 export default class Querchy<
@@ -78,7 +77,9 @@ export default class Querchy<
 
   QuerchyDefinitionType extends QuerchyDefinition<
     ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
-  > = QuerchyDefinition<ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
+  > = QuerchyDefinition<
+    ActionType, CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+  >,
 
   ExtraDependencies = any,
 > {
@@ -100,6 +101,7 @@ export default class Querchy<
     querchyDefinition : QuerchyDefinitionType,
     deps?: ExtraDependencies
   ) {
+    this.actionCreatorSets = <any>{};
     this.querchyDefinition = querchyDefinition;
     const queryCreatorMap = this.normalizeQuerchyDefinition();
     this.deps = {
@@ -107,25 +109,97 @@ export default class Querchy<
       queryCreatorMap,
       querchyDef: this.querchyDefinition,
     };
-    this.actionCreatorSets = <any>{};
+  }
+
+  createModelActionTypes(modelName : string, commonConfig : CommonConfigType) : ResourceModelActionTypes<ActionType, CommonConfigType> {
+    const { queryPrefix = '' } = this.querchyDefinition.commonConfig;
+    return {
+      create: commonConfig.getActionTypeName!(queryPrefix, `create_${modelName}`),
+      read: commonConfig.getActionTypeName!(queryPrefix, `read_${modelName}`),
+      update: commonConfig.getActionTypeName!(queryPrefix, `update_${modelName}`),
+      delete: commonConfig.getActionTypeName!(queryPrefix, `delete_${modelName}`),
+    };
+  }
+
+  createModelActions(modelName : string, actionTypes : ResourceModelActionTypes<ActionType, CommonConfigType>, commonConfig : CommonConfigType) : ResourceModelActions<ActionType, CommonConfigType> {
+    return {
+      create: Object.assign(
+        (data, options?) => (<ActionType><any>{
+          type: actionTypes.create,
+          modelName,
+          actionTypes,
+          crudType: 'create',
+          data,
+          options,
+        }),
+        { actionType: actionTypes.create },
+      ),
+      read: Object.assign(
+        (resourceId, options?) => (<ActionType><any>{
+          type: actionTypes.read,
+          modelName,
+          actionTypes,
+          crudType: 'read',
+          id: resourceId,
+          options,
+        }),
+        { actionType: actionTypes.read },
+      ),
+      update: Object.assign(
+        (resourceId, data, options?) => (<ActionType><any>{
+          type: actionTypes.update,
+          modelName,
+          actionTypes,
+          crudType: 'update',
+          id: resourceId,
+          data,
+          options,
+        }),
+        { actionType: actionTypes.update },
+      ),
+      delete: Object.assign(
+        (resourceId, options?) => (<ActionType><any>{
+          type: actionTypes.delete,
+          modelName,
+          actionTypes,
+          crudType: 'delete',
+          id: resourceId,
+          options,
+        }),
+        { actionType: actionTypes.delete },
+      ),
+    };
   }
 
   normalizeQuerchyDefinition() : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> {
     const queryCreatorMap : QueryCreatorMap<ActionType, CommonConfigType, ModelMapType> = {};
     const { queryPrefix = '' } = this.querchyDefinition.commonConfig;
-    const { queryCreators, commonConfig } = this.querchyDefinition;
+    const { queryCreators, commonConfig, models } = this.querchyDefinition;
+
+    // normalize commonConfig
     if (!commonConfig.getActionTypeName) {
       commonConfig.getActionTypeName = (
         queryPrefix, queryName,
       ) => `${queryPrefix}${toUnderscore(queryName).toUpperCase()}`;
     }
     commonConfig.queryRunners = commonConfig.queryRunners || {};
+
+    // normalize queryCreators
     Object.keys(queryCreators)
     .forEach((key) => {
       const newKey = commonConfig.getActionTypeName!(queryPrefix, key);
       queryCreatorMap[newKey] = queryCreators[key];
     });
+
+    // normalize extraActionCreators
     this.querchyDefinition.extraActionCreators = this.querchyDefinition.extraActionCreators || <any>{ [INIT_FUNC] : () => {} };
+    this.actionCreatorSets.extra = this.querchyDefinition.extraActionCreators!;
+    Object.keys(models)
+    .forEach((key) => {
+      models[key].actionTypes = this.createModelActionTypes(key, commonConfig);
+      models[key].actions = this.createModelActions(key, models[key].actionTypes!, commonConfig);
+      (<any>this.actionCreatorSets)[key] = models[key].actions;
+    });
     return queryCreatorMap;
   }
 
@@ -216,15 +290,27 @@ export default class Querchy<
       });
     const epicMiddlewareCb = epicMiddleware({
       dispatch: (action) => {
+        // console.log('action.type :', action.type);
         epicMiddlewareCb(() => {})(action);
-        if (action.type === 'XX/POST_HTTP_BIN_CANCEL' || action.type === 'XX/POST_HTTP_BIN_SUCCESS' || action.type === 'XX/POST_HTTP_BIN_ERROR') {
+        if (
+          action.type === 'XX/CREATE_HTTP_BIN_RES_CANCEL'
+          || action.type === 'XX/CREATE_HTTP_BIN_RES_SUCCESS'
+          || action.type === 'XX/CREATE_HTTP_BIN_RES_ERROR'
+        ) {
           resolve(data);
         }
       },
       getState: () => ({ xxx: 1 }),
     });
     epicMiddleware.run(rootEpic);
-    epicMiddlewareCb(() => {})(<ActionType>{ type: 'XX/POST_HTTP_BIN' });
+    epicMiddlewareCb(() => {})(this.actionCreatorSets.httpBinRes.create({}));
     // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
+
+    // const readAction = this.actionCreatorSets.httpBinRes.read('ss');
+    // console.log('readAction :', readAction);
+    // const updateAction = this.actionCreatorSets.httpBinRes.update('ss', {});
+    // console.log('updateAction :', updateAction);
+    // const deleteAction = this.actionCreatorSets.httpBinRes.delete('ss');
+    // console.log('deleteAction :', deleteAction);
   }
 }

@@ -19,18 +19,44 @@ export type CommonConfig = {
   [s : string] : any;
 };
 
+export type ResourceModelActionsOptions<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig
+> = {
+  query?: any;
+  headers?: { [s : string] : string };
+};
+
 export type ResourceModelActions<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
-  get: (s: string) => ActionType,
-  update: (s: string) => ActionType,
+  create: ((
+    data: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
+  ) => ActionType) & { actionType: string },
+  read: ((
+    resourceId: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
+  ) => ActionType) & { actionType: string },
+  update: ((
+    resourceId: any, data: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
+  ) => ActionType) & { actionType: string },
+  delete: ((
+    resourceId: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
+  ) => ActionType) & { actionType: string },
+};
+
+export type ResourceModelActionTypes<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig
+> = {
+  [P in keyof ResourceModelActions<ActionType, CommonConfigType>]: string;
 };
 
 export type ResourceModel<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = {
+  actionTypes?: ResourceModelActionTypes<ActionType, CommonConfigType>,
   actions?: ResourceModelActions<ActionType, CommonConfigType>,
 };
 
