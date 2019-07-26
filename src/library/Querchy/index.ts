@@ -207,14 +207,21 @@ export default class Querchy<
       });
     const epicMiddlewareCb = epicMiddleware({
       dispatch: (action) => {
-        console.log('action.type :', action.type);
+        // console.log('action :', action.type);
         epicMiddlewareCb(() => {})(action);
-        if (
-          action.type === 'XX/CREATE_HTTP_BIN_RES_CANCEL'
-          || action.type === 'XX/CREATE_HTTP_BIN_RES_RESPOND'
-          || action.type === 'XX/CREATE_HTTP_BIN_RES_ERROR'
-        ) {
-          resolve(data);
+
+        const {
+          actionCreator,
+        } = (<any>action);
+        if (actionCreator) {
+          // console.log('actionCreator :', actionCreator);
+          if (
+            action.type === 'XX/CREATE_HTTP_BIN_RES_CANCEL'
+            || action.type === 'XX/CREATE_HTTP_BIN_RES_RESPOND'
+            || action.type === 'XX/CREATE_HTTP_BIN_RES_ERROR'
+          ) {
+            resolve(data);
+          }
         }
       },
       getState: () => ({ xxx: 1 }),
