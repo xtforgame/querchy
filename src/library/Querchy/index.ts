@@ -26,6 +26,8 @@ import {
   ModelActionCreators,
   ModelActionCreatorSet,
   ActionCreatorSets,
+
+  AnyActionCreatorWithProps,
 } from '~/core/interfaces';
 
 import {
@@ -210,15 +212,17 @@ export default class Querchy<
         // console.log('action :', action.type);
         epicMiddlewareCb(() => {})(action);
 
-        const {
-          actionCreator,
-        } = (<any>action);
+        const actionCreator : AnyActionCreatorWithProps = (<any>action).actionCreator;
         if (actionCreator) {
-          // console.log('actionCreator :', actionCreator);
+          const {
+            respond,
+            respondError,
+            cancel,
+          } = actionCreator.creatorRefs;
           if (
-            action.type === 'XX/CREATE_HTTP_BIN_RES_CANCEL'
-            || action.type === 'XX/CREATE_HTTP_BIN_RES_RESPOND'
-            || action.type === 'XX/CREATE_HTTP_BIN_RES_ERROR'
+            action.type === cancel.actionType
+            || action.type === respond.actionType
+            || action.type === respondError.actionType
           ) {
             resolve(data);
           }

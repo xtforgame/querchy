@@ -37,7 +37,7 @@ import {
 export const createModelActionTypes = <
   ActionType extends Action,
   CommonConfigType extends CommonConfig,
->(modelName : string, commonConfig : CommonConfigType) : ResourceModelActionTypes<ActionType, CommonConfigType> => {
+>(modelName : string, commonConfig : CommonConfigType) : ResourceModelActionTypes => {
   const { queryPrefix = '' } = commonConfig;
   return {
     create: commonConfig.getActionTypeName!(queryPrefix, `create_${modelName}`),
@@ -53,21 +53,21 @@ const createModelCrudAction = <
   StartActionCreatorType,
 >(
   modelName : string,
-  actionTypes : ResourceModelActionTypes<ActionType, CommonConfigType>,
+  actionTypes : ResourceModelActionTypes,
   commonConfig : CommonConfigType,
   crudType: CrudType,
   start : StartActionCreatorType,
 ) : ActionCreatorWithProps<
-  ActionType, CommonConfigType, StartActionCreatorType, StartActionCreatorType
+  StartActionCreatorType, StartActionCreatorType
 > => {
   const actionCreatorProps : ActionCreatorProps<
-    ActionType, CommonConfigType, StartActionCreatorType
+    StartActionCreatorType
   > = <any>{
     creatorRefs: {},
   };
 
   const startFunc : ActionCreatorWithProps<
-    ActionType, CommonConfigType, StartActionCreatorType, StartActionCreatorType
+    StartActionCreatorType, StartActionCreatorType
   > = Object.assign(
     start,
     actionCreatorProps,
@@ -125,13 +125,13 @@ export const createModelActions = <
   CommonConfigType extends CommonConfig,
 >(
   modelName : string,
-  actionTypes : ResourceModelActionTypes<ActionType, CommonConfigType>,
+  actionTypes : ResourceModelActionTypes,
   commonConfig : CommonConfigType,
-) : ResourceModelActions<ActionType, CommonConfigType> => {
+) : ResourceModelActions => {
   const createFunc = createModelCrudAction<
     ActionType,
     CommonConfigType,
-    ModelActionCreatorCreate<ActionType, CommonConfigType>
+    ModelActionCreatorCreate
   >(
     modelName, actionTypes, commonConfig, 'create',
     (data, options?) => ({
@@ -149,7 +149,7 @@ export const createModelActions = <
   const readFunc = createModelCrudAction<
     ActionType,
     CommonConfigType,
-    ModelActionCreatorRead<ActionType, CommonConfigType>
+    ModelActionCreatorRead
   >(
     modelName, actionTypes, commonConfig, 'read',
     (resourceId, options?) => ({
@@ -167,7 +167,7 @@ export const createModelActions = <
   const updateFunc = createModelCrudAction<
     ActionType,
     CommonConfigType,
-    ModelActionCreatorUpdate<ActionType, CommonConfigType>
+    ModelActionCreatorUpdate
   >(
     modelName, actionTypes, commonConfig, 'update',
     (resourceId, data, options?) => ({
@@ -186,7 +186,7 @@ export const createModelActions = <
   const deleteFunc = createModelCrudAction<
     ActionType,
     CommonConfigType,
-    ModelActionCreatorDelete<ActionType, CommonConfigType>
+    ModelActionCreatorDelete
   >(
     modelName, actionTypes, commonConfig, 'delete',
     (resourceId, options?) => ({
