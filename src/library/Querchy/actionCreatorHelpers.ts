@@ -11,6 +11,9 @@ import {
 } from '~/common/interfaces';
 
 import {
+  CrudType,
+  CrudSubType,
+
   CommonConfig,
   ResourceModel,
   ResourceModelActionTypes,
@@ -22,6 +25,13 @@ import {
   QcDependencies,
   INIT_FUNC,
   InitFunctionKeyType,
+
+  ActionCreatorProps,
+  ActionCreatorWithProps,
+  ModelActionCreatorCreate,
+  ModelActionCreatorRead,
+  ModelActionCreatorUpdate,
+  ModelActionCreatorDelete,
 } from '~/core/interfaces';
 
 export const createModelActionTypes = <
@@ -37,55 +47,164 @@ export const createModelActionTypes = <
   };
 };
 
+const createModelCrudAction = <
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig,
+  StartActionCreatorType,
+>(
+  modelName : string,
+  actionTypes : ResourceModelActionTypes<ActionType, CommonConfigType>,
+  commonConfig : CommonConfigType,
+  crudType: CrudType,
+  start : StartActionCreatorType,
+) : ActionCreatorWithProps<
+  ActionType, CommonConfigType, StartActionCreatorType, StartActionCreatorType
+> => {
+  const actionCreatorProps : ActionCreatorProps<
+    ActionType, CommonConfigType, StartActionCreatorType
+  > = <any>{
+    creatorRefs: {},
+  };
+
+  const startFunc : ActionCreatorWithProps<
+    ActionType, CommonConfigType, StartActionCreatorType, StartActionCreatorType
+  > = Object.assign(
+    start,
+    actionCreatorProps,
+  );
+
+  actionCreatorProps.creatorRefs.start = startFunc;
+  actionCreatorProps.creatorRefs.respond = Object.assign(
+    (response, responseType, options?) => ({
+      type: `${actionTypes[crudType]}_RESPOND`,
+      actionCreator: actionCreatorProps.creatorRefs.respond,
+      response,
+      responseType,
+      modelName,
+      actionTypes,
+      crudType,
+      crudSubType: <CrudSubType>'respond',
+      options,
+    }),
+    actionCreatorProps,
+    { actionType: `${actionTypes[crudType]}_RESPOND` },
+  );
+  actionCreatorProps.creatorRefs.respondError = Object.assign(
+    (error, options?) => ({
+      type: `${actionTypes[crudType]}_ERROR`,
+      actionCreator: actionCreatorProps.creatorRefs.respondError,
+      error,
+      modelName,
+      actionTypes,
+      crudType,
+      crudSubType: <CrudSubType>'respondError',
+      options,
+    }),
+    actionCreatorProps,
+    { actionType: `${actionTypes[crudType]}_ERROR` },
+  );
+  actionCreatorProps.creatorRefs.cancel = Object.assign(
+    (reason, options?) => ({
+      type: `${actionTypes[crudType]}_CANCEL`,
+      actionCreator: actionCreatorProps.creatorRefs.cancel,
+      reason,
+      modelName,
+      actionTypes,
+      crudType,
+      crudSubType: <CrudSubType>'cancel',
+      options,
+    }),
+    actionCreatorProps,
+    { actionType: `${actionTypes[crudType]}_CANCEL` },
+  );
+  return startFunc;
+};
+
 export const createModelActions = <
   ActionType extends Action,
   CommonConfigType extends CommonConfig,
->(modelName : string, actionTypes : ResourceModelActionTypes<ActionType, CommonConfigType>, commonConfig : CommonConfigType) : ResourceModelActions<ActionType, CommonConfigType> => {
+>(
+  modelName : string,
+  actionTypes : ResourceModelActionTypes<ActionType, CommonConfigType>,
+  commonConfig : CommonConfigType,
+) : ResourceModelActions<ActionType, CommonConfigType> => {
+  const createFunc = createModelCrudAction<
+    ActionType,
+    CommonConfigType,
+    ModelActionCreatorCreate<ActionType, CommonConfigType>
+  >(
+    modelName, actionTypes, commonConfig, 'create',
+    (data, options?) => ({
+      type: actionTypes['create'],
+      actionCreator: createFunc,
+      modelName,
+      actionTypes,
+      crudType: 'create',
+      crudSubType: 'start',
+      data,
+      options,
+    }),
+  );
+
+  const readFunc = createModelCrudAction<
+    ActionType,
+    CommonConfigType,
+    ModelActionCreatorRead<ActionType, CommonConfigType>
+  >(
+    modelName, actionTypes, commonConfig, 'read',
+    (resourceId, options?) => ({
+      type: actionTypes['read'],
+      actionCreator: readFunc,
+      modelName,
+      actionTypes,
+      crudType: 'read',
+      crudSubType: 'start',
+      id: resourceId,
+      options,
+    }),
+  );
+
+  const updateFunc = createModelCrudAction<
+    ActionType,
+    CommonConfigType,
+    ModelActionCreatorUpdate<ActionType, CommonConfigType>
+  >(
+    modelName, actionTypes, commonConfig, 'update',
+    (resourceId, data, options?) => ({
+      type: actionTypes['update'],
+      actionCreator: updateFunc,
+      modelName,
+      actionTypes,
+      crudType: 'update',
+      crudSubType: 'start',
+      id: resourceId,
+      data,
+      options,
+    }),
+  );
+
+  const deleteFunc = createModelCrudAction<
+    ActionType,
+    CommonConfigType,
+    ModelActionCreatorDelete<ActionType, CommonConfigType>
+  >(
+    modelName, actionTypes, commonConfig, 'delete',
+    (resourceId, options?) => ({
+      type: actionTypes['delete'],
+      actionCreator: deleteFunc,
+      modelName,
+      actionTypes,
+      crudType: 'delete',
+      crudSubType: 'start',
+      id: resourceId,
+      options,
+    }),
+  );
+
   return {
-    create: Object.assign(
-      (data, options?) => (<ActionType><any>{
-        type: actionTypes.create,
-        modelName,
-        actionTypes,
-        crudType: 'create',
-        data,
-        options,
-      }),
-      { actionType: actionTypes.create, creators: {} },
-    ),
-    read: Object.assign(
-      (resourceId, options?) => (<ActionType><any>{
-        type: actionTypes.read,
-        modelName,
-        actionTypes,
-        crudType: 'read',
-        id: resourceId,
-        options,
-      }),
-      { actionType: actionTypes.read, creators: {} },
-    ),
-    update: Object.assign(
-      (resourceId, data, options?) => (<ActionType><any>{
-        type: actionTypes.update,
-        modelName,
-        actionTypes,
-        crudType: 'update',
-        id: resourceId,
-        data,
-        options,
-      }),
-      { actionType: actionTypes.update, creators: {} },
-    ),
-    delete: Object.assign(
-      (resourceId, options?) => (<ActionType><any>{
-        type: actionTypes.delete,
-        modelName,
-        actionTypes,
-        crudType: 'delete',
-        id: resourceId,
-        options,
-      }),
-      { actionType: actionTypes.delete, creators: {} },
-    ),
+    create: createFunc,
+    read: readFunc,
+    update: updateFunc,
+    delete: deleteFunc,
   };
 };

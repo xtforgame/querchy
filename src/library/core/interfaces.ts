@@ -27,69 +27,185 @@ export type ResourceModelActionsOptions<
   headers?: { [s : string] : string };
 };
 
+// ====================
+
+export type CrudType = 'create' | 'read' | 'update' | 'delete';
+export type CrudSubType = 'start' | 'respond' | 'respondError' | 'cancel';
+
+export interface QcResponseAction extends QcAction {
+  response: QcResponse;
+  responseType : string;
+
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+
+  // actionCreator: deleteFunc,
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+export interface QcResponseErrorAction extends QcAction {
+  error: QcResponseError;
+
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+
+  // actionCreator: deleteFunc,
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+export interface QcCancelRequestAction extends QcAction {
+  reason: QcCancelReason;
+
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+
+  // actionCreator: deleteFunc,
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+
+export interface QcCreateAction extends QcAction {
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+
+  // actionCreator: deleteFunc,
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+
+export interface QcReadAction extends QcAction {
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+
+  // actionCreator: deleteFunc,
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+
+export interface QcUpdateAction extends QcAction {
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+
+  // actionCreator: deleteFunc,
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+
+export interface QcDeleteAction extends QcAction {
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+
+  // actionCreator: deleteFunc,
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+
+// ====================
+
 export type ModelActionCreatorCreate<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = (
   data: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
-) => ActionType;
+) => QcCreateAction;
 
 export type ModelActionCreatorRead<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = (
   resourceId: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
-) => ActionType;
+) => QcReadAction;
 
 export type ModelActionCreatorUpdate<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = (
   resourceId: any, data: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
-) => ActionType;
+) => QcUpdateAction;
 
 export type ModelActionCreatorDelete<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = (
   resourceId: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
-) => ActionType;
+) => QcDeleteAction;
 
 export type ModelSubActionCreatorRespond<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = (
-  resourceId: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
-) => ActionType;
+  response: any, responseType: string, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
+) => QcResponseAction;
 
 export type ModelSubActionCreatorRespondError<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = (
-  resourceId: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
-) => ActionType;
+  error: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
+) => QcResponseErrorAction;
 
 export type ModelSubActionCreatorCancel<
   ActionType extends Action,
   CommonConfigType extends CommonConfig
 > = (
-  resourceId: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
-) => ActionType;
+  reason: any, options?: ResourceModelActionsOptions<ActionType, CommonConfigType>,
+) => QcCancelRequestAction;
+
+export type ActionCreatorRefs<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig,
+  StartActionCreatorType,
+> = {
+  start: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, StartActionCreatorType>,
+  respond: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, ModelSubActionCreatorRespond<ActionType, CommonConfigType>>,
+  respondError: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, ModelSubActionCreatorRespondError<ActionType, CommonConfigType>>,
+  cancel: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, ModelSubActionCreatorCancel<ActionType, CommonConfigType>>,
+};
+
+export type ActionCreatorProps<
+  ActionType extends Action,
+  CommonConfigType extends CommonConfig,
+  StartActionCreatorType,
+> = {
+  actionType: string,
+  creatorRefs: ActionCreatorRefs<
+    ActionType,
+    CommonConfigType,
+    StartActionCreatorType
+  >,
+};
 
 export type ActionCreatorWithProps<
   ActionType extends Action,
   CommonConfigType extends CommonConfig,
   StartActionCreatorType,
   ActionCreatorType,
-> = ActionCreatorType & {
-  actionType: string,
-  creators: {
-    start?: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, StartActionCreatorType>,
-    respond?: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, ModelSubActionCreatorRespond<ActionType, CommonConfigType>>,
-    respondError?: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, ModelSubActionCreatorRespondError<ActionType, CommonConfigType>>,
-    cancel?: ActionCreatorWithProps<ActionType, CommonConfigType, StartActionCreatorType, ModelSubActionCreatorCancel<ActionType, CommonConfigType>>,
-  },
-};
+> = ActionCreatorType & ActionCreatorProps<
+  ActionType,
+  CommonConfigType,
+  StartActionCreatorType
+>;
 
 export type StartActionCreatorWithProps<
   ActionType extends Action,
@@ -105,6 +221,7 @@ export type ResourceModelActions<
   read: StartActionCreatorWithProps<ActionType, CommonConfigType, ModelActionCreatorRead<ActionType, CommonConfigType>>,
   update: StartActionCreatorWithProps<ActionType, CommonConfigType, ModelActionCreatorUpdate<ActionType, CommonConfigType>>,
   delete: StartActionCreatorWithProps<ActionType, CommonConfigType, ModelActionCreatorDelete<ActionType, CommonConfigType>>,
+  [s: string]: StartActionCreatorWithProps<ActionType, CommonConfigType, Function>,
 };
 
 export type ResourceModelActionTypes<
@@ -148,28 +265,12 @@ export interface QcResponse {
   config: QcRequestConfig;
 }
 
-export interface QcResponseAction extends QcAction {
-  response: QcResponse;
-  responseType : string;
-  options: any;
-}
-
 export interface QcResponseError extends Error {
   config: QcRequestConfig;
   response?: QcResponse;
 }
 
-export interface QcResponseErrorAction extends QcAction {
-  error: QcResponseError;
-  options: any;
-}
-
 export type QcCancelReason = any;
-
-export interface QcCancelRequestAction extends QcAction {
-  reason: QcCancelReason;
-  options: any;
-}
 
 export type SuccessActionCreator = (
   response : any,
@@ -189,6 +290,8 @@ export interface QcRequestActionCreators {
   error: ErrorActionCreator;
   cancel: CancelActionCreator;
 }
+
+// ====================
 
 export type QueryCreatorDefinition<
   ActionType extends Action,

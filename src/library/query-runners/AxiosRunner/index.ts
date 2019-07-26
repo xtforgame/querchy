@@ -87,7 +87,6 @@ export default class AxiosRunner<
   > = (
     action, { store$, action$, dependencies },
   ) => {
-
     // console.log('action :', action);
     // console.log('store :', store$.value);
     // console.log('dependencies :', dependencies);
@@ -99,24 +98,11 @@ export default class AxiosRunner<
       throw new Error(`QueryCreator not found: ${action.type}`);
     }
 
-    const createSuccessAction = (response, responseType) => ({
-      type: `${action.type}_SUCCESS`,
-      response,
-      responseType,
-      options: {},
-    });
+    const createSuccessAction = action.actionCreator.creatorRefs.respond;
 
-    const createErrorAction = (error) => ({
-      type: `${action.type}_ERROR`,
-      error,
-      options: {},
-    });
+    const createErrorAction = action.actionCreator.creatorRefs.respondError;
 
-    const createCancelAction = (reason) => ({
-      type: `${action.type}_CANCEL`,
-      reason,
-      options: {},
-    });
+    const createCancelAction = action.actionCreator.creatorRefs.cancel;
 
     let requestConfig : QcRequestConfig;
     try {
@@ -144,6 +130,7 @@ export default class AxiosRunner<
     };
 
     const source = axios.CancelToken.source();
+    const cancelActionType = action.actionCreator.creatorRefs.cancel.actionType;
     return this.axiosObservable(
       requestConfig.rawConfigs,
       {
@@ -155,7 +142,7 @@ export default class AxiosRunner<
         axiosCancelTokenSource: source,
         cancelStream$: action$.pipe(
           filter<Input>((cancelAction) => {
-            if (cancelAction.type !== `${action.type}_CANCEL`) {
+            if (cancelAction.type !== cancelActionType) {
               return false;
             }
             return true;

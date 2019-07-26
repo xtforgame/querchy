@@ -207,11 +207,11 @@ export default class Querchy<
       });
     const epicMiddlewareCb = epicMiddleware({
       dispatch: (action) => {
-        // console.log('action.type :', action.type);
+        console.log('action.type :', action.type);
         epicMiddlewareCb(() => {})(action);
         if (
           action.type === 'XX/CREATE_HTTP_BIN_RES_CANCEL'
-          || action.type === 'XX/CREATE_HTTP_BIN_RES_SUCCESS'
+          || action.type === 'XX/CREATE_HTTP_BIN_RES_RESPOND'
           || action.type === 'XX/CREATE_HTTP_BIN_RES_ERROR'
         ) {
           resolve(data);
@@ -220,7 +220,7 @@ export default class Querchy<
       getState: () => ({ xxx: 1 }),
     });
     epicMiddleware.run(rootEpic);
-    epicMiddlewareCb(() => {})(this.actionCreatorSets.httpBinRes.create({}));
+    epicMiddlewareCb(() => {})(<ActionType><any>this.actionCreatorSets.httpBinRes.create({}));
     // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
     // const readAction = this.actionCreatorSets.httpBinRes.read('ss');

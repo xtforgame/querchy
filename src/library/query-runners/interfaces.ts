@@ -14,6 +14,8 @@ import {
   QuerchyDefinition,
   QcDependencies,
   ExtraActionCreators,
+
+  StartActionCreatorWithProps,
 } from '~/core/interfaces';
 
 export interface Canceler {
@@ -74,7 +76,9 @@ export type RunnerRun<
 
   ExtraDependencies = any,
 > = (
-  action: Input,
+  action: Input & {
+    actionCreator: StartActionCreatorWithProps<Input, CommonConfigType, Function>,
+  },
   options: RunnerRunOption<
     Input,
     StateType,
