@@ -29,8 +29,8 @@ export type QcQueryCreatorMap<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>
 > = {
-  first : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
-  createHttpBinRes : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
+  defaultCreator : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
+  customCreate : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
 };
 
 export class QcExtraActionCreators<
@@ -47,7 +47,7 @@ export class QcExtraActionCreators<
 
   constructor() {
     this[INIT_FUNC] = () => {
-      console.log('constructor()');
+      // console.log('constructor()');
     };
   }
 
@@ -56,67 +56,69 @@ export class QcExtraActionCreators<
   }
 }
 
+class MyAxiosRunner extends AxiosRunner<
+  QcState,
+  CommonConfig,
+  QcModelMap<CommonConfig>,
+  QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
+  QcExtraActionCreators<CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>>,
+  QuerchyDefinition<
+    CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
+    QcExtraActionCreators<CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>>
+  >,
+  any
+> {}
+
+class MyQuerchy extends Querchy<
+  CommonConfig,
+  QcModelMap<CommonConfig>,
+  QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
+  QcExtraActionCreators<
+    CommonConfig,
+    QcModelMap<CommonConfig>,
+    QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>
+  >,
+  QuerchyDefinition<
+    CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
+    QcExtraActionCreators<
+      CommonConfig,
+      QcModelMap<CommonConfig>,
+      QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>
+    >
+  >,
+  any
+> {}
+
+class MyQcExtraActionCreators extends QcExtraActionCreators<
+  CommonConfig,
+  QcModelMap<CommonConfig>,
+  QcQueryCreatorMap<
+    CommonConfig,
+    QcModelMap<CommonConfig>
+  >
+> {}
+
 export default (data : any, err : any) => {
   return new Promise((resolve, reject) => {
     if (err) {
       return reject(err);
     }
-    const querchy = new Querchy<
-      CommonConfig,
-      QcModelMap<CommonConfig>,
-      QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
-      QcExtraActionCreators<
-        CommonConfig,
-        QcModelMap<CommonConfig>,
-        QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>
-      >,
-      QuerchyDefinition<
-        CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
-        QcExtraActionCreators<
-          CommonConfig,
-          QcModelMap<CommonConfig>,
-          QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>
-        >
-      >,
-      any
-    >(
+    const querchy = new MyQuerchy(
       {
         commonConfig: {
-          defaultQueryRunner: new AxiosRunner<
-            QcState,
-            CommonConfig,
-            QcModelMap<CommonConfig>,
-            QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
-            QcExtraActionCreators<CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>>,
-            QuerchyDefinition<
-              CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
-              QcExtraActionCreators<CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>>
-            >,
-            any
-          >(),
+          defaultQueryRunner: new MyAxiosRunner(),
           queryRunners: {
-            xxxx: new AxiosRunner<
-              QcState,
-              CommonConfig,
-              QcModelMap<CommonConfig>,
-              QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
-              QcExtraActionCreators<CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>>,
-              QuerchyDefinition<
-                CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>,
-                QcExtraActionCreators<CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>>
-              >,
-              any
-            >(),
+            customRunner: new MyAxiosRunner(),
           },
           queryPrefix: 'XX/',
         },
         models: {
           httpBinRes: {
+            queryCreator: 'customCreate',
           },
         },
         queryCreators: {
-          first: {
-            queryRunner: 'xxxx',
+          defaultCreator: {
             buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
               method: 'post',
               url: 'https://httpbin.org/post',
@@ -128,7 +130,7 @@ export default (data : any, err : any) => {
               },
             }),
           },
-          createHttpBinRes: {
+          customCreate: {
             buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
               method: 'post',
               url: 'https://httpbin.org/post',
@@ -141,9 +143,10 @@ export default (data : any, err : any) => {
             }),
           },
         },
-        extraActionCreators: new QcExtraActionCreators<CommonConfig, QcModelMap<CommonConfig>, QcQueryCreatorMap<CommonConfig, QcModelMap<CommonConfig>>>(),
+        extraActionCreators: new MyQcExtraActionCreators(),
       },
     );
     querchy.testRun(resolve, data);
+    querchy.actionCreatorSets.extra.xxxx('ddd', 1);
   });
 };

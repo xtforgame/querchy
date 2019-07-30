@@ -10,6 +10,7 @@ import {
 import {
   CommonConfig,
   ModelMap,
+  QueryCreatorDefinition,
   QueryCreatorMap,
   QuerchyDefinition,
   QcDependencies,
@@ -76,6 +77,7 @@ export type RunnerRun<
   action: QcAction & {
     actionCreator: StartActionCreatorWithProps<Function>,
   },
+  queryCreator: QueryCreatorDefinition<CommonConfigType, ModelMapType>,
   options: RunnerRunOption<
     StateType,
     CommonConfigType,

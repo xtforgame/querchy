@@ -192,6 +192,7 @@ export type ResourceModelActionTypes = {
 export type ResourceModel<
   CommonConfigType extends CommonConfig
 > = {
+  queryCreator?: string;
   actionTypes?: ResourceModelActionTypes,
   actions?: ResourceModelActions,
 };
@@ -263,6 +264,7 @@ export type QueryCreatorMap<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>
 > = {
+  defaultCreator : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
   [s : string] : QueryCreatorDefinition<CommonConfigType, ModelMapType> | undefined;
 };
 
@@ -296,13 +298,12 @@ export type QcDependencies<
   >,
   ExtraDependencies = any,
 > = ExtraDependencies & {
-  queryCreatorMap : QueryCreatorMap<CommonConfigType, ModelMapType>;
   querchyDef : QuerchyDefinitionType;
 };
 
 export const INIT_FUNC = Symbol('init');
 export type InitFunctionKeyType = typeof INIT_FUNC;
-export type ActionCreatorsInitFunction = (x: any) => void;
+export type ActionCreatorsInitFunction = (args: any) => void;
 
 export interface ExtraActionCreators<
   CommonConfigType extends CommonConfig,
@@ -316,7 +317,6 @@ export interface ExtraActionCreators<
   [INIT_FUNC] : ActionCreatorsInitFunction;
   [s : string] : QcActionCreator;
 }
-
 
 // ==========
 

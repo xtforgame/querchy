@@ -79,15 +79,14 @@ export default class AxiosRunner<
     QuerchyDefinitionType,
     ExtraDependencies
   > = (
-    action, { store$, action$, dependencies },
+    action, queryCreator, { store$, action$, dependencies },
   ) => {
     // console.log('action :', action);
     // console.log('store :', store$.value);
     // console.log('dependencies :', dependencies);
 
-    const { querchyDef, queryCreatorMap } = dependencies!;
+    const { querchyDef } = dependencies!;
     const { commonConfig } = querchyDef;
-    const queryCreator = queryCreatorMap[action.type];
     if (!queryCreator) {
       throw new Error(`QueryCreator not found: ${action.type}`);
     }
