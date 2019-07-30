@@ -2,6 +2,9 @@ import { State } from 'pure-epic';
 import { Observable, ObservableInput } from 'rxjs';
 import axios, { AxiosStatic } from 'axios';
 import { mergeMap, filter } from 'rxjs/operators';
+import {
+  toNull,
+} from '~/utils/helper-functions';
 
 import {
   QcAction,
@@ -85,7 +88,7 @@ export default class AxiosRunner<
     // console.log('store :', store$.value);
     // console.log('dependencies :', dependencies);
 
-    const { querchyDef: { commonConfig } } = dependencies!;
+    const { querchyDef: { commonConfig, models } } = dependencies!;
 
     if (!queryCreator) {
       throw new Error(`QueryCreator not found: ${action.type}`);
@@ -99,9 +102,17 @@ export default class AxiosRunner<
 
     let requestConfig : QcRequestConfig;
     try {
-      requestConfig = queryCreator.buildRequestConfig(action, this.type, commonConfig);
+      requestConfig = queryCreator.buildRequestConfig(action, {
+        runnerType: this.type,
+        commonConfig,
+        models,
+      });
     } catch (error) {
       return [createErrorAction(error)];
+    }
+
+    if (!requestConfig) {
+      return [toNull()];
     }
 
     const {

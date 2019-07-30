@@ -6,6 +6,7 @@ import {
   QuerchyDefinition,
   QueryCreatorDefinition,
   QcAction,
+  QcStartAction,
   QcState,
   QcActionCreator,
   INIT_FUNC,
@@ -13,16 +14,22 @@ import {
   ActionCreatorsInitFunction,
 } from './interfaces';
 
+import {
+  crudToRestMap,
+} from './utils/rest-helpers';
+
 import Querchy from '~/Querchy';
 import AxiosRunner from '~/query-runners/AxiosRunner';
 
 export * from './interfaces';
+export * from './utils/helper-functions';
+export * from './utils/rest-helpers';
 
 export type QcModelMap<
   CommonConfigType extends CommonConfig
 > = {
   httpBinRes: ResourceModel<CommonConfigType>;
-  // [s : string] : any;
+  [s : string]: ResourceModel<CommonConfigType>;
 };
 
 export type QcQueryCreatorMap<
@@ -30,7 +37,7 @@ export type QcQueryCreatorMap<
   ModelMapType extends ModelMap<CommonConfigType>
 > = {
   defaultCreator : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
-  customCreate : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
+  customPath : QueryCreatorDefinition<CommonConfigType, ModelMapType>;
 };
 
 export class QcExtraActionCreators<
@@ -113,33 +120,40 @@ export default (data : any, err : any) => {
       },
       models: {
         httpBinRes: {
-          queryCreator: 'customCreate',
+          url: 'https://httpbin.org/post',
+          queryCreator: 'customPath',
         },
       },
       queryCreators: {
         defaultCreator: {
-          buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
-            method: 'post',
-            url: 'https://httpbin.org/post',
-            query: {
-              queryKey1: 1,
-            },
-            body: {
-              dataKey1: 1,
-            },
-          }),
+          buildRequestConfig: (action: QcStartAction, { runnerType, commonConfig, models }) => {
+            // console.log('action', action);
+            if (!action.modelName) {
+              return null;
+            }
+            return ({
+              method: crudToRestMap[action.crudType],
+              url: models[action.modelName].buildUrl!(action),
+              headers: action.options.headers,
+              query: action.options.query,
+              body: action.data,
+            });
+          },
         },
-        customCreate: {
-          buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
-            method: 'post',
-            url: 'https://httpbin.org/post',
-            query: {
-              queryKey1: 1,
-            },
-            body: {
-              dataKey1: 1,
-            },
-          }),
+        customPath: {
+          buildRequestConfig: (action: QcStartAction, { runnerType, commonConfig, models }) => {
+            // console.log('action', action);
+            if (!action.modelName) {
+              return null;
+            }
+            return ({
+              method: crudToRestMap[action.crudType],
+              url: `https://httpbin.org/${crudToRestMap[action.crudType]}`,
+              headers: action.options.headers,
+              query: action.options.query,
+              body: action.data,
+            });
+          },
         },
       },
       extraActionCreators: new MyQcExtraActionCreators(),

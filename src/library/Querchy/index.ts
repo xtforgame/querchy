@@ -126,6 +126,14 @@ export default class Querchy<
       models[key].actionTypes = createModelActionTypes(key, commonConfig);
       models[key].actions = createModelActions(key, models[key].actionTypes!);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
+      models[key].buildUrl = models[key].buildUrl || (
+        (action) => {
+          if (action.crudType === 'create') {
+            return models[key].url;
+          }
+          return `${models[key].url}/${action.id}`;
+        }
+      );
     });
 
     // normalize models P2
@@ -249,6 +257,15 @@ export default class Querchy<
     const epicMiddlewareCb = epicMiddleware({
       dispatch: (action) => {
         // console.log('action :', action.type);
+        if (action.response) {
+          if (action.response.data.headers) {
+            // console.log('action.response.data.headers :', action.response.data.headers);
+          }
+          if (action.response.data.args) {
+            // console.log('action.response.data.args :', action.response.data.args);
+          }
+          // console.log();
+        }
         epicMiddlewareCb(() => {})(action);
 
         const actionCreator : AnyActionCreatorWithProps = (<any>action).actionCreator;
@@ -257,7 +274,7 @@ export default class Querchy<
             respond,
             respondError,
             cancel,
-          } = actionCreator.creatorRefs;
+          } = this.actionCreatorSets.httpBinRes.delete.creatorRefs; // actionCreator.creatorRefs;
           if (
             action.type === cancel.actionType
             || action.type === respond.actionType
@@ -270,7 +287,23 @@ export default class Querchy<
       getState: () => ({ xxx: 1 }),
     });
     epicMiddleware.run(rootEpic);
-    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.create({}));
+    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.create(
+      {},
+      { query: { x: 1 }, headers: { Ppp: 'xxx' } },
+    ));
+    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.read(
+      1,
+      { query: { x: 1 }, headers: { Ppp: 'xxx' } },
+    ));
+    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.update(
+      1,
+      {},
+      { query: { x: 1 }, headers: { Ppp: 'xxx' } },
+    ));
+    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.delete(
+      1,
+      { query: { x: 1 }, headers: { Ppp: 'xxx' } },
+    ));
     // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
     // const readAction = this.actionCreatorSets.httpBinRes.read('ss');

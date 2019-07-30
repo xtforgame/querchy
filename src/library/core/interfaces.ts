@@ -27,6 +27,20 @@ export type ResourceModelActionsOptions = {
 export type CrudType = 'create' | 'read' | 'update' | 'delete';
 export type CrudSubType = 'start' | 'respond' | 'respondError' | 'cancel';
 
+export interface QcStartAction extends QcAction {
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+  // actionTypes,
+
+  options: any;
+  [s : string] : any;
+}
+
+export interface QcStartActionWithResourceId extends QcStartAction {
+  resourceId: any;
+}
+
 export interface QcResponseAction extends QcAction {
   response: QcResponse;
   responseType : string;
@@ -41,6 +55,7 @@ export interface QcResponseAction extends QcAction {
   options: any;
   [s : string] : any;
 }
+
 export interface QcResponseErrorAction extends QcAction {
   error: QcResponseError;
 
@@ -68,51 +83,23 @@ export interface QcCancelRequestAction extends QcAction {
   [s : string] : any;
 }
 
-export interface QcCreateAction extends QcAction {
-  modelName: string;
-  crudType: CrudType;
-  crudSubType: CrudSubType;
-
+export interface QcCreateAction extends QcStartAction {
   actionCreator: StartActionCreatorWithProps<ModelActionCreatorCreate>;
-  // actionTypes,
-
-  options: any;
   [s : string] : any;
 }
 
-export interface QcReadAction extends QcAction {
-  modelName: string;
-  crudType: CrudType;
-  crudSubType: CrudSubType;
-
+export interface QcReadAction extends QcStartActionWithResourceId {
   actionCreator: StartActionCreatorWithProps<ModelActionCreatorRead>;
-  // actionTypes,
-
-  options: any;
   [s : string] : any;
 }
 
-export interface QcUpdateAction extends QcAction {
-  modelName: string;
-  crudType: CrudType;
-  crudSubType: CrudSubType;
-
+export interface QcUpdateAction extends QcStartActionWithResourceId {
   actionCreator: StartActionCreatorWithProps<ModelActionCreatorUpdate>;
-  // actionTypes,
-
-  options: any;
   [s : string] : any;
 }
 
-export interface QcDeleteAction extends QcAction {
-  modelName: string;
-  crudType: CrudType;
-  crudSubType: CrudSubType;
-
+export interface QcDeleteAction extends QcStartActionWithResourceId {
   actionCreator: StartActionCreatorWithProps<ModelActionCreatorDelete>;
-  // actionTypes,
-
-  options: any;
   [s : string] : any;
 }
 
@@ -192,6 +179,8 @@ export type ResourceModelActionTypes = {
 export type ResourceModel<
   CommonConfigType extends CommonConfig
 > = {
+  url: string;
+  buildUrl?: (action: QcStartAction) => string;
   queryCreator?: string;
   actionTypes?: ResourceModelActionTypes,
   actions?: ResourceModelActions,
@@ -211,7 +200,7 @@ export type QcRequestConfig = {
   headers?: { [s : string] : string };
   query?: { [s : string] : any };
   body?: any;
-};
+} | null;
 
 export interface QcResponse {
   rawResponse: any;
@@ -250,13 +239,23 @@ export interface QcRequestActionCreators {
 
 // ====================
 
+export type BuildRequestConfigOption<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = {
+  runnerType : RunnerType,
+  commonConfig : CommonConfigType,
+  models: ModelMapType,
+};
+
 export type QueryCreatorDefinition<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>
 > = {
   queryRunner?: string | SimpleQueryRunner,
   buildRequestConfig : (
-    action: QcAction, runnerType : RunnerType, commonConfig : CommonConfigType,
+    action: QcStartAction,
+    options: BuildRequestConfigOption<CommonConfigType, ModelMapType>,
   ) => QcRequestConfig;
 };
 
