@@ -21,6 +21,10 @@ import {
 import Querchy from '~/Querchy';
 import AxiosRunner from '~/query-runners/AxiosRunner';
 
+import {
+  mergeTest,
+} from './reducer/utils';
+
 export * from './interfaces';
 export * from './utils/helper-functions';
 export * from './utils/rest-helpers';
@@ -161,5 +165,7 @@ export default (data : any, err : any) => {
     });
     querchy.testRun(resolve, data);
     querchy.actionCreatorSets.extra.xxxx('ddd', 1);
+
+    mergeTest(querchy);
   });
 };
