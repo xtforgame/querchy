@@ -126,7 +126,7 @@ export default (data : any, err : any) => {
       },
       queryCreators: {
         defaultCreator: {
-          buildRequestConfig: (action: QcStartAction, { runnerType, commonConfig, models }) => {
+          buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
             // console.log('action', action);
             if (!action.modelName) {
               return null;
@@ -141,7 +141,8 @@ export default (data : any, err : any) => {
           },
         },
         customPath: {
-          buildRequestConfig: (action: QcStartAction, { runnerType, commonConfig, models }) => {
+          queryRunner: 'customRunner',
+          buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
             // console.log('action', action);
             if (!action.modelName) {
               return null;

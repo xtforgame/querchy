@@ -108,6 +108,9 @@ export default class Querchy<
       let runner : any = queryRunner;
       if (typeof queryRunner === 'string') {
         runner = commonConfig.queryRunners![queryRunner];
+        if (!runner) {
+          throw new Error(`no runner found: ${queryRunner}`);
+        }
       } else if (!queryRunner) {
         runner = commonConfig.defaultQueryRunner;
       }
@@ -287,20 +290,20 @@ export default class Querchy<
       getState: () => ({ xxx: 1 }),
     });
     epicMiddleware.run(rootEpic);
-    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.create(
+    epicMiddlewareCb(() => {})(this.actionCreatorSets.httpBinRes.create(
       {},
       { query: { x: 1 }, headers: { Ppp: 'xxx' } },
     ));
-    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.read(
+    epicMiddlewareCb(() => {})(this.actionCreatorSets.httpBinRes.read(
       1,
       { query: { x: 1 }, headers: { Ppp: 'xxx' } },
     ));
-    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.update(
+    epicMiddlewareCb(() => {})(this.actionCreatorSets.httpBinRes.update(
       1,
       {},
       { query: { x: 1 }, headers: { Ppp: 'xxx' } },
     ));
-    epicMiddlewareCb(() => {})(<QcAction><any>this.actionCreatorSets.httpBinRes.delete(
+    epicMiddlewareCb(() => {})(this.actionCreatorSets.httpBinRes.delete(
       1,
       { query: { x: 1 }, headers: { Ppp: 'xxx' } },
     ));
