@@ -85,8 +85,8 @@ export default class AxiosRunner<
     // console.log('store :', store$.value);
     // console.log('dependencies :', dependencies);
 
-    const { querchyDef } = dependencies!;
-    const { commonConfig } = querchyDef;
+    const { querchyDef: { commonConfig } } = dependencies!;
+
     if (!queryCreator) {
       throw new Error(`QueryCreator not found: ${action.type}`);
     }

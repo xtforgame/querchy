@@ -103,49 +103,47 @@ export default (data : any, err : any) => {
     if (err) {
       return reject(err);
     }
-    const querchy = new MyQuerchy(
-      {
-        commonConfig: {
-          defaultQueryRunner: new MyAxiosRunner(),
-          queryRunners: {
-            customRunner: new MyAxiosRunner(),
-          },
-          queryPrefix: 'XX/',
+    const querchy = new MyQuerchy({
+      commonConfig: {
+        defaultQueryRunner: new MyAxiosRunner(),
+        queryRunners: {
+          customRunner: new MyAxiosRunner(),
         },
-        models: {
-          httpBinRes: {
-            queryCreator: 'customCreate',
-          },
-        },
-        queryCreators: {
-          defaultCreator: {
-            buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
-              method: 'post',
-              url: 'https://httpbin.org/post',
-              query: {
-                queryKey1: 1,
-              },
-              body: {
-                dataKey1: 1,
-              },
-            }),
-          },
-          customCreate: {
-            buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
-              method: 'post',
-              url: 'https://httpbin.org/post',
-              query: {
-                queryKey1: 1,
-              },
-              body: {
-                dataKey1: 1,
-              },
-            }),
-          },
-        },
-        extraActionCreators: new MyQcExtraActionCreators(),
+        queryPrefix: 'XX/',
       },
-    );
+      models: {
+        httpBinRes: {
+          queryCreator: 'customCreate',
+        },
+      },
+      queryCreators: {
+        defaultCreator: {
+          buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
+            method: 'post',
+            url: 'https://httpbin.org/post',
+            query: {
+              queryKey1: 1,
+            },
+            body: {
+              dataKey1: 1,
+            },
+          }),
+        },
+        customCreate: {
+          buildRequestConfig: (action: QcAction, runnerType: string, commonConfig) => ({
+            method: 'post',
+            url: 'https://httpbin.org/post',
+            query: {
+              queryKey1: 1,
+            },
+            body: {
+              dataKey1: 1,
+            },
+          }),
+        },
+      },
+      extraActionCreators: new MyQcExtraActionCreators(),
+    });
     querchy.testRun(resolve, data);
     querchy.actionCreatorSets.extra.xxxx('ddd', 1);
   });
