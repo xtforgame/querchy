@@ -135,7 +135,7 @@ export const createModelActions = (
       actionTypes,
       crudType: 'read',
       crudSubType: 'start',
-      id: resourceId,
+      resourceId,
       options,
     }),
   );
@@ -151,7 +151,7 @@ export const createModelActions = (
       actionTypes,
       crudType: 'update',
       crudSubType: 'start',
-      id: resourceId,
+      resourceId,
       data,
       options,
     }),
@@ -168,7 +168,7 @@ export const createModelActions = (
       actionTypes,
       crudType: 'delete',
       crudSubType: 'start',
-      id: resourceId,
+      resourceId,
       options,
     }),
   );
