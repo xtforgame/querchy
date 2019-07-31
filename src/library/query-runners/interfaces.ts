@@ -16,7 +16,7 @@ import {
   QcDependencies,
   ExtraActionCreators,
 
-  QcStartAction,
+  QcBasicAction,
   StartActionCreatorWithProps,
 } from '~/core/interfaces';
 
@@ -75,7 +75,7 @@ export type RunnerRun<
 
   ExtraDependencies = any,
 > = (
-  action: QcStartAction,
+  action: QcBasicAction,
   queryCreator: QueryCreatorDefinition<CommonConfigType, ModelMapType>,
   options: RunnerRunOption<
     StateType,
