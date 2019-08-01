@@ -159,4 +159,4 @@ export type ResourceModelActions<
 > = {
   [P in keyof QueryInfosLike] : StartActionCreatorWithProps<ModelActionCreator<QueryInfosLike[P]['actionCreator']>>;
   // [s: string]: StartActionCreatorWithProps<{}>,
-}
+};

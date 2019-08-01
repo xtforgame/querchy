@@ -8,10 +8,6 @@ import {
   QcBasicAction,
   QcRequestConfig,
   ResourceModelActions,
-  RawActionCreatorCreate,
-  RawActionCreatorRead,
-  RawActionCreatorUpdate,
-  RawActionCreatorDelete,
 } from './crud-sub-action-interfaces';
 
 export * from './crud-sub-action-interfaces';
