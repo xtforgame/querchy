@@ -126,7 +126,8 @@ export default class Querchy<
     this.actionCreatorSets.extra = this.querchyDefinition.extraActionCreators!;
     Object.keys(models)
     .forEach((key) => {
-      models[key].actionTypes = createModelActionTypes(key, commonConfig);
+      models[key].crudTypes = models[key].crudTypes || ['create', 'read', 'update', 'delete'];
+      models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key].crudTypes!);
       models[key].actions = createModelActions(key, models[key].actionTypes!);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
       models[key].buildUrl = models[key].buildUrl || (
@@ -231,7 +232,7 @@ export default class Querchy<
           >>(
             (actionType) => {
               return this.getEpicFromQueryCreatorByActionType(
-                actionType, queryCreator!,
+                actionType!, queryCreator!,
               );
             },
           ),

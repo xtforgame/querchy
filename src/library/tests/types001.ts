@@ -27,6 +27,7 @@ import {
   CrudType,
   CrudSubType,
 
+  ResourceModelActionTypes,
   ResourceModelActionsOptions,
   ResourceModelActions,
   StartActionCreatorWithProps,
@@ -41,20 +42,13 @@ export interface CommonConfig001 extends CommonConfig {
   [s : string]: any;
 }
 
-export interface QcXxxAction {
-  modelName: string;
-  crudType: CrudType;
-  crudSubType: CrudSubType;
-  // actionTypes,
-
-  options: any;
-  resourceId: any;
-
+export interface QcXxxAction extends QcBasicAction {
   actionCreator: StartActionCreatorWithProps<ModelActionCreatorXxxx>;
+  [s : string] : any;
 }
 
 export type ModelActionCreatorXxxx = (
-  resourceId: any, options?: ResourceModelActionsOptions,
+  options?: ResourceModelActionsOptions,
 ) => QcXxxAction;
 
 export interface ResourceModelActionsXxx extends ResourceModelActions {
@@ -62,17 +56,14 @@ export interface ResourceModelActionsXxx extends ResourceModelActions {
   [s: string]: any;
 }
 
-export type ResourceModelActionTypesXxx = {
-  [P in keyof ResourceModelActionsXxx]: string;
-};
-
 export type ResourceModelXxx<
   CommonConfigType extends CommonConfig
 > = {
   url: string;
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
-  actionTypes?: ResourceModelActionTypesXxx,
+  crudTypes?: string[];
+  actionTypes?: ResourceModelActionTypes<ResourceModelActionsXxx>,
   actions?: ResourceModelActionsXxx,
 };
 

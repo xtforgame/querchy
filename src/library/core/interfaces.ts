@@ -27,8 +27,8 @@ export type CommonConfig = {
 
 // ====================
 
-export type ResourceModelActionTypes = {
-  [P in keyof ResourceModelActions]: string;
+export type ResourceModelActionTypes<ModelActions> = {
+  [P in keyof ModelActions]: string;
 };
 
 export type ResourceModel<
@@ -37,7 +37,8 @@ export type ResourceModel<
   url: string;
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
-  actionTypes?: ResourceModelActionTypes,
+  crudTypes?: string[];
+  actionTypes?: ResourceModelActionTypes<ResourceModelActions>,
   actions?: ResourceModelActions,
 };
 

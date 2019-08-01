@@ -64,7 +64,7 @@ export class MyStore implements MyQcStore001 {
   }
 
   dispatch = (action : QcAction) => {
-    // console.log('action :', action.type);
+    // console.log('action.type :', action.type);
     if (action.crudSubType === 'respond') {
       // console.log('action.response.data :', action.response.data);
     }
