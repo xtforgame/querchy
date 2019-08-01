@@ -113,7 +113,7 @@ export const createModelActions = (
   >(
     modelName, actionTypes, 'create',
     (data, options?) => ({
-      type: actionTypes['create'],
+      type: actionTypes['create']!,
       actionCreator: createFunc,
       modelName,
       actionTypes,
@@ -129,7 +129,7 @@ export const createModelActions = (
   >(
     modelName, actionTypes, 'read',
     (resourceId, options?) => ({
-      type: actionTypes['read'],
+      type: actionTypes['read']!,
       actionCreator: readFunc,
       modelName,
       actionTypes,
@@ -145,7 +145,7 @@ export const createModelActions = (
   >(
     modelName, actionTypes, 'update',
     (resourceId, data, options?) => ({
-      type: actionTypes['update'],
+      type: actionTypes['update']!,
       actionCreator: updateFunc,
       modelName,
       actionTypes,
@@ -162,7 +162,7 @@ export const createModelActions = (
   >(
     modelName, actionTypes, 'delete',
     (resourceId, options?) => ({
-      type: actionTypes['delete'],
+      type: actionTypes['delete']!,
       actionCreator: deleteFunc,
       modelName,
       actionTypes,

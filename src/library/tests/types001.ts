@@ -22,7 +22,14 @@ import {
 
   Querchy,
   AxiosRunner,
-  QcUpdater,
+  CacheUpdater,
+
+  CrudType,
+  CrudSubType,
+
+  ResourceModelActionsOptions,
+  ResourceModelActions,
+  StartActionCreatorWithProps,
 } from '~/index';
 
 export interface CommonConfig001 extends CommonConfig {
@@ -34,9 +41,44 @@ export interface CommonConfig001 extends CommonConfig {
   [s : string]: any;
 }
 
+export interface QcXxxAction {
+  modelName: string;
+  crudType: CrudType;
+  crudSubType: CrudSubType;
+  // actionTypes,
+
+  options: any;
+  resourceId: any;
+
+  actionCreator: StartActionCreatorWithProps<ModelActionCreatorXxxx>;
+}
+
+export type ModelActionCreatorXxxx = (
+  resourceId: any, options?: ResourceModelActionsOptions,
+) => QcXxxAction;
+
+export interface ResourceModelActionsXxx extends ResourceModelActions {
+  xxx: StartActionCreatorWithProps<ModelActionCreatorXxxx>;
+  [s: string]: any;
+}
+
+export type ResourceModelActionTypesXxx = {
+  [P in keyof ResourceModelActionsXxx]: string;
+};
+
+export type ResourceModelXxx<
+  CommonConfigType extends CommonConfig
+> = {
+  url: string;
+  buildUrl?: (action: QcBasicAction) => string;
+  queryCreator?: string;
+  actionTypes?: ResourceModelActionTypesXxx,
+  actions?: ResourceModelActionsXxx,
+};
+
 export type QcModelMap001 = {
   httpBinRes: ResourceModel<CommonConfig001>;
-  [s : string]: ResourceModel<CommonConfig001>;
+  httpBinRes2: ResourceModelXxx<CommonConfig001>;
 };
 
 export type QcQueryCreatorMap001 = {
@@ -106,7 +148,7 @@ export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware
 
 export class MyQcExtraActionCreators001 extends QcExtraActionCreators001 {}
 
-export class MyQcUpdater001 extends QcUpdater<
+export class MyCacheUpdater001 extends CacheUpdater<
   CommonConfig001,
   QcModelMap001,
   QcQueryCreatorMap001,

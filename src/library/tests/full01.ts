@@ -23,7 +23,7 @@ import {
 
   Querchy,
   AxiosRunner,
-  QcUpdater,
+  CacheUpdater,
 
   QcStore,
   QcDependencies,
@@ -38,7 +38,7 @@ import {
   MyQcExtraActionCreators001,
   MyQuerchy001,
   MyAxiosRunner001,
-  MyQcUpdater001,
+  MyCacheUpdater001,
   createEpicMiddleware001,
 } from './types001';
 
@@ -46,13 +46,13 @@ export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 
 export class MyStore implements MyQcStore001 {
   state: MyState001;
-  updater: MyQcUpdater001;
+  updater: MyCacheUpdater001;
   epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
   epicMiddlewareCb: EpicMiddlewareCb;
   cb: (action : QcAction) => any;
 
   constructor(
-    updater : MyQcUpdater001,
+    updater : MyCacheUpdater001,
     epicMiddleware: (store: MyStore) => EpicMiddlewareCb,
     cb: (action : QcAction) => any,
   ) {
@@ -87,7 +87,7 @@ export class MyStore implements MyQcStore001 {
   getState = () => this.state;
 }
 
-const testRun = (querchy : MyQuerchy001, updater : MyQcUpdater001, resolve: Function) => {
+const testRun = (querchy : MyQuerchy001, updater : MyCacheUpdater001, resolve: Function) => {
   const rootEpic = querchy.getAllEpics();
 
   const epicMiddleware = createEpicMiddleware001({
@@ -160,6 +160,10 @@ export default () => {
           url: 'https://httpbin.org/post',
           queryCreator: 'customPath',
         },
+        httpBinRes2: {
+          url: 'https://httpbin.org/post',
+          queryCreator: 'customPath',
+        },
       },
       queryCreators: {
         defaultCreator: {
@@ -196,7 +200,7 @@ export default () => {
       },
       extraActionCreators: new MyQcExtraActionCreators001(),
     });
-    const updater = new MyQcUpdater001(querchy);
+    const updater = new MyCacheUpdater001(querchy);
     testRun(querchy, updater, resolve);
     querchy.actionCreatorSets.extra.xxxx('ddd', 1);
   });
