@@ -149,6 +149,34 @@ export default () => {
   return new Promise((resolve) => {
     const querchy = new MyQuerchy001({
       commonConfig: {
+        builtinCrudTypes: ['create', 'read', 'update', 'delete'],
+        builtinQueryInfos: {
+          create: {
+            actionCreator: (data, options?) => ({
+              data,
+              options,
+            }),
+          },
+          read: {
+            actionCreator: (resourceId, options?) => ({
+              resourceId,
+              options,
+            }),
+          },
+          update: {
+            actionCreator: (resourceId, data, options?) => ({
+              resourceId,
+              data,
+              options,
+            }),
+          },
+          delete: {
+            actionCreator: (resourceId, options?) => ({
+              resourceId,
+              options,
+            }),
+          },
+        },
         defaultQueryRunner: new MyAxiosRunner001(),
         queryRunners: {
           customRunner: new MyAxiosRunner001(),

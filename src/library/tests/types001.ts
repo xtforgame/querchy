@@ -32,11 +32,24 @@ import {
   ResourceModelActions,
   StartActionCreatorWithProps,
   QueryInfo,
-  QueryInfos,
   RawActionCreatorCreate,
+  RawActionCreatorRead,
+  RawActionCreatorUpdate,
+  RawActionCreatorDelete,
 } from '~/index';
 
+export type QueryInfos = {
+  create: QueryInfo<RawActionCreatorCreate>;
+  read: QueryInfo<RawActionCreatorRead>;
+  update: QueryInfo<RawActionCreatorUpdate>;
+  delete: QueryInfo<RawActionCreatorDelete>;
+} & {
+  [s : string]: QueryInfo<Function>;
+};
+
 export interface CommonConfig001 extends CommonConfig {
+  builtinCrudTypes : string[];
+  builtinQueryInfos : QueryInfos;
   defaultQueryRunner: SimpleQueryRunner;
   queryRunners: {
     customRunner: SimpleQueryRunner;
@@ -54,10 +67,10 @@ export type RawActionCreatorGetCollection = (
 
 export type QueryInfosXxx<
   CommonConfigType extends CommonConfig
-> = QueryInfos<CommonConfigType> & {
-  getCollection: QueryInfo<CommonConfigType, RawActionCreatorGetCollection>;
+> = Partial<CommonConfigType['builtinQueryInfos']> & {
+  getCollection: QueryInfo<RawActionCreatorGetCollection>;
 } & {
-  [s : string]: QueryInfo<CommonConfigType, Function>;
+  [s : string]: QueryInfo<Function>;
 };
 
 export type ResourceModelXxx<

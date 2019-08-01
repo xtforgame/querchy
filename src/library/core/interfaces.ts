@@ -21,8 +21,18 @@ export type SimpleQueryRunner = {
   handle: Function;
 };
 
+export type QueryInfo<
+  RawActionCreator extends Function
+> = {
+  actionCreator: RawActionCreator;
+};
+
 export type CommonConfig = {
-  defaultQueryRunner : SimpleQueryRunner,
+  builtinCrudTypes: string[];
+  builtinQueryInfos : {
+    [s : string]: QueryInfo<Function>;
+  };
+  defaultQueryRunner : SimpleQueryRunner;
   queryRunners?: { [s : string] : SimpleQueryRunner };
   queryPrefix?: string;
   getActionTypeName?: (queryPrefix: string, queryName: string) => string;
@@ -30,24 +40,6 @@ export type CommonConfig = {
 };
 
 // ====================
-
-export type QueryInfo<
-  CommonConfigType extends CommonConfig,
-  RawActionCreator extends Function
-> = {
-  actionCreator: RawActionCreator;
-};
-
-export type QueryInfos<
-  CommonConfigType extends CommonConfig
-> = {
-  create?: QueryInfo<CommonConfigType, RawActionCreatorCreate>;
-  read?: QueryInfo<CommonConfigType, RawActionCreatorRead>;
-  update?: QueryInfo<CommonConfigType, RawActionCreatorUpdate>;
-  delete?: QueryInfo<CommonConfigType, RawActionCreatorDelete>;
-} & {
-  [s : string]: QueryInfo<CommonConfigType, Function>;
-};
 
 export type ResourceModelActionTypes<ModelActions> = {
   [P in keyof ModelActions]: string;
@@ -57,12 +49,14 @@ export type ResourceModel<
   CommonConfigType extends CommonConfig
 > = {
   url: string;
-  queryInfos: QueryInfos<CommonConfigType>;
+  queryInfos: Partial<CommonConfigType['builtinQueryInfos']> & {
+    [s : string]: QueryInfo<Function>;
+  };
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
   crudTypes?: string[];
-  actionTypes?: ResourceModelActionTypes<ResourceModelActions<Required<QueryInfos<CommonConfigType>>>>,
-  actions?: ResourceModelActions<Required<QueryInfos<CommonConfigType>>>,
+  actionTypes?: ResourceModelActionTypes<ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>>,
+  actions?: ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>,
 };
 
 export type ModelMap<

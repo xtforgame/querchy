@@ -31,24 +31,23 @@ export const createModelActionTypes = <
 
 const createModelCrudAction = <
   CommonConfigType extends CommonConfig,
-  ResourceModelType extends ResourceModel<CommonConfigType>,
-  StartActionCreatorType,
+  ResourceModelType extends ResourceModel<CommonConfigType>
 >(
   modelName : string,
   actionTypes : Required<ResourceModelType['actionTypes']>,
   crudType: CrudType,
   start : Function,
 ) : ActionCreatorWithProps<
-  StartActionCreatorType, StartActionCreatorType
+  Function, Function
 > => {
   const actionCreatorProps : ActionCreatorProps<
-    StartActionCreatorType
+    Function
   > = <any>{
     creatorRefs: {},
   };
 
   const startFunc : ActionCreatorWithProps<
-    StartActionCreatorType, StartActionCreatorType
+    Function, Function
   > = <any>Object.assign(
     (...args : any[]) => ({
       ...start(...args),
@@ -109,30 +108,11 @@ const createModelCrudAction = <
   return startFunc;
 };
 
-const defaultRawActionCreator : { [s : string] : any } = {
-  create: (data, options?) => ({
-    data,
-    options,
-  }),
-  read: (resourceId, options?) => ({
-    resourceId,
-    options,
-  }),
-  update: (resourceId, data, options?) => ({
-    resourceId,
-    data,
-    options,
-  }),
-  delete: (resourceId, options?) => ({
-    resourceId,
-    options,
-  }),
-};
-
 export const createModelActionCreators = <
   CommonConfigType extends CommonConfig,
   ResourceModelType extends ResourceModel<CommonConfigType>
 >(
+  commonConfigType: CommonConfigType,
   modelName : string,
   model: ResourceModelType,
 ) : ResourceModelActions<Required<ResourceModelType['queryInfos']>> => {
@@ -141,14 +121,11 @@ export const createModelActionCreators = <
   const crudTypes = model.crudTypes!;
 
   return crudTypes.reduce((actionCreators, crudType) => {
+    const queryInfo = queryInfos[crudType] || commonConfigType.builtinQueryInfos[crudType];
     const func = createModelCrudAction<
-      CommonConfigType, ResourceModelType, ModelActionCreator<RawActionCreatorCreate>
+      CommonConfigType, ResourceModelType
     >(
-      modelName, actionTypes, crudType,
-      (
-        queryInfos[crudType]
-        && queryInfos[crudType].actionCreator
-      ) || defaultRawActionCreator[crudType],
+      modelName, actionTypes, crudType, queryInfo.actionCreator,
     );
     return {
       ...actionCreators,
