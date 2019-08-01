@@ -159,9 +159,18 @@ export default () => {
         httpBinRes: {
           url: 'https://httpbin.org/post',
           queryCreator: 'customPath',
+          queryInfos: {},
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
+          crudTypes: ['create', 'read', 'update', 'delete', 'getCollection'],
+          queryInfos: {
+            getCollection: {
+              actionCreator: (options?) => ({
+                options,
+              }),
+            },
+          },
           queryCreator: 'customPath',
         },
       },

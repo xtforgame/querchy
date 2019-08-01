@@ -31,6 +31,9 @@ import {
   ResourceModelActionsOptions,
   ResourceModelActions,
   StartActionCreatorWithProps,
+  QueryInfo,
+  QueryInfos,
+  RawActionCreatorCreate,
 } from '~/index';
 
 export interface CommonConfig001 extends CommonConfig {
@@ -56,10 +59,24 @@ export interface ResourceModelActionsXxx extends ResourceModelActions {
   [s: string]: any;
 }
 
+export type RawActionCreatorGetCollection = (
+  options?: ResourceModelActionsOptions,
+) => {
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+export interface QueryInfosXxx<
+  CommonConfigType extends CommonConfig
+> extends QueryInfos<CommonConfigType> {
+  getCollection: QueryInfo<CommonConfigType, RawActionCreatorGetCollection>;
+}
+
 export type ResourceModelXxx<
   CommonConfigType extends CommonConfig
 > = {
   url: string;
+  queryInfos: QueryInfosXxx<CommonConfigType>;
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
   crudTypes?: string[];

@@ -143,7 +143,42 @@ export type StartActionCreatorWithProps<
 
 export type AnyActionCreatorWithProps = StartActionCreatorWithProps<{}>;
 
-// ====================
+// =========================================================================
+
+export type RawActionCreatorCreate = (
+  data: any, options?: ResourceModelActionsOptions,
+) => {
+  data: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+export type RawActionCreatorRead = (
+  resourceId: any, options?: ResourceModelActionsOptions,
+) => {
+  resourceId: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+export type RawActionCreatorUpdate = (
+  resourceId: any, data: any, options?: ResourceModelActionsOptions,
+) => {
+  resourceId: any;
+  data: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+export type RawActionCreatorDelete = (
+  resourceId: any, options?: ResourceModelActionsOptions,
+) => {
+  resourceId: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+// ============================
 
 export interface QcCreateAction extends QcBasicAction {
   actionCreator: StartActionCreatorWithProps<ModelActionCreatorCreate>;

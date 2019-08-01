@@ -127,7 +127,13 @@ export default class Querchy<
     Object.keys(models)
     .forEach((key) => {
       models[key].crudTypes = models[key].crudTypes || ['create', 'read', 'update', 'delete'];
+      Object.keys(models[key].queryInfos).forEach((key2) => {
+        if (!models[key].crudTypes!.includes(key2)) {
+          models[key].crudTypes!.push(key2);
+        }
+      });
       models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key].crudTypes!);
+      console.log('models[key].actionTypes :', models[key].actionTypes);
       models[key].actions = createModelActions(key, models[key].actionTypes!);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
       models[key].buildUrl = models[key].buildUrl || (

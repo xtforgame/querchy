@@ -8,9 +8,13 @@ import {
   QcBasicAction,
   QcRequestConfig,
   ResourceModelActions,
-} from './crud-interfaces';
+  RawActionCreatorCreate,
+  RawActionCreatorRead,
+  RawActionCreatorUpdate,
+  RawActionCreatorDelete,
+} from './crud-sub-action-interfaces';
 
-export * from './crud-interfaces';
+export * from './crud-sub-action-interfaces';
 
 export type SimpleQueryRunner = {
   type: RunnerType;
@@ -27,6 +31,23 @@ export type CommonConfig = {
 
 // ====================
 
+export type QueryInfo<
+  CommonConfigType extends CommonConfig,
+  RawActionCreator extends Function
+> = {
+  actionCreator: RawActionCreator;
+};
+
+export interface QueryInfos<
+  CommonConfigType extends CommonConfig
+> {
+  create?: QueryInfo<CommonConfigType, RawActionCreatorCreate>;
+  read?: QueryInfo<CommonConfigType, RawActionCreatorRead>;
+  update?: QueryInfo<CommonConfigType, RawActionCreatorUpdate>;
+  delete?: QueryInfo<CommonConfigType, RawActionCreatorDelete>;
+  // [s : string]: QueryInfo<CommonConfigType, Function>;
+}
+
 export type ResourceModelActionTypes<ModelActions> = {
   [P in keyof ModelActions]: string;
 };
@@ -35,6 +56,7 @@ export type ResourceModel<
   CommonConfigType extends CommonConfig
 > = {
   url: string;
+  queryInfos: QueryInfos<CommonConfigType>;
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
   crudTypes?: string[];

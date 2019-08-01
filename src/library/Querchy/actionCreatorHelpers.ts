@@ -22,7 +22,7 @@ export const createModelActionTypes = <
   return <ResourceModelActionTypes<ModelActions>><any>crudTypes.reduce((actionTypes, crudType) => {
     return {
       ...actionTypes,
-      [crudType]: commonConfig.getActionTypeName!(queryPrefix, `${crudType}_${modelName}`),
+      [crudType]: commonConfig.getActionTypeName!(queryPrefix, `${modelName}_${crudType}`),
     }
   }, {});
 };
