@@ -1,32 +1,6 @@
-import { Epic, combineEpics } from 'pure-epic';
-import { ObservableInput } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
-import { toUnderscore } from '~/common/common-functions';
-
 import {
-  CommonConfig,
-  ResourceModel,
-  ModelMap,
-  QueryCreatorMap,
-  QuerchyDefinition,
-  QueryCreatorDefinition,
   QcAction,
-  QcBasicAction,
-  QcState,
-  QcActionCreator,
-  INIT_FUNC,
-  InitFunctionKeyType,
-  ActionCreatorsInitFunction,
   AnyActionCreatorWithProps,
-
-  crudToRestMap,
-
-  Querchy,
-  AxiosRunner,
-  CacheUpdater,
-
-  QcStore,
-  QcDependencies,
 } from '~/index';
 
 import {
@@ -41,6 +15,13 @@ import {
   MyCacheUpdater001,
   createEpicMiddleware001,
 } from './types001';
+
+export const crudToRestMap = {
+  create: 'post',
+  read: 'get',
+  update: 'patch',
+  delete: 'delete',
+};
 
 export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 

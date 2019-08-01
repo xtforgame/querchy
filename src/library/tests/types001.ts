@@ -18,8 +18,6 @@ import {
 
   SimpleQueryRunner,
 
-  crudToRestMap,
-
   Querchy,
   AxiosRunner,
   CacheUpdater,
@@ -32,11 +30,40 @@ import {
   ResourceModelActions,
   StartActionCreatorWithProps,
   QueryInfo,
-  RawActionCreatorCreate,
-  RawActionCreatorRead,
-  RawActionCreatorUpdate,
-  RawActionCreatorDelete,
 } from '~/index';
+
+export type RawActionCreatorCreate = (
+  data: any, options?: ResourceModelActionsOptions,
+) => {
+  data: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+export type RawActionCreatorRead = (
+  resourceId: any, options?: ResourceModelActionsOptions,
+) => {
+  resourceId: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+export type RawActionCreatorUpdate = (
+  resourceId: any, data: any, options?: ResourceModelActionsOptions,
+) => {
+  resourceId: any;
+  data: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
+export type RawActionCreatorDelete = (
+  resourceId: any, options?: ResourceModelActionsOptions,
+) => {
+  resourceId: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
 
 export type QueryInfos = {
   create: QueryInfo<RawActionCreatorCreate>;
