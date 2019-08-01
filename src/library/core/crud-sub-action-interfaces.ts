@@ -1,4 +1,9 @@
 import {
+  ArgumentTypes,
+  ReturnType,
+} from '~/utils/helper-functions';
+
+import {
   RunnerType,
   QcAction,
   QcActionCreator,
@@ -22,10 +27,6 @@ export interface QcBasicAction extends QcAction {
 
   options: any;
   [s : string] : any;
-}
-
-export interface QcBasicActionWithResourceId extends QcBasicAction {
-  resourceId: any;
 }
 
 // ==================
@@ -180,46 +181,21 @@ export type RawActionCreatorDelete = (
 
 // ============================
 
-export interface QcCreateAction extends QcBasicAction {
-  actionCreator: StartActionCreatorWithProps<ModelActionCreatorCreate>;
-  [s : string] : any;
-}
+export type ModelActionCreator<
+  RawActionCreator extends Function
+> = (
+  ...args: ArgumentTypes<RawActionCreator>
+) => ReturnType<RawActionCreator> & {
+  actionCreator: StartActionCreatorWithProps<ModelActionCreator<RawActionCreator>>;
+} & QcBasicAction;
 
-export interface QcReadAction extends QcBasicActionWithResourceId {
-  actionCreator: StartActionCreatorWithProps<ModelActionCreatorRead>;
-  [s : string] : any;
-}
-
-export interface QcUpdateAction extends QcBasicActionWithResourceId {
-  actionCreator: StartActionCreatorWithProps<ModelActionCreatorUpdate>;
-  [s : string] : any;
-}
-
-export interface QcDeleteAction extends QcBasicActionWithResourceId {
-  actionCreator: StartActionCreatorWithProps<ModelActionCreatorDelete>;
-  [s : string] : any;
-}
-
-export type ModelActionCreatorCreate = (
-  data: any, options?: ResourceModelActionsOptions,
-) => QcCreateAction;
-
-export type ModelActionCreatorRead = (
-  resourceId: any, options?: ResourceModelActionsOptions,
-) => QcReadAction;
-
-export type ModelActionCreatorUpdate = (
-  resourceId: any, data: any, options?: ResourceModelActionsOptions,
-) => QcUpdateAction;
-
-export type ModelActionCreatorDelete = (
-  resourceId: any, options?: ResourceModelActionsOptions,
-) => QcDeleteAction;
-
-export interface ResourceModelActions {
-  create?: StartActionCreatorWithProps<ModelActionCreatorCreate>;
-  read?: StartActionCreatorWithProps<ModelActionCreatorRead>;
-  update?: StartActionCreatorWithProps<ModelActionCreatorUpdate>;
-  delete?: StartActionCreatorWithProps<ModelActionCreatorDelete>;
+export type ResourceModelActions<
+  QueryInfosLike extends { [ s : string] : { actionCreator: Function; } }
+> = {
+  [P in keyof QueryInfosLike] : StartActionCreatorWithProps<ModelActionCreator<QueryInfosLike[P]['actionCreator']>>;
+  // create?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorCreate>>;
+  // read?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorRead>>;
+  // update?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorUpdate>>;
+  // delete?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorDelete>>;
   // [s: string]: StartActionCreatorWithProps<{}>,
 }

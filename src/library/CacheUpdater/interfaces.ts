@@ -4,24 +4,7 @@ import {
 
 import {
   CommonConfig,
-  ResourceModel,
-  ResourceModelActionTypes,
-  ResourceModelActions,
-  SimpleQueryRunner,
   ModelMap,
-  QueryCreatorDefinition,
-  QueryCreatorMap,
-  ExtraActionCreators,
-  QuerchyDefinition,
-  QcDependencies,
-  INIT_FUNC,
-  InitFunctionKeyType,
-
-  ModelActionCreators,
-  ModelActionCreatorSet,
-  ActionCreatorSets,
-
-  AnyActionCreatorWithProps,
 } from '~/core/interfaces';
 
 export type SliceReducer = (state: any, action: QcAction) => any;

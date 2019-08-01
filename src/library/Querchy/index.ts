@@ -12,9 +12,6 @@ import {
 
 import {
   CommonConfig,
-  ResourceModel,
-  ResourceModelActionTypes,
-  ResourceModelActions,
   SimpleQueryRunner,
   ModelMap,
   QueryCreatorDefinition,
@@ -23,13 +20,8 @@ import {
   QuerchyDefinition,
   QcDependencies,
   INIT_FUNC,
-  InitFunctionKeyType,
-
-  ModelActionCreators,
   ModelActionCreatorSet,
   ActionCreatorSets,
-
-  AnyActionCreatorWithProps,
 } from '~/core/interfaces';
 
 import {
@@ -38,7 +30,7 @@ import {
 
 import {
   createModelActionTypes,
-  createModelActions,
+  createModelActionCreators,
 } from './actionCreatorHelpers';
 
 export default class Querchy<
@@ -133,8 +125,7 @@ export default class Querchy<
         }
       });
       models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key].crudTypes!);
-      console.log('models[key].actionTypes :', models[key].actionTypes);
-      models[key].actions = createModelActions(key, models[key].actionTypes!);
+      models[key].actions = createModelActionCreators(key, models[key]);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
       models[key].buildUrl = models[key].buildUrl || (
         (action) => {

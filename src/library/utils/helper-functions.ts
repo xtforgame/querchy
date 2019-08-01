@@ -2,6 +2,7 @@ export const toNull = (...args) : any => ({ type: 'TO_NULL' });
 
 // https://stackoverflow.com/questions/50011616/typescript-change-function-type-so-that-it-returns-new-value
 export type ArgumentTypes<T> = T extends (... args: infer U ) => infer R ? U: never;
+export type ReturnType<T> = T extends (...args: infer U ) => infer R ? R: never;
 export type ReplaceReturnType<T, TNewReturn> = (...a: ArgumentTypes<T>) => TNewReturn;
 export type WithOptional = ReplaceReturnType<(n?: number) => string, Promise<string>>;
 

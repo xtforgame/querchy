@@ -3,15 +3,17 @@ import {
   CrudSubType,
 
   CommonConfig,
+  ResourceModel,
   ResourceModelActionTypes,
   ResourceModelActions,
 
   ActionCreatorProps,
   ActionCreatorWithProps,
-  ModelActionCreatorCreate,
-  ModelActionCreatorRead,
-  ModelActionCreatorUpdate,
-  ModelActionCreatorDelete,
+  ModelActionCreator,
+  RawActionCreatorCreate,
+  RawActionCreatorRead,
+  RawActionCreatorUpdate,
+  RawActionCreatorDelete,
 } from '~/core/interfaces';
 
 export const createModelActionTypes = <
@@ -28,11 +30,12 @@ export const createModelActionTypes = <
 };
 
 const createModelCrudAction = <
-  ModelActions,
+  CommonConfigType extends CommonConfig,
+  ResourceModelType extends ResourceModel<CommonConfigType>,
   StartActionCreatorType,
 >(
   modelName : string,
-  actionTypes : ResourceModelActionTypes<ModelActions>,
+  actionTypes : Required<ResourceModelType['actionTypes']>,
   crudType: CrudType,
   start : Function,
 ) : ActionCreatorWithProps<
@@ -106,39 +109,50 @@ const createModelCrudAction = <
   return startFunc;
 };
 
-export const createModelActions = <
-  ModelActions,
+const defaultRawActionCreator : { [s : string] : any } = {
+  create: (data, options?) => ({
+    data,
+    options,
+  }),
+  read: (resourceId, options?) => ({
+    resourceId,
+    options,
+  }),
+  update: (resourceId, data, options?) => ({
+    resourceId,
+    data,
+    options,
+  }),
+  delete: (resourceId, options?) => ({
+    resourceId,
+    options,
+  }),
+};
+
+export const createModelActionCreators = <
+  CommonConfigType extends CommonConfig,
+  ResourceModelType extends ResourceModel<CommonConfigType>
 >(
   modelName : string,
-  actionTypes : ResourceModelActionTypes<ModelActions>,
-) : ResourceModelActions => ({
-  create: createModelCrudAction<ModelActions, ModelActionCreatorCreate>(
-    modelName, actionTypes, 'create',
-    (data, options?) => ({
-      data,
-      options,
-    }),
-  ),
-  read: createModelCrudAction<ModelActions, ModelActionCreatorRead>(
-    modelName, actionTypes, 'read',
-    (resourceId, options?) => ({
-      resourceId,
-      options,
-    }),
-  ),
-  update: createModelCrudAction<ModelActions, ModelActionCreatorUpdate>(
-    modelName, actionTypes, 'update',
-    (resourceId, data, options?) => ({
-      resourceId,
-      data,
-      options,
-    }),
-  ),
-  delete: createModelCrudAction<ModelActions, ModelActionCreatorDelete>(
-    modelName, actionTypes, 'delete',
-    (resourceId, options?) => ({
-      resourceId,
-      options,
-    }),
-  ),
-});
+  model: ResourceModelType,
+) : ResourceModelActions<Required<ResourceModelType['queryInfos']>> => {
+  const actionTypes : Required<ResourceModelType['actionTypes']> = <any>model.actionTypes!;
+  const queryInfos = model.queryInfos!;
+  const crudTypes = model.crudTypes!;
+
+  return crudTypes.reduce((actionCreators, crudType) => {
+    const func = createModelCrudAction<
+      CommonConfigType, ResourceModelType, ModelActionCreator<RawActionCreatorCreate>
+    >(
+      modelName, actionTypes, crudType,
+      (
+        queryInfos[crudType]
+        && queryInfos[crudType].actionCreator
+      ) || defaultRawActionCreator[crudType],
+    );
+    return {
+      ...actionCreators,
+      [crudType]: func,
+    };
+  }, <any>{});
+};

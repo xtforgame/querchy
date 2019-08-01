@@ -38,15 +38,16 @@ export type QueryInfo<
   actionCreator: RawActionCreator;
 };
 
-export interface QueryInfos<
+export type QueryInfos<
   CommonConfigType extends CommonConfig
-> {
+> = {
   create?: QueryInfo<CommonConfigType, RawActionCreatorCreate>;
   read?: QueryInfo<CommonConfigType, RawActionCreatorRead>;
   update?: QueryInfo<CommonConfigType, RawActionCreatorUpdate>;
   delete?: QueryInfo<CommonConfigType, RawActionCreatorDelete>;
-  // [s : string]: QueryInfo<CommonConfigType, Function>;
-}
+} & {
+  [s : string]: QueryInfo<CommonConfigType, Function>;
+};
 
 export type ResourceModelActionTypes<ModelActions> = {
   [P in keyof ModelActions]: string;
@@ -60,8 +61,8 @@ export type ResourceModel<
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
   crudTypes?: string[];
-  actionTypes?: ResourceModelActionTypes<ResourceModelActions>,
-  actions?: ResourceModelActions,
+  actionTypes?: ResourceModelActionTypes<ResourceModelActions<Required<QueryInfos<CommonConfigType>>>>,
+  actions?: ResourceModelActions<Required<QueryInfos<CommonConfigType>>>,
 };
 
 export type ModelMap<
@@ -149,15 +150,6 @@ export interface ExtraActionCreators<
 }
 
 // ==========
-
-export type ModelActionCreators<
-  CommonConfigType extends CommonConfig,
-  T extends Required<ResourceModelActions>
-> = {
-  [P in keyof T] : QcActionCreator;
-} & {
-  [s : string] : QcActionCreator;
-};
 
 export type ModelActionCreatorSet<
   CommonConfigType extends CommonConfig,
