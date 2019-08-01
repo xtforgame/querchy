@@ -158,9 +158,5 @@ export type ResourceModelActions<
   QueryInfosLike extends { [ s : string] : { actionCreator: Function; } }
 > = {
   [P in keyof QueryInfosLike] : StartActionCreatorWithProps<ModelActionCreator<QueryInfosLike[P]['actionCreator']>>;
-  // create?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorCreate>>;
-  // read?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorRead>>;
-  // update?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorUpdate>>;
-  // delete?: StartActionCreatorWithProps<ModelActionCreator<RawActionCreatorDelete>>;
   // [s: string]: StartActionCreatorWithProps<{}>,
 }

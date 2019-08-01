@@ -133,29 +133,16 @@ export default () => {
         builtinCrudTypes: ['create', 'read', 'update', 'delete'],
         builtinQueryInfos: {
           create: {
-            actionCreator: (data, options?) => ({
-              data,
-              options,
-            }),
+            actionCreator: (data, options?) => ({ data, options }),
           },
           read: {
-            actionCreator: (resourceId, options?) => ({
-              resourceId,
-              options,
-            }),
+            actionCreator: (resourceId, options?) => ({ resourceId, options }),
           },
           update: {
-            actionCreator: (resourceId, data, options?) => ({
-              resourceId,
-              data,
-              options,
-            }),
+            actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
           },
           delete: {
-            actionCreator: (resourceId, options?) => ({
-              resourceId,
-              options,
-            }),
+            actionCreator: (resourceId, options?) => ({ resourceId, options }),
           },
         },
         defaultQueryRunner: new MyAxiosRunner001(),
@@ -172,12 +159,10 @@ export default () => {
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
-          crudTypes: ['create', 'read', 'update', 'delete', 'getCollection'],
+          crudTypes: ['getCollection'],
           queryInfos: {
             getCollection: {
-              actionCreator: (options?) => ({
-                options,
-              }),
+              actionCreator: (options?) => ({ options }),
             },
           },
           queryCreator: 'customPath',

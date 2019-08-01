@@ -124,6 +124,11 @@ export default class Querchy<
           models[key].crudTypes!.push(key2);
         }
       });
+      Object.keys(commonConfig.builtinQueryInfos).forEach((key2) => {
+        if (!models[key].crudTypes!.includes(key2)) {
+          models[key].crudTypes!.push(key2);
+        }
+      });
       models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key].crudTypes!);
       models[key].actions = createModelActionCreators(commonConfig, key, models[key]);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
