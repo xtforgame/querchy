@@ -1,5 +1,8 @@
 import {
   QcAction,
+  ResourceMetadata,
+  ResourceMetadataMap,
+  ResourceState,
 } from '~/common/interfaces';
 
 import {
@@ -7,7 +10,15 @@ import {
   ModelMap,
 } from '~/core/interfaces';
 
-export type SliceReducer = (state: any, action: QcAction) => any;
+export type Merger<
+  ActionType extends QcAction
+> = (state: ResourceState, action: ActionType) => ResourceState;
+
+export type BasicMerger = Merger<QcAction>;
+
+export type RootReducer = (state: any, action: QcAction) => any;
+
+export type SliceReducer = BasicMerger;
 
 export type ReducerSet<T> = {
   [P in keyof T] : SliceReducer;

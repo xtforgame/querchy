@@ -10,10 +10,6 @@ import {
   ActionCreatorProps,
   ActionCreatorWithProps,
   ModelActionCreator,
-  RawActionCreatorCreate,
-  RawActionCreatorRead,
-  RawActionCreatorUpdate,
-  RawActionCreatorDelete,
 } from '~/core/interfaces';
 
 export const createModelActionTypes = <
@@ -49,15 +45,25 @@ const createModelCrudAction = <
   const startFunc : ActionCreatorWithProps<
     Function, Function
   > = <any>Object.assign(
-    (...args : any[]) => ({
-      ...start(...args),
-      type: actionTypes[crudType]!,
-      actionCreator: startFunc,
-      modelName,
-      actionTypes,
-      crudType,
-      crudSubType: 'start',
-    }),
+    (...args : any[]) => {
+      const requestTimestamp = new Date().getTime();
+      const requestAction = {
+        ...start(...args),
+        type: actionTypes[crudType]!,
+        actionCreator: startFunc,
+        modelName,
+        actionTypes,
+        crudType,
+        crudSubType: 'start',
+        requestTimestamp,
+        transferables: {},
+      };
+      requestAction.transferables = {
+        requestTimestamp,
+        requestAction,
+      };
+      return requestAction;
+    },
     actionCreatorProps,
   );
 
@@ -72,6 +78,16 @@ const createModelCrudAction = <
       actionTypes,
       crudType,
       crudSubType: <CrudSubType>'respond',
+      responseTimestamp: new Date().getTime(),
+      requestTimestamp: options
+        && options.transferables
+        && options.transferables.requestTimestamp,
+      transferables: {
+        ...options
+          && options.transferables
+          && options.transferables.requestAction.transferables,
+        ...options && options.transferables,
+      },
       options,
     }),
     actionCreatorProps,
@@ -86,6 +102,16 @@ const createModelCrudAction = <
       actionTypes,
       crudType,
       crudSubType: <CrudSubType>'respondError',
+      errorTimestamp: new Date().getTime(),
+      requestTimestamp: options
+        && options.transferables
+        && options.transferables.requestTimestamp,
+      transferables: {
+        ...options
+          && options.transferables
+          && options.transferables.requestAction.transferables,
+        ...options && options.transferables,
+      },
       options,
     }),
     actionCreatorProps,
@@ -100,6 +126,16 @@ const createModelCrudAction = <
       actionTypes,
       crudType,
       crudSubType: <CrudSubType>'cancel',
+      cancelTimestamp: new Date().getTime(),
+      requestTimestamp: options
+        && options.transferables
+        && options.transferables.requestTimestamp,
+      transferables: {
+        ...options
+          && options.transferables
+          && options.transferables.requestAction.transferables,
+        ...options && options.transferables,
+      },
       options,
     }),
     actionCreatorProps,

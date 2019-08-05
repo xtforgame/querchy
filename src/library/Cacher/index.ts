@@ -1,5 +1,6 @@
 import {
   QcAction,
+  ResourceMetadata,
 } from '~/common/interfaces';
 
 import {
@@ -8,11 +9,18 @@ import {
   QueryCreatorMap,
   ExtraActionCreators,
   QuerchyDefinition,
+
+  QcResponseAction,
 } from '~/core/interfaces';
 
+import combineReducers from '~/redux/combineReducers';
+
 import {
+  RootReducer,
   SliceReducer,
   ReducerSets,
+  Merger,
+  BasicMerger,
 } from './interfaces';
 
 import Querchy from '~/Querchy';
@@ -49,7 +57,9 @@ export default class Updater<
     ModelMapType
   >;
 
-  allReducers : SliceReducer[];
+  allReducers : { [s : string]: SliceReducer };
+
+  rootReducer : RootReducer;
 
   constructor(
     querchy : Querchy<
@@ -64,44 +74,68 @@ export default class Updater<
     this.querchy = querchy;
     // console.log('querchy :', querchy.querchyDefinition);
     this.reducerSet = <any>{};
-    this.allReducers = [];
+    this.allReducers = {};
+    this.rootReducer = () => {};
     this.init();
   }
+
+  createResponseMerger = (actionType : string) : Merger<QcResponseAction> => {
+    return (state = {
+      metadataMap: {},
+      resourceMap: {},
+    }, action) => {
+      const resourceId : string = (
+        action.response
+        && action.response.data
+        && action.response.data.args
+        && action.response.data.args.id
+      ) || '1';
+
+      if (action.type === actionType /*  && action.crudSubType === 'respond' */) {
+        const metadata : ResourceMetadata = {
+          lastRequest: {
+            ...(state.metadataMap[resourceId] && state.metadataMap[resourceId].lastRequest),
+            requestTimestamp: action.requestTimestamp,
+            responseTimestamp: action.responseTimestamp,
+          },
+        };
+        return {
+          ...state,
+          metadataMap: {
+            ...state.metadataMap,
+            [resourceId]: metadata,
+          },
+          resourceMap: {
+            ...state.resourceMap,
+            [resourceId]: action.response.data,
+          },
+        };
+      }
+      return state;
+    };
+  };
 
   init() {
     const {
       models,
     } = this.querchy.querchyDefinition;
-    Object.keys(models).forEach((key) => {
+    Object.keys(models)
+    .forEach((key) => {
       const model = models[key];
       const actions = model.actions!;
 
       const reducers : { [s : string] : SliceReducer } = {};
       Object.keys(actions).forEach((actionKey) => {
         const { actionType } = actions[actionKey].creatorRefs.respond;
-        reducers[actionKey] = (state, action) => {
-          if (
-            action.type === actionType
-            // action.crudSubType === 'respond'
-            && action.response
-            && action.response.data
-            && action.response.data.args
-            && action.response.data.args.id
-          ) {
-            return {
-              ...state,
-              [action.response.data.args.id]: action.response.data,
-            };
-          }
-          return state;
-        };
-        this.allReducers.push(reducers[actionKey]);
+        reducers[actionKey] = <BasicMerger>this.createResponseMerger(actionType);
+        this.allReducers[key] = reducers[actionKey];
       });
       (<any>this.reducerSet[key]) = reducers;
     });
+    this.rootReducer = combineReducers(this.allReducers);
   }
 
   reduce(state: any, action: QcAction) : any {
-    return this.allReducers.reduce((s, r) => r(s, action), state);
+    return this.rootReducer(state, action);
   }
 }

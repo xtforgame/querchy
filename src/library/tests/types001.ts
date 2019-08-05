@@ -20,7 +20,7 @@ import {
 
   Querchy,
   AxiosRunner,
-  CacheUpdater,
+  Cacher,
 
   CrudType,
   CrudSubType,
@@ -184,7 +184,7 @@ export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware
 
 export class MyQcExtraActionCreators001 extends QcExtraActionCreators001 {}
 
-export class MyCacheUpdater001 extends CacheUpdater<
+export class MyCacher001 extends Cacher<
   CommonConfig001,
   QcModelMap001,
   QcQueryCreatorMap001,

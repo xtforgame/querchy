@@ -12,7 +12,7 @@ import {
   MyQcExtraActionCreators001,
   MyQuerchy001,
   MyAxiosRunner001,
-  MyCacheUpdater001,
+  MyCacher001,
   createEpicMiddleware001,
 } from './types001';
 
@@ -27,18 +27,18 @@ export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 
 export class MyStore implements MyQcStore001 {
   state: MyState001;
-  updater: MyCacheUpdater001;
+  cacher: MyCacher001;
   epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
   epicMiddlewareCb: EpicMiddlewareCb;
   cb: (action : QcAction) => any;
 
   constructor(
-    updater : MyCacheUpdater001,
+    cacher : MyCacher001,
     epicMiddleware: (store: MyStore) => EpicMiddlewareCb,
     cb: (action : QcAction) => any,
   ) {
     this.state = {};
-    this.updater = updater;
+    this.cacher = cacher;
     this.epicMiddleware = epicMiddleware;
     this.epicMiddlewareCb = this.epicMiddleware(this);
     this.cb = cb;
@@ -58,9 +58,9 @@ export class MyStore implements MyQcStore001 {
       }
       // console.log();
     }
-    this.state = this.updater.reduce(this.getState(), action);
+    this.state = this.cacher.reduce(this.getState(), action);
     this.epicMiddlewareCb(() => {})(action);
-    // console.log('this.state :', this.state);
+    console.log('this.state :', this.state);
 
     this.cb(action);
   }
@@ -68,7 +68,7 @@ export class MyStore implements MyQcStore001 {
   getState = () => this.state;
 }
 
-const testRun = (querchy : MyQuerchy001, updater : MyCacheUpdater001, resolve: Function) => {
+const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function) => {
   const rootEpic = querchy.getAllEpics();
 
   const epicMiddleware = createEpicMiddleware001({
@@ -92,27 +92,29 @@ const testRun = (querchy : MyQuerchy001, updater : MyCacheUpdater001, resolve: F
     }
   };
   const store = new MyStore(
-    updater,
+    cacher,
     epicMiddleware,
     cb,
   );
 
   const epicMiddlewareCb = store.epicMiddlewareCb;
   epicMiddleware.run(rootEpic);
-  epicMiddlewareCb(() => {})(querchy.actionCreatorSets.httpBinRes.create(
+
+  const { httpBinRes } = querchy.actionCreatorSets;
+  store.dispatch(httpBinRes.create(
     {},
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
-  epicMiddlewareCb(() => {})(querchy.actionCreatorSets.httpBinRes.read(
+  store.dispatch(httpBinRes.read(
     1,
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
-  epicMiddlewareCb(() => {})(querchy.actionCreatorSets.httpBinRes.update(
+  store.dispatch(httpBinRes.update(
     1,
     {},
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
-  epicMiddlewareCb(() => {})(querchy.actionCreatorSets.httpBinRes.delete(
+  store.dispatch(httpBinRes.delete(
     1,
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
@@ -203,8 +205,8 @@ export default () => {
       },
       extraActionCreators: new MyQcExtraActionCreators001(),
     });
-    const updater = new MyCacheUpdater001(querchy);
-    testRun(querchy, updater, resolve);
+    const cacher = new MyCacher001(querchy);
+    testRun(querchy, cacher, resolve);
     querchy.actionCreatorSets.extra.xxxx('ddd', 1);
   });
 };

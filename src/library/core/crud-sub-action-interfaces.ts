@@ -5,13 +5,21 @@ import {
 
 import {
   RunnerType,
+  QcTimestamp,
   QcAction,
   QcActionCreator,
 } from '~/common/interfaces';
 
+export type QcTransferables = {
+  requestTimestamp: QcTimestamp;
+  requestAction?: QcRequestAction;
+  [s : string] : any;
+};
+
 export type ResourceModelActionsOptions = {
   query?: any;
   headers?: { [s : string] : string };
+  transferables?: QcTransferables;
 };
 
 export type CrudType = string;
@@ -30,6 +38,12 @@ export interface QcBasicAction extends QcAction {
 }
 
 // ==================
+
+export interface QcRequestAction extends QcAction {
+  requestTimestamp: QcTimestamp;
+  transferables: QcTransferables;
+  [s : string] : any;
+}
 
 export type QcRequestConfig = {
   rawConfigs?: any;
@@ -78,22 +92,25 @@ export interface QcRequestActionCreators {
 
 // ================
 
-export interface QcResponseAction extends QcBasicAction {
+export interface QcResponseAction extends QcRequestAction {
   response: QcResponse;
   responseType : string;
+  responseTimestamp: QcTimestamp;
 
   actionCreator: ActionCreatorWithProps<{}, ModelSubActionCreatorRespond>;
   [s : string] : any;
 }
 
-export interface QcResponseErrorAction extends QcBasicAction {
+export interface QcResponseErrorAction extends QcRequestAction {
   error: QcResponseError;
+  errorTimestamp: QcTimestamp;
 
   actionCreator: ActionCreatorWithProps<{}, ModelSubActionCreatorRespondError>;
   [s : string] : any;
 }
-export interface QcCancelRequestAction extends QcBasicAction {
+export interface QcCancelRequestAction extends QcRequestAction {
   reason: QcCancelReason;
+  cancelTimestamp: QcTimestamp;
 
   actionCreator: ActionCreatorWithProps<{}, ModelSubActionCreatorCancel>;
   [s : string] : any;
@@ -152,7 +169,7 @@ export type ModelActionCreator<
   ...args: ArgumentTypes<RawActionCreator>
 ) => ReturnType<RawActionCreator> & {
   actionCreator: StartActionCreatorWithProps<ModelActionCreator<RawActionCreator>>;
-} & QcBasicAction;
+} & QcRequestAction;
 
 export type ResourceModelActions<
   QueryInfosLike extends { [ s : string] : { actionCreator: Function; } }
