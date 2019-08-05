@@ -60,7 +60,7 @@ export class MyStore implements MyQcStore001 {
     }
     this.state = this.cacher.reduce(this.getState(), action);
     this.epicMiddlewareCb(() => {})(action);
-    console.log('this.state :', this.state);
+    // console.log('this.state :', this.state);
 
     this.cb(action);
   }

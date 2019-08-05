@@ -1,6 +1,11 @@
 import {
   QcAction,
   ResourceMetadata,
+
+  RootReducer,
+  SliceReducer,
+  Merger,
+  BasicMerger,
 } from '~/common/interfaces';
 
 import {
@@ -16,11 +21,7 @@ import {
 import combineReducers from '~/redux/combineReducers';
 
 import {
-  RootReducer,
-  SliceReducer,
   ReducerSets,
-  Merger,
-  BasicMerger,
 } from './interfaces';
 
 import Querchy from '~/Querchy';
@@ -80,10 +81,10 @@ export default class Updater<
   }
 
   createResponseMerger = (actionType : string) : Merger<QcResponseAction> => {
-    return (state = {
-      metadataMap: {},
-      resourceMap: {},
-    }, action) => {
+    return (
+      state,
+      action,
+    ) => {
       const resourceId : string = (
         action.response
         && action.response.data
@@ -91,10 +92,12 @@ export default class Updater<
         && action.response.data.args.id
       ) || '1';
 
+      const { metadataMap } = state;
+
       if (action.type === actionType /*  && action.crudSubType === 'respond' */) {
         const metadata : ResourceMetadata = {
           lastRequest: {
-            ...(state.metadataMap[resourceId] && state.metadataMap[resourceId].lastRequest),
+            ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
             requestTimestamp: action.requestTimestamp,
             responseTimestamp: action.responseTimestamp,
           },
@@ -102,7 +105,7 @@ export default class Updater<
         return {
           ...state,
           metadataMap: {
-            ...state.metadataMap,
+            ...metadataMap,
             [resourceId]: metadata,
           },
           resourceMap: {
@@ -113,7 +116,7 @@ export default class Updater<
       }
       return state;
     };
-  };
+  }
 
   init() {
     const {
@@ -125,12 +128,23 @@ export default class Updater<
       const actions = model.actions!;
 
       const reducers : { [s : string] : SliceReducer } = {};
+      const reducerArray : SliceReducer[] = [];
       Object.keys(actions).forEach((actionKey) => {
         const { actionType } = actions[actionKey].creatorRefs.respond;
-        reducers[actionKey] = <BasicMerger>this.createResponseMerger(actionType);
-        this.allReducers[key] = reducers[actionKey];
+        const reducer : BasicMerger = <BasicMerger>this.createResponseMerger(actionType);
+        reducers[actionKey] = reducer;
+        reducerArray.push(reducer);
       });
       (<any>this.reducerSet[key]) = reducers;
+      this.allReducers[key] = (
+        state = {
+          metadataMap: {},
+          resourceMap: {},
+        },
+        action,
+      ) => {
+        return reducerArray.reduce((s, r) => r(s, action), state);
+      };
     });
     this.rootReducer = combineReducers(this.allReducers);
   }
