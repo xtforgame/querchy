@@ -12,6 +12,8 @@ import {
   ModelMap,
 } from '~/core/interfaces';
 
+export * from './update-cache-action-interfaces';
+
 export type ReducerSet<T> = {
   [P in keyof T] : SliceReducer;
 } & {

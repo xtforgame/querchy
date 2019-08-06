@@ -82,7 +82,10 @@ export default class Updater<
 
   createResponseMerger = (actionType : string) : Merger<QcResponseAction> => {
     return (
-      state,
+      state = {
+        metadataMap: {},
+        resourceMap: {},
+      },
       action,
     ) => {
       const resourceId : string = (
@@ -94,7 +97,7 @@ export default class Updater<
 
       const { metadataMap } = state;
 
-      if (action.type === actionType /*  && action.crudSubType === 'respond' */) {
+      if (action.type === actionType) { /* action.crudSubType === 'respond' */
         const metadata : ResourceMetadata = {
           lastRequest: {
             ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
@@ -119,9 +122,7 @@ export default class Updater<
   }
 
   init() {
-    const {
-      models,
-    } = this.querchy.querchyDefinition;
+    const { models } = this.querchy.querchyDefinition;
     Object.keys(models)
     .forEach((key) => {
       const model = models[key];

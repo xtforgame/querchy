@@ -15,13 +15,17 @@ import {
 export const createModelActionTypes = <
   CommonConfigType extends CommonConfig,
   ModelActions,
->(modelName : string, commonConfig : CommonConfigType, crudTypes: string[]) : ResourceModelActionTypes<ModelActions> => {
+>(
+  modelName : string,
+  commonConfig : CommonConfigType,
+  crudTypes: string[],
+) : ResourceModelActionTypes<ModelActions> => {
   const { queryPrefix = '' } = commonConfig;
   return <ResourceModelActionTypes<ModelActions>><any>crudTypes.reduce((actionTypes, crudType) => {
     return {
       ...actionTypes,
       [crudType]: commonConfig.getActionTypeName!(queryPrefix, `${modelName}_${crudType}`),
-    }
+    };
   }, {});
 };
 

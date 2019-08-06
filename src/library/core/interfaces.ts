@@ -51,7 +51,9 @@ export type ResourceModel<
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
   crudTypes?: string[];
-  actionTypes?: ResourceModelActionTypes<ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>>,
+  actionTypes?: ResourceModelActionTypes<
+    ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>
+  >,
   actions?: ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>,
 };
 

@@ -39,7 +39,7 @@ export interface QcBasicAction extends QcAction {
 
 // ==================
 
-export interface QcRequestAction extends QcAction {
+export interface QcRequestAction extends QcBasicAction {
   requestTimestamp: QcTimestamp;
   transferables: QcTransferables;
   [s : string] : any;
@@ -64,7 +64,7 @@ export interface QcResponse {
   config: QcRequestConfig;
 }
 
-export interface QcResponseError extends Error {
+export interface QcRespondError extends Error {
   config: QcRequestConfig;
   response?: QcResponse;
 }
@@ -78,7 +78,7 @@ export type SuccessActionCreator = (
 
 export type ErrorActionCreator = (
   error : any,
-) => QcResponseErrorAction;
+) => QcRespondErrorAction;
 
 export type CancelActionCreator = (
   reason : any,
@@ -101,13 +101,14 @@ export interface QcResponseAction extends QcRequestAction {
   [s : string] : any;
 }
 
-export interface QcResponseErrorAction extends QcRequestAction {
-  error: QcResponseError;
+export interface QcRespondErrorAction extends QcRequestAction {
+  error: QcRespondError;
   errorTimestamp: QcTimestamp;
 
   actionCreator: ActionCreatorWithProps<{}, ModelSubActionCreatorRespondError>;
   [s : string] : any;
 }
+
 export interface QcCancelRequestAction extends QcRequestAction {
   reason: QcCancelReason;
   cancelTimestamp: QcTimestamp;
@@ -124,7 +125,7 @@ export type ModelSubActionCreatorRespond = (
 
 export type ModelSubActionCreatorRespondError = (
   error: any, options?: ResourceModelActionsOptions,
-) => QcResponseErrorAction;
+) => QcRespondErrorAction;
 
 export type ModelSubActionCreatorCancel = (
   reason: any, options?: ResourceModelActionsOptions,
@@ -174,6 +175,8 @@ export type ModelActionCreator<
 export type ResourceModelActions<
   QueryInfosLike extends { [ s : string] : { actionCreator: Function; } }
 > = {
-  [P in keyof QueryInfosLike] : StartActionCreatorWithProps<ModelActionCreator<QueryInfosLike[P]['actionCreator']>>;
+  [P in keyof QueryInfosLike] : StartActionCreatorWithProps<
+    ModelActionCreator<QueryInfosLike[P]['actionCreator']>
+  >;
   // [s: string]: StartActionCreatorWithProps<{}>,
 };
