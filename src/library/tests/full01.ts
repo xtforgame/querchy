@@ -1,3 +1,4 @@
+import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import {
   QcAction,
   AnyQueryActionCreatorWithProps,
@@ -45,7 +46,7 @@ export class MyStore implements MyQcStore001 {
   }
 
   dispatch = (action : QcAction) => {
-    // console.log('action.type :', action.type);
+    console.log('action.type :', action.type);
     if (action.crudSubType === 'respond') {
       // console.log('action.response.data :', action.response.data);
     }
@@ -69,7 +70,10 @@ export class MyStore implements MyQcStore001 {
 }
 
 const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function) => {
-  const rootEpic = querchy.getRootEpic();
+  const querchyRootEpic = querchy.getRootEpic();
+  const cacherRootEpic = cacher.getRootEpic();
+
+  const rootEpic = combineEpics(querchyRootEpic, cacherRootEpic);
 
   const epicMiddleware = createEpicMiddleware001({
     dependencies: querchy.deps,

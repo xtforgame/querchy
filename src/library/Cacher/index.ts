@@ -1,5 +1,11 @@
+import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
+import { ObservableInput } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { toUnderscore } from '~/common/common-functions';
+
 import {
   QcAction,
+  QcState,
   ResourceMetadata,
 
   RootReducer,
@@ -9,6 +15,8 @@ import {
 } from '~/common/interfaces';
 
 import {
+
+  QcDependencies,
   CommonConfig,
   ModelMap,
   QueryCreatorMap,
@@ -150,6 +158,87 @@ export default class Updater<
       };
     });
     this.rootReducer = combineReducers(this.allReducers);
+  }
+
+  getEpicFromQueryCreatorByActionType(
+    actionType : string,
+  ) : Epic<
+    QcAction,
+    QcAction,
+    QcState,
+    QcDependencies<
+      CommonConfigType,
+      ModelMapType,
+      QueryCreatorMapType,
+      ExtraActionCreatorsType,
+      QuerchyDefinitionType,
+      ExtraDependencies
+    >
+  > {
+    return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
+    .pipe(
+      mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
+        return [{ type: 'XXX' }];
+      }),
+    );
+  }
+
+  getRootEpic() : Epic<
+    QcAction,
+    QcAction,
+    QcState,
+    QcDependencies<
+      CommonConfigType,
+      ModelMapType,
+      QueryCreatorMapType,
+      ExtraActionCreatorsType,
+      QuerchyDefinitionType,
+      ExtraDependencies
+    >
+  > {
+    const { queryCreators, models } = this.querchy.querchyDefinition;
+    return combineEpics(
+      ...Object.values(models)
+      .map<Epic<
+        QcAction,
+        QcAction,
+        QcState,
+        QcDependencies<
+          CommonConfigType,
+          ModelMapType,
+          QueryCreatorMapType,
+          ExtraActionCreatorsType,
+          QuerchyDefinitionType,
+          ExtraDependencies
+        >
+      >>((model) => {
+        const queryCreator = queryCreators[model.queryCreator!];
+        // console.log('model.queryCreator :', model.queryCreator);
+        return combineEpics(
+          ...Object.values(model.actions!)
+          .filter(a => a.creatorRefs)
+          .map<Epic<
+            QcAction,
+            QcAction,
+            QcState,
+            QcDependencies<
+              CommonConfigType,
+              ModelMapType,
+              QueryCreatorMapType,
+              ExtraActionCreatorsType,
+              QuerchyDefinitionType,
+              ExtraDependencies
+            >
+          >>(
+            (action) => {
+              return this.getEpicFromQueryCreatorByActionType(
+                action.creatorRefs.respond.actionType,
+              );
+            },
+          ),
+        );
+      }),
+    );
   }
 
   reduce(state: any, action: QcAction) : any {
