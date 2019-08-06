@@ -11,21 +11,23 @@ import {
   ResourceModelActionsOptions,
 } from '~/core/crud-sub-action-interfaces';
 
-export interface QcUpdateCache {
+export interface QcCacheChange {
 }
 
 export type UpdateCacheActionCreator = (
-  error : any,
+  cacheChange : QcCacheChange,
 ) => QcUpdateCacheAction;
 
 export interface QcUpdateCacheAction extends QcRequestAction {
-  error : QcUpdateCache;
-  errorTimestamp : QcTimestamp;
+  cacheChange : QcCacheChange;
+  updateCacheTimestamp : QcTimestamp;
 
-  actionCreator : ActionCreatorWithProps<{}, ModelSubActionCreatorUpdateCache>;
+  actionCreator : ModelActionCreatorUpdateCache & {
+    actionType: string;
+  };
   [s : string] : any;
 }
 
-export type ModelSubActionCreatorUpdateCache = (
-  error : any, options?: ResourceModelActionsOptions,
+export type ModelActionCreatorUpdateCache = (
+  cacheChange : QcCacheChange, options?: ResourceModelActionsOptions,
 ) => QcUpdateCacheAction;

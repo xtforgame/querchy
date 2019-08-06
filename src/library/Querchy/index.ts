@@ -118,18 +118,18 @@ export default class Querchy<
     this.actionCreatorSets.extra = this.querchyDefinition.extraActionCreators!;
     Object.keys(models)
     .forEach((key) => {
-      models[key].crudTypes = models[key].crudTypes || commonConfig.builtinCrudTypes;
+      models[key].crudNames = models[key].crudNames || commonConfig.builtinCrudTypes;
       Object.keys(models[key].queryInfos).forEach((key2) => {
-        if (!models[key].crudTypes!.includes(key2)) {
-          models[key].crudTypes!.push(key2);
+        if (!models[key].crudNames!.includes(key2)) {
+          models[key].crudNames!.push(key2);
         }
       });
       Object.keys(commonConfig.builtinQueryInfos).forEach((key2) => {
-        if (!models[key].crudTypes!.includes(key2)) {
-          models[key].crudTypes!.push(key2);
+        if (!models[key].crudNames!.includes(key2)) {
+          models[key].crudNames!.push(key2);
         }
       });
-      models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key].crudTypes!);
+      models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key].crudNames!);
       models[key].actions = createModelActionCreators(commonConfig, key, models[key]);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
       models[key].buildUrl = models[key].buildUrl || (

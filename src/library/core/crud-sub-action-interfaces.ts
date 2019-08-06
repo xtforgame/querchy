@@ -134,19 +134,19 @@ export type ModelSubActionCreatorCancel = (
 export type ActionCreatorRefs<
   StartActionCreatorType,
 > = {
-  start: ActionCreatorWithProps<StartActionCreatorType, StartActionCreatorType>,
-  respond: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespond>,
-  respondError: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespondError>,
-  cancel: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorCancel>,
+  start: ActionCreatorWithProps<StartActionCreatorType, StartActionCreatorType>;
+  respond: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespond>;
+  respondError: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespondError>;
+  cancel: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorCancel>;
 };
 
 export type ActionCreatorProps<
   StartActionCreatorType,
 > = {
-  actionType: string,
+  actionType: string;
   creatorRefs: ActionCreatorRefs<
     StartActionCreatorType
-  >,
+  >;
 };
 
 export type ActionCreatorWithProps<
@@ -178,5 +178,5 @@ export type ResourceModelActions<
   [P in keyof QueryInfosLike] : StartActionCreatorWithProps<
     ModelActionCreator<QueryInfosLike[P]['actionCreator']>
   >;
-  // [s: string]: StartActionCreatorWithProps<{}>,
+  // [s: string]: StartActionCreatorWithProps<{}>;
 };

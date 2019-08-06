@@ -30,6 +30,7 @@ import {
   ResourceModelActions,
   StartActionCreatorWithProps,
   QueryInfo,
+  ActionInfo,
 } from '~/index';
 
 export type RawActionCreatorCreate = (
@@ -65,6 +66,14 @@ export type RawActionCreatorDelete = (
   [s : string] : any;
 };
 
+export type RawActionCreatorUpdateCache = (
+  cacheChange: any, options?: ResourceModelActionsOptions,
+) => {
+  cacheChange: any;
+  options?: ResourceModelActionsOptions;
+  [s : string] : any;
+};
+
 export type QueryInfos = {
   create: QueryInfo<RawActionCreatorCreate>;
   read: QueryInfo<RawActionCreatorRead>;
@@ -74,9 +83,16 @@ export type QueryInfos = {
   [s : string]: QueryInfo<Function>;
 };
 
+export type ActionInfos = {
+  updateCache: ActionInfo<RawActionCreatorUpdateCache>;
+} & {
+  [s : string]: ActionInfo<Function>;
+};
+
 export interface CommonConfig001 extends CommonConfig {
   builtinCrudTypes : string[];
   builtinQueryInfos : QueryInfos;
+  builtinActionInfos : ActionInfos;
   defaultQueryRunner: SimpleQueryRunner;
   queryRunners: {
     customRunner: SimpleQueryRunner;
@@ -100,14 +116,23 @@ export type QueryInfosXxx<
   [s : string]: QueryInfo<Function>;
 };
 
+export type ActionInfosXxx<
+  CommonConfigType extends CommonConfig
+> = Partial<CommonConfigType['builtinActionInfos']> & {
+} & {
+  [s : string]: ActionInfo<Function>;
+};
+
 export type ResourceModelXxx<
   CommonConfigType extends CommonConfig
 > = {
   url: string;
+  crudNames?: string[];
   queryInfos: QueryInfosXxx<CommonConfigType>;
+  actionNames?: string[];
+  actionInfos: ActionInfosXxx<CommonConfigType>;
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
-  crudTypes?: string[];
   actionTypes?: ResourceModelActionTypes<ResourceModelActions<Required<QueryInfosXxx<CommonConfigType>>>>,
   actions?: ResourceModelActions<Required<QueryInfosXxx<CommonConfigType>>>,
 };

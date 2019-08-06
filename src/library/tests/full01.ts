@@ -147,6 +147,12 @@ export default () => {
             actionCreator: (resourceId, options?) => ({ resourceId, options }),
           },
         },
+        builtinActionNames: ['updateCache'],
+        builtinActionInfos: {
+          updateCache: {
+            actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
+          },
+        },
         defaultQueryRunner: new MyAxiosRunner001(),
         queryRunners: {
           customRunner: new MyAxiosRunner001(),
@@ -158,15 +164,18 @@ export default () => {
           url: 'https://httpbin.org/post',
           queryCreator: 'customPath',
           queryInfos: {},
+          actionInfos: {},
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
-          crudTypes: ['getCollection'],
+          crudNames: ['getCollection'],
           queryInfos: {
             getCollection: {
               actionCreator: (options?) => ({ options }),
             },
           },
+          actionNames: [],
+          actionInfos: {},
           queryCreator: 'customPath',
         },
       },

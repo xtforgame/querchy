@@ -23,10 +23,20 @@ export type QueryInfo<
   actionCreator: RawActionCreator;
 };
 
+export type ActionInfo<
+  RawActionCreator extends Function
+> = {
+  actionCreator: RawActionCreator;
+};
+
 export type CommonConfig = {
   builtinCrudTypes: string[];
   builtinQueryInfos : {
     [s : string]: QueryInfo<Function>;
+  };
+  builtinActionNames: string[];
+  builtinActionInfos : {
+    [s : string]: ActionInfo<Function>;
   };
   defaultQueryRunner : SimpleQueryRunner;
   queryRunners?: { [s : string] : SimpleQueryRunner };
@@ -45,12 +55,16 @@ export type ResourceModel<
   CommonConfigType extends CommonConfig
 > = {
   url: string;
+  crudNames?: string[];
   queryInfos: Partial<CommonConfigType['builtinQueryInfos']> & {
     [s : string]: QueryInfo<Function>;
   };
+  actionNames?: string[];
+  actionInfos: Partial<CommonConfigType['builtinActionInfos']> & {
+    [s : string]: ActionInfo<Function>;
+  };
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
-  crudTypes?: string[];
   actionTypes?: ResourceModelActionTypes<
     ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>
   >,

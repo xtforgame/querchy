@@ -18,10 +18,10 @@ export const createModelActionTypes = <
 >(
   modelName : string,
   commonConfig : CommonConfigType,
-  crudTypes: string[],
+  crudNames: string[],
 ) : ResourceModelActionTypes<ModelActions> => {
   const { queryPrefix = '' } = commonConfig;
-  return <ResourceModelActionTypes<ModelActions>><any>crudTypes.reduce((actionTypes, crudType) => {
+  return <ResourceModelActionTypes<ModelActions>><any>crudNames.reduce((actionTypes, crudType) => {
     return {
       ...actionTypes,
       [crudType]: commonConfig.getActionTypeName!(queryPrefix, `${modelName}_${crudType}`),
@@ -158,9 +158,9 @@ export const createModelActionCreators = <
 ) : ResourceModelActions<Required<ResourceModelType['queryInfos']>> => {
   const actionTypes : Required<ResourceModelType['actionTypes']> = <any>model.actionTypes!;
   const queryInfos = model.queryInfos!;
-  const crudTypes = model.crudTypes!;
+  const crudNames = model.crudNames!;
 
-  return crudTypes.reduce((actionCreators, crudType) => {
+  return crudNames.reduce((actionCreators, crudType) => {
     const queryInfo = queryInfos[crudType] || commonConfigType.builtinQueryInfos[crudType];
     const func = createModelCrudAction<
       CommonConfigType, ResourceModelType
