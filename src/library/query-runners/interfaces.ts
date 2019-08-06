@@ -17,7 +17,7 @@ import {
   ExtraActionCreators,
 
   QcBasicAction,
-  StartActionCreatorWithProps,
+  StartQueryActionCreatorWithProps,
 } from '~/core/interfaces';
 
 export interface Canceler {

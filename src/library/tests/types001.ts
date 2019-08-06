@@ -25,52 +25,54 @@ import {
   CrudType,
   CrudSubType,
 
-  ResourceModelActionTypes,
-  ResourceModelActionsOptions,
   ResourceModelActions,
-  StartActionCreatorWithProps,
+
+  ResourceModelActionTypes,
+  ResourceModelQueryActionOptions,
+  ResourceModelQueryActions,
+  StartQueryActionCreatorWithProps,
   QueryInfo,
   ActionInfo,
 } from '~/index';
 
 export type RawActionCreatorCreate = (
-  data: any, options?: ResourceModelActionsOptions,
+  data: any, options?: ResourceModelQueryActionOptions,
 ) => {
   data: any;
-  options?: ResourceModelActionsOptions;
+  options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
 
 export type RawActionCreatorRead = (
-  resourceId: any, options?: ResourceModelActionsOptions,
+  resourceId: any, options?: ResourceModelQueryActionOptions,
 ) => {
   resourceId: any;
-  options?: ResourceModelActionsOptions;
+  options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
 
 export type RawActionCreatorUpdate = (
-  resourceId: any, data: any, options?: ResourceModelActionsOptions,
+  resourceId: any, data: any, options?: ResourceModelQueryActionOptions,
 ) => {
   resourceId: any;
   data: any;
-  options?: ResourceModelActionsOptions;
+  options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
 
 export type RawActionCreatorDelete = (
-  resourceId: any, options?: ResourceModelActionsOptions,
+  resourceId: any, options?: ResourceModelQueryActionOptions,
 ) => {
   resourceId: any;
-  options?: ResourceModelActionsOptions;
+  options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
 
 export type RawActionCreatorUpdateCache = (
-  cacheChange: any, options?: ResourceModelActionsOptions,
+  cacheChange: any, options?: ResourceModelQueryActionOptions,
 ) => {
   cacheChange: any;
-  options?: ResourceModelActionsOptions;
+  options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
 
@@ -102,9 +104,9 @@ export interface CommonConfig001 extends CommonConfig {
 }
 
 export type RawActionCreatorGetCollection = (
-  options?: ResourceModelActionsOptions,
+  options?: ResourceModelQueryActionOptions,
 ) => {
-  options?: ResourceModelActionsOptions;
+  options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
 
@@ -133,8 +135,16 @@ export type ResourceModelXxx<
   actionInfos: ActionInfosXxx<CommonConfigType>;
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
-  actionTypes?: ResourceModelActionTypes<ResourceModelActions<Required<QueryInfosXxx<CommonConfigType>>>>,
-  actions?: ResourceModelActions<Required<QueryInfosXxx<CommonConfigType>>>,
+  actionTypes?: ResourceModelActionTypes<
+    ResourceModelQueryActions<Required<QueryInfosXxx<CommonConfigType>>>
+  > & ResourceModelActionTypes<
+    ResourceModelActions<Required<ActionInfosXxx<CommonConfigType>>>
+  >,
+  actions?: ResourceModelQueryActions<
+    Required<QueryInfosXxx<CommonConfigType>>
+  > & ResourceModelActions<
+    Required<ActionInfosXxx<CommonConfigType>>
+  >,
 };
 
 export type QcModelMap001 = {

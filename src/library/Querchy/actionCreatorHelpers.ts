@@ -1,32 +1,78 @@
 import {
+  ModelActionCreator,
+  ResourceModelActions,
+} from '~/common/interfaces';
+
+import {
   CrudType,
   CrudSubType,
 
   CommonConfig,
   ResourceModel,
   ResourceModelActionTypes,
-  ResourceModelActions,
+  ResourceModelQueryActions,
 
-  ActionCreatorProps,
-  ActionCreatorWithProps,
-  ModelActionCreator,
+  QueryActionCreatorProps,
+  QueryActionCreatorWithProps,
+  ModelQueryActionCreator,
 } from '~/core/interfaces';
 
 export const createModelActionTypes = <
   CommonConfigType extends CommonConfig,
-  ModelActions,
+  ResourceModelType extends ResourceModel<CommonConfigType>
 >(
   modelName : string,
   commonConfig : CommonConfigType,
-  crudNames: string[],
-) : ResourceModelActionTypes<ModelActions> => {
+  model: ResourceModelType,
+) : Required<ResourceModelType['actionTypes']> => {
   const { queryPrefix = '' } = commonConfig;
-  return <ResourceModelActionTypes<ModelActions>><any>crudNames.reduce((actionTypes, crudType) => {
-    return {
+  const crudNames = model.crudNames!;
+  const actionNames = model.actionNames!;
+  return <Required<ResourceModelType['actionTypes']>><any>actionNames.reduce(
+    (actionTypes, actionName) => ({
       ...actionTypes,
-      [crudType]: commonConfig.getActionTypeName!(queryPrefix, `${modelName}_${crudType}`),
-    };
-  }, {});
+      [actionName]: commonConfig.getActionTypeName!(queryPrefix, `${modelName}_${actionName}`),
+    }),
+    crudNames.reduce(
+      (actionTypes, crudType) => ({
+        ...actionTypes,
+        [crudType]: commonConfig.getActionTypeName!(queryPrefix, `${modelName}_${crudType}`),
+      }),
+      {},
+    ),
+  );
+};
+
+const createModelAction = <
+  CommonConfigType extends CommonConfig,
+  ResourceModelType extends ResourceModel<CommonConfigType>
+>(
+  modelName : string,
+  actionTypes : Required<ResourceModelType['actionTypes']>,
+  actionName: string,
+  start : Function,
+) : ModelActionCreator<Function> => {
+  const startFunc : ModelActionCreator<Function> = <any>Object.assign(
+    (...args : any[]) => {
+      const requestTimestamp = new Date().getTime();
+      const requestAction = {
+        ...start(...args),
+        type: actionTypes[actionName]!,
+        actionCreator: startFunc,
+        modelName,
+        actionTypes,
+        actionName,
+        transferables: {},
+      };
+      requestAction.transferables = {
+        requestTimestamp,
+        requestAction,
+      };
+      return requestAction;
+    },
+    { actionType: actionTypes[actionName] },
+  );
+  return startFunc;
 };
 
 const createModelCrudAction = <
@@ -37,18 +83,18 @@ const createModelCrudAction = <
   actionTypes : Required<ResourceModelType['actionTypes']>,
   crudType: CrudType,
   start : Function,
-) : ActionCreatorWithProps<
+) : QueryActionCreatorWithProps<
   Function, Function
 > => {
-  const actionCreatorProps : ActionCreatorProps<
+  const QueryActionCreatorProps : QueryActionCreatorProps<
     Function
   > = <any>{
     creatorRefs: {},
   };
 
-  const startFunc : ActionCreatorWithProps<
+  const startFunc : QueryActionCreatorWithProps<
     Function, Function
-  > = <any>Object.assign(
+  > = Object.assign(
     (...args : any[]) => {
       const requestTimestamp = new Date().getTime();
       const requestAction = {
@@ -68,14 +114,15 @@ const createModelCrudAction = <
       };
       return requestAction;
     },
-    actionCreatorProps,
+    QueryActionCreatorProps,
+    { actionType: actionTypes[crudType] },
   );
 
-  actionCreatorProps.creatorRefs.start = startFunc;
-  actionCreatorProps.creatorRefs.respond = Object.assign(
+  QueryActionCreatorProps.creatorRefs.start = startFunc;
+  QueryActionCreatorProps.creatorRefs.respond = Object.assign(
     (response, responseType, options?) => ({
       type: `${actionTypes[crudType]}_RESPOND`,
-      actionCreator: actionCreatorProps.creatorRefs.respond,
+      actionCreator: QueryActionCreatorProps.creatorRefs.respond,
       response,
       responseType,
       modelName,
@@ -94,13 +141,13 @@ const createModelCrudAction = <
       },
       options,
     }),
-    actionCreatorProps,
+    QueryActionCreatorProps,
     { actionType: `${actionTypes[crudType]}_RESPOND` },
   );
-  actionCreatorProps.creatorRefs.respondError = Object.assign(
+  QueryActionCreatorProps.creatorRefs.respondError = Object.assign(
     (error, options?) => ({
       type: `${actionTypes[crudType]}_ERROR`,
-      actionCreator: actionCreatorProps.creatorRefs.respondError,
+      actionCreator: QueryActionCreatorProps.creatorRefs.respondError,
       error,
       modelName,
       actionTypes,
@@ -118,13 +165,13 @@ const createModelCrudAction = <
       },
       options,
     }),
-    actionCreatorProps,
+    QueryActionCreatorProps,
     { actionType: `${actionTypes[crudType]}_ERROR` },
   );
-  actionCreatorProps.creatorRefs.cancel = Object.assign(
+  QueryActionCreatorProps.creatorRefs.cancel = Object.assign(
     (reason, options?) => ({
       type: `${actionTypes[crudType]}_CANCEL`,
-      actionCreator: actionCreatorProps.creatorRefs.cancel,
+      actionCreator: QueryActionCreatorProps.creatorRefs.cancel,
       reason,
       modelName,
       actionTypes,
@@ -142,7 +189,7 @@ const createModelCrudAction = <
       },
       options,
     }),
-    actionCreatorProps,
+    QueryActionCreatorProps,
     { actionType: `${actionTypes[crudType]}_CANCEL` },
   );
   return startFunc;
@@ -155,21 +202,45 @@ export const createModelActionCreators = <
   commonConfigType: CommonConfigType,
   modelName : string,
   model: ResourceModelType,
-) : ResourceModelActions<Required<ResourceModelType['queryInfos']>> => {
+) : ResourceModelQueryActions<
+  Required<ResourceModelType['queryInfos']>
+> & ResourceModelActions<
+  Required<ResourceModelType['actionInfos']>
+> => {
   const actionTypes : Required<ResourceModelType['actionTypes']> = <any>model.actionTypes!;
   const queryInfos = model.queryInfos!;
   const crudNames = model.crudNames!;
 
-  return crudNames.reduce((actionCreators, crudType) => {
-    const queryInfo = queryInfos[crudType] || commonConfigType.builtinQueryInfos[crudType];
-    const func = createModelCrudAction<
-      CommonConfigType, ResourceModelType
-    >(
-      modelName, actionTypes, crudType, queryInfo.actionCreator,
-    );
-    return {
-      ...actionCreators,
-      [crudType]: func,
-    };
-  }, <any>{});
+  const actionInfos = model.actionInfos!;
+  const actionNames = model.actionNames!;
+
+  return actionNames.reduce(
+    (actionCreators, actionName) => {
+      const actionInfo = actionInfos[actionName] || commonConfigType.builtinActionInfos[actionName];
+      const func = createModelAction<
+        CommonConfigType, ResourceModelType
+      >(
+        modelName, actionTypes, actionName, actionInfo.actionCreator,
+      );
+      return {
+        ...actionCreators,
+        [actionName]: func,
+      };
+    },
+    <any>crudNames.reduce(
+      (actionCreators, crudType) => {
+        const queryInfo = queryInfos[crudType] || commonConfigType.builtinQueryInfos[crudType];
+        const func = createModelCrudAction<
+          CommonConfigType, ResourceModelType
+        >(
+          modelName, actionTypes, crudType, queryInfo.actionCreator,
+        );
+        return {
+          ...actionCreators,
+          [crudType]: func,
+        };
+      },
+      <any>{},
+    ),
+  );
 };

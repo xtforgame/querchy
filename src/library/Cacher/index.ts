@@ -131,10 +131,12 @@ export default class Updater<
       const reducers : { [s : string] : SliceReducer } = {};
       const reducerArray : SliceReducer[] = [];
       Object.keys(actions).forEach((actionKey) => {
-        const { actionType } = actions[actionKey].creatorRefs.respond;
-        const reducer : BasicMerger = <BasicMerger>this.createResponseMerger(actionType);
-        reducers[actionKey] = reducer;
-        reducerArray.push(reducer);
+        if (actions[actionKey].creatorRefs) {
+          const { actionType } = actions[actionKey].creatorRefs.respond;
+          const reducer : BasicMerger = <BasicMerger>this.createResponseMerger(actionType);
+          reducers[actionKey] = reducer;
+          reducerArray.push(reducer);
+        }
       });
       (<any>this.reducerSet[key]) = reducers;
       this.allReducers[key] = (

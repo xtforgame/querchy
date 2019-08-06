@@ -20,7 +20,7 @@ import {
   QuerchyDefinition,
   QcDependencies,
   INIT_FUNC,
-  ModelActionCreatorSet,
+  ModelQueryActionCreatorSet,
   ActionCreatorSets,
 } from '~/core/interfaces';
 
@@ -63,7 +63,7 @@ export default class Querchy<
   actionCreatorSets: ActionCreatorSets<
     CommonConfigType,
     ModelMapType,
-    ModelActionCreatorSet<
+    ModelQueryActionCreatorSet<
       CommonConfigType, {}, ExtraActionCreatorsType
     >
   >;
@@ -129,7 +129,18 @@ export default class Querchy<
           models[key].crudNames!.push(key2);
         }
       });
-      models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key].crudNames!);
+      models[key].actionNames = models[key].actionNames || commonConfig.builtinActionNames;
+      Object.keys(models[key].actionInfos).forEach((key2) => {
+        if (!models[key].actionNames!.includes(key2)) {
+          models[key].actionNames!.push(key2);
+        }
+      });
+      Object.keys(commonConfig.builtinActionInfos).forEach((key2) => {
+        if (!models[key].actionNames!.includes(key2)) {
+          models[key].actionNames!.push(key2);
+        }
+      });
+      models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key]);
       models[key].actions = createModelActionCreators(commonConfig, key, models[key]);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
       models[key].buildUrl = models[key].buildUrl || (
@@ -186,7 +197,7 @@ export default class Querchy<
     );
   }
 
-  getAllEpics() : Epic<
+  getRootEpic() : Epic<
     QcAction,
     QcAction,
     QcState,

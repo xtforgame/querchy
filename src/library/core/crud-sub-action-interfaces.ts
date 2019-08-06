@@ -16,7 +16,7 @@ export type QcTransferables = {
   [s : string] : any;
 };
 
-export type ResourceModelActionsOptions = {
+export type ResourceModelQueryActionOptions = {
   query?: any;
   headers?: { [s : string] : string };
   transferables?: QcTransferables;
@@ -97,7 +97,7 @@ export interface QcResponseAction extends QcRequestAction {
   responseType : string;
   responseTimestamp: QcTimestamp;
 
-  actionCreator: ActionCreatorWithProps<{}, ModelSubActionCreatorRespond>;
+  actionCreator: QueryActionCreatorWithProps<{}, ModelSubActionCreatorRespond>;
   [s : string] : any;
 }
 
@@ -105,7 +105,7 @@ export interface QcRespondErrorAction extends QcRequestAction {
   error: QcRespondError;
   errorTimestamp: QcTimestamp;
 
-  actionCreator: ActionCreatorWithProps<{}, ModelSubActionCreatorRespondError>;
+  actionCreator: QueryActionCreatorWithProps<{}, ModelSubActionCreatorRespondError>;
   [s : string] : any;
 }
 
@@ -113,34 +113,34 @@ export interface QcCancelRequestAction extends QcRequestAction {
   reason: QcCancelReason;
   cancelTimestamp: QcTimestamp;
 
-  actionCreator: ActionCreatorWithProps<{}, ModelSubActionCreatorCancel>;
+  actionCreator: QueryActionCreatorWithProps<{}, ModelSubActionCreatorCancel>;
   [s : string] : any;
 }
 
 // ====================
 
 export type ModelSubActionCreatorRespond = (
-  response: any, responseType: string, options?: ResourceModelActionsOptions,
+  response: any, responseType: string, options?: ResourceModelQueryActionOptions,
 ) => QcResponseAction;
 
 export type ModelSubActionCreatorRespondError = (
-  error: any, options?: ResourceModelActionsOptions,
+  error: any, options?: ResourceModelQueryActionOptions,
 ) => QcRespondErrorAction;
 
 export type ModelSubActionCreatorCancel = (
-  reason: any, options?: ResourceModelActionsOptions,
+  reason: any, options?: ResourceModelQueryActionOptions,
 ) => QcCancelRequestAction;
 
 export type ActionCreatorRefs<
   StartActionCreatorType,
 > = {
-  start: ActionCreatorWithProps<StartActionCreatorType, StartActionCreatorType>;
-  respond: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespond>;
-  respondError: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespondError>;
-  cancel: ActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorCancel>;
+  start: QueryActionCreatorWithProps<StartActionCreatorType, StartActionCreatorType>;
+  respond: QueryActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespond>;
+  respondError: QueryActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorRespondError>;
+  cancel: QueryActionCreatorWithProps<StartActionCreatorType, ModelSubActionCreatorCancel>;
 };
 
-export type ActionCreatorProps<
+export type QueryActionCreatorProps<
   StartActionCreatorType,
 > = {
   actionType: string;
@@ -149,34 +149,34 @@ export type ActionCreatorProps<
   >;
 };
 
-export type ActionCreatorWithProps<
+export type QueryActionCreatorWithProps<
   StartActionCreatorType,
   ActionCreatorType,
-> = ActionCreatorType & ActionCreatorProps<
+> = ActionCreatorType & QueryActionCreatorProps<
   StartActionCreatorType
 >;
 
-export type StartActionCreatorWithProps<
+export type StartQueryActionCreatorWithProps<
   ActionCreatorType,
-> = ActionCreatorWithProps<ActionCreatorType, ActionCreatorType>;
+> = QueryActionCreatorWithProps<ActionCreatorType, ActionCreatorType>;
 
-export type AnyActionCreatorWithProps = StartActionCreatorWithProps<{}>;
+export type AnyQueryActionCreatorWithProps = StartQueryActionCreatorWithProps<{}>;
 
 // =========================================================================
 
-export type ModelActionCreator<
+export type ModelQueryActionCreator<
   RawActionCreator extends Function
 > = (
   ...args: ArgumentTypes<RawActionCreator>
 ) => ReturnType<RawActionCreator> & {
-  actionCreator: StartActionCreatorWithProps<ModelActionCreator<RawActionCreator>>;
+  actionCreator: StartQueryActionCreatorWithProps<ModelQueryActionCreator<RawActionCreator>>;
 } & QcRequestAction;
 
-export type ResourceModelActions<
+export type ResourceModelQueryActions<
   QueryInfosLike extends { [ s : string] : { actionCreator: Function; } }
 > = {
-  [P in keyof QueryInfosLike] : StartActionCreatorWithProps<
-    ModelActionCreator<QueryInfosLike[P]['actionCreator']>
+  [P in keyof QueryInfosLike] : StartQueryActionCreatorWithProps<
+    ModelQueryActionCreator<QueryInfosLike[P]['actionCreator']>
   >;
-  // [s: string]: StartActionCreatorWithProps<{}>;
+  // [s: string]: StartQueryActionCreatorWithProps<{}>;
 };

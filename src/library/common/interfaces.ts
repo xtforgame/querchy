@@ -1,3 +1,8 @@
+import {
+  ArgumentTypes,
+  ReturnType,
+} from '~/utils/helper-functions';
+
 export type QcTimestamp = number;
 
 export type QcAction = {
@@ -56,3 +61,22 @@ export type RootReducer = (state: any, action: QcAction) => any;
 export type SliceReducer = BasicMerger;
 
 // ==========
+
+export type ModelActionCreator<
+  RawActionCreator extends Function
+> = ((
+  ...args: ArgumentTypes<RawActionCreator>
+) => ReturnType<RawActionCreator> & {
+  actionCreator: ModelActionCreator<RawActionCreator>;
+} & {
+  actionType: string;
+}) & {
+  actionType: string;
+};
+
+export type ResourceModelActions<
+  ActionInfosLike extends { [ s : string] : { actionCreator: Function; } }
+> = {
+  [P in keyof ActionInfosLike] : ModelActionCreator<ActionInfosLike[P]['actionCreator']>;
+  // [s: string]: StartQueryActionCreatorWithProps<{}>;
+};

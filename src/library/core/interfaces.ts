@@ -2,12 +2,13 @@ import {
   RunnerType,
   QcAction,
   QcActionCreator,
+  ResourceModelActions,
 } from '~/common/interfaces';
 
 import {
   QcBasicAction,
   QcRequestConfig,
-  ResourceModelActions,
+  ResourceModelQueryActions,
 } from './crud-sub-action-interfaces';
 
 export * from './crud-sub-action-interfaces';
@@ -66,9 +67,15 @@ export type ResourceModel<
   buildUrl?: (action: QcBasicAction) => string;
   queryCreator?: string;
   actionTypes?: ResourceModelActionTypes<
-    ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>
+    ResourceModelQueryActions<Required<CommonConfigType['builtinQueryInfos']>>
+  > & ResourceModelActionTypes<
+    ResourceModelQueryActions<Required<CommonConfigType['builtinActionInfos']>>
   >,
-  actions?: ResourceModelActions<Required<CommonConfigType['builtinQueryInfos']>>,
+  actions?: ResourceModelQueryActions<
+    Required<CommonConfigType['builtinQueryInfos']>
+  > & ResourceModelActions<
+    Required<CommonConfigType['builtinActionInfos']>
+  >,
 };
 
 export type ModelMap<
@@ -157,7 +164,7 @@ export interface ExtraActionCreators<
 
 // ==========
 
-export type ModelActionCreatorSet<
+export type ModelQueryActionCreatorSet<
   CommonConfigType extends CommonConfig,
   T extends ModelMap<CommonConfigType>,
   ExtraActionCreatorsType
@@ -173,6 +180,6 @@ export type ActionCreatorSets<
   CommonConfigType extends CommonConfig,
   T extends ModelMap<CommonConfigType>,
   ExtraActionCreatorSetsType
-> = ModelActionCreatorSet<CommonConfigType, T, {}> & {
+> = ModelQueryActionCreatorSet<CommonConfigType, T, {}> & {
   extra : ExtraActionCreatorSetsType;
 };

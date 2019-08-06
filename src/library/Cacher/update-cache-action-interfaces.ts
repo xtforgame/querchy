@@ -7,8 +7,8 @@ import {
 
 import {
   QcRequestAction,
-  ActionCreatorWithProps,
-  ResourceModelActionsOptions,
+  QueryActionCreatorWithProps,
+  ResourceModelQueryActionOptions,
 } from '~/core/crud-sub-action-interfaces';
 
 export interface QcCacheChange {
@@ -22,12 +22,12 @@ export interface QcUpdateCacheAction extends QcRequestAction {
   cacheChange : QcCacheChange;
   updateCacheTimestamp : QcTimestamp;
 
-  actionCreator : ModelActionCreatorUpdateCache & {
+  actionCreator : ModelQueryActionCreatorUpdateCache & {
     actionType: string;
   };
   [s : string] : any;
 }
 
-export type ModelActionCreatorUpdateCache = (
-  cacheChange : QcCacheChange, options?: ResourceModelActionsOptions,
+export type ModelQueryActionCreatorUpdateCache = (
+  cacheChange : QcCacheChange, options?: ResourceModelQueryActionOptions,
 ) => QcUpdateCacheAction;

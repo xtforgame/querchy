@@ -1,6 +1,6 @@
 import {
   QcAction,
-  AnyActionCreatorWithProps,
+  AnyQueryActionCreatorWithProps,
 } from '~/index';
 
 import {
@@ -69,13 +69,13 @@ export class MyStore implements MyQcStore001 {
 }
 
 const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function) => {
-  const rootEpic = querchy.getAllEpics();
+  const rootEpic = querchy.getRootEpic();
 
   const epicMiddleware = createEpicMiddleware001({
     dependencies: querchy.deps,
   });
   const cb = (action : QcAction) => {
-    const actionCreator : AnyActionCreatorWithProps = action.actionCreator;
+    const actionCreator : AnyQueryActionCreatorWithProps = action.actionCreator;
     if (actionCreator) {
       const {
         respond,
