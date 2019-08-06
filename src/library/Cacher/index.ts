@@ -1,6 +1,6 @@
 import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { mergeMap, filter } from 'rxjs/operators';
 import { toUnderscore } from '~/common/common-functions';
 
 import {
@@ -160,7 +160,7 @@ export default class Updater<
     this.rootReducer = combineReducers(this.allReducers);
   }
 
-  getEpicFromQueryCreatorByActionType(
+  getEpicByActionType(
     actionType : string,
   ) : Epic<
     QcAction,
@@ -175,8 +175,14 @@ export default class Updater<
       ExtraDependencies
     >
   > {
-    return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
-    .pipe(
+    return (action$, store$, dependencies, ...args) => action$.pipe(
+      filter<QcAction>((action) => {
+        // console.log('action :', action);
+        if (action.type !== actionType) {
+          return false;
+        }
+        return true;
+      }),
       mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
         return [{ type: 'XXX' }];
       }),
@@ -196,7 +202,7 @@ export default class Updater<
       ExtraDependencies
     >
   > {
-    const { queryCreators, models } = this.querchy.querchyDefinition;
+    const { models } = this.querchy.querchyDefinition;
     return combineEpics(
       ...Object.values(models)
       .map<Epic<
@@ -212,8 +218,6 @@ export default class Updater<
           ExtraDependencies
         >
       >>((model) => {
-        const queryCreator = queryCreators[model.queryCreator!];
-        // console.log('model.queryCreator :', model.queryCreator);
         return combineEpics(
           ...Object.values(model.actions!)
           .filter(a => a.creatorRefs)
@@ -231,7 +235,7 @@ export default class Updater<
             >
           >>(
             (action) => {
-              return this.getEpicFromQueryCreatorByActionType(
+              return this.getEpicByActionType(
                 action.creatorRefs.respond.actionType,
               );
             },
