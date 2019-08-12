@@ -136,27 +136,6 @@ export default () => {
   return new Promise((resolve) => {
     const querchy = new MyQuerchy001({
       commonConfig: {
-        builtinCrudNames: ['create', 'read', 'update', 'delete'],
-        builtinQueryInfos: {
-          create: {
-            actionCreator: (data, options?) => ({ data, options }),
-          },
-          read: {
-            actionCreator: (resourceId, options?) => ({ resourceId, options }),
-          },
-          update: {
-            actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
-          },
-          delete: {
-            actionCreator: (resourceId, options?) => ({ resourceId, options }),
-          },
-        },
-        builtinActionNames: ['updateCache'],
-        builtinActionInfos: {
-          updateCache: {
-            actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
-          },
-        },
         defaultQueryRunner: new MyAxiosRunner001(),
         queryRunners: {
           customRunner: new MyAxiosRunner001(),
@@ -166,20 +145,55 @@ export default () => {
       models: {
         httpBinRes: {
           url: 'https://httpbin.org/post',
+          crudNames: ['create', 'read', 'update', 'delete'],
           queryCreator: 'customPath',
-          queryInfos: {},
-          actionInfos: {},
+          queryInfos: {
+            create: {
+              actionCreator: (data, options?) => ({ data, options }),
+            },
+            read: {
+              actionCreator: (resourceId, options?) => ({ resourceId, options }),
+            },
+            update: {
+              actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
+            },
+            delete: {
+              actionCreator: (resourceId, options?) => ({ resourceId, options }),
+            },
+          },
+          actionNames: ['updateCache'],
+          actionInfos: {
+            updateCache: {
+              actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
+            },
+          },
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
-          crudNames: ['getCollection'],
+          crudNames: ['create', 'read', 'update', 'delete', 'getCollection'],
           queryInfos: {
+            create: {
+              actionCreator: (data, options?) => ({ data, options }),
+            },
+            read: {
+              actionCreator: (resourceId, options?) => ({ resourceId, options }),
+            },
+            update: {
+              actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
+            },
+            delete: {
+              actionCreator: (resourceId, options?) => ({ resourceId, options }),
+            },
             getCollection: {
               actionCreator: (options?) => ({ options }),
             },
           },
-          actionNames: [],
-          actionInfos: {},
+          actionNames: ['updateCache'],
+          actionInfos: {
+            updateCache: {
+              actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
+            },
+          },
           queryCreator: 'customPath',
         },
       },

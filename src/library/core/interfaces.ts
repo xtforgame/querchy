@@ -9,6 +9,7 @@ import {
   QcBasicAction,
   QcRequestConfig,
   ResourceModelQueryActions,
+  StartQueryActionCreatorWithProps,
 } from './crud-sub-action-interfaces';
 
 export * from './crud-sub-action-interfaces';
@@ -31,14 +32,6 @@ export type ActionInfo<
 };
 
 export type CommonConfig = {
-  builtinCrudNames: string[];
-  builtinQueryInfos: {
-    [s : string]: QueryInfo<Function>;
-  };
-  builtinActionNames: string[];
-  builtinActionInfos: {
-    [s : string]: ActionInfo<Function>;
-  };
   defaultQueryRunner: SimpleQueryRunner;
   queryRunners?: { [s : string] : SimpleQueryRunner };
   queryPrefix?: string;
@@ -57,26 +50,18 @@ export type ResourceModel<
 > = {
   url: string;
   crudNames?: string[];
-  queryInfos: Partial<CommonConfigType['builtinQueryInfos']> & {
+  queryInfos: {
     [s : string]: QueryInfo<Function>;
   };
   actionNames?: string[];
-  actionInfos: Partial<CommonConfigType['builtinActionInfos']> & {
+  actionInfos: {
     [s : string]: ActionInfo<Function>;
   };
   buildUrl?: (action: QcBasicAction) => string;
   parseResponse?: (action: QcBasicAction) => {};
   queryCreator?: string;
-  actionTypes?: ResourceModelActionTypes<
-    ResourceModelQueryActions<Required<CommonConfigType['builtinQueryInfos']>>
-  > & ResourceModelActionTypes<
-    ResourceModelQueryActions<Required<CommonConfigType['builtinActionInfos']>>
-  >,
-  actions?: ResourceModelQueryActions<
-    Required<CommonConfigType['builtinQueryInfos']>
-  > & ResourceModelActions<
-    Required<CommonConfigType['builtinActionInfos']>
-  >,
+  actionTypes?: {};
+  actions?: {},
 };
 
 export type ModelMap<

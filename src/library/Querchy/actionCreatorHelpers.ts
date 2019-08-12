@@ -216,7 +216,7 @@ export const createModelActionCreators = <
 
   return actionNames.reduce(
     (actionCreators, actionName) => {
-      const actionInfo = actionInfos[actionName] || commonConfigType.builtinActionInfos[actionName];
+      const actionInfo = actionInfos[actionName] || [];
       const func = createModelAction<
         CommonConfigType, ResourceModelType
       >(
@@ -229,7 +229,7 @@ export const createModelActionCreators = <
     },
     <any>crudNames.reduce(
       (actionCreators, crudType) => {
-        const queryInfo = queryInfos[crudType] || commonConfigType.builtinQueryInfos[crudType];
+        const queryInfo = queryInfos[crudType] || [];
         const func = createModelCrudAction<
           CommonConfigType, ResourceModelType
         >(
