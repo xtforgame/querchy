@@ -60,7 +60,7 @@ export type RootReducer = (state: any, action: QcAction) => any;
 
 export type SliceReducer = BasicMerger;
 
-// ==========
+// ========================================
 
 export type ModelActionCreator<
   RawActionCreator extends Function

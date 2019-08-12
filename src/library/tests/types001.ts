@@ -134,6 +134,7 @@ export type ResourceModelXxx<
   actionNames?: string[];
   actionInfos: ActionInfosXxx<CommonConfigType>;
   buildUrl?: (action: QcBasicAction) => string;
+  parseResponse?: (action: QcBasicAction) => {};
   queryCreator?: string;
   actionTypes?: ResourceModelActionTypes<
     ResourceModelQueryActions<Required<QueryInfosXxx<CommonConfigType>>>

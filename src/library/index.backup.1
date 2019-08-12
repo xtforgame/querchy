@@ -23,7 +23,7 @@ export default function echo(data : any, err : any) {
     ) => action$.ofType('FIRST')
     .pipe(
       mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        return runner.handle(action, {
+        return runner.handleQuery(action, {
           action$, store$, dependencies, args,
         });
       }),

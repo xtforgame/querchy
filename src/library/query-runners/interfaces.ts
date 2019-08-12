@@ -108,7 +108,7 @@ export type QueryRunner<
   ExtraDependencies = any,
 > = {
   type: RunnerType;
-  handle: RunnerRun<
+  handleQuery: RunnerRun<
     StateType,
     CommonConfigType,
     ModelMapType,

@@ -73,7 +73,7 @@ export default class AxiosRunner<
     this.axiosObservable = AxiosObservable<any>(a || axios);
   }
 
-  handle : RunnerRun<
+  handleQuery : RunnerRun<
     StateType,
     CommonConfigType,
     ModelMapType,

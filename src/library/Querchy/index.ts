@@ -167,7 +167,7 @@ export default class Querchy<
     });
   }
 
-  getEpicFromQueryCreatorByActionType(
+  getHandleQueryEpicFromQueryCreatorByActionType(
     actionType : string,
     queryCreator: QueryCreatorDefinition<
       CommonConfigType,
@@ -190,7 +190,7 @@ export default class Querchy<
     return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
     .pipe(
       mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        return runner.handle(action, queryCreator, {
+        return runner.handleQuery(action, queryCreator, {
           action$, store$, dependencies, args,
         });
       }),
@@ -243,11 +243,9 @@ export default class Querchy<
               ExtraDependencies
             >
           >>(
-            (actionType) => {
-              return this.getEpicFromQueryCreatorByActionType(
-                actionType!, queryCreator!,
-              );
-            },
+            actionType => this.getHandleQueryEpicFromQueryCreatorByActionType(
+              actionType!, queryCreator!,
+            ),
           ),
         );
       }),

@@ -15,7 +15,7 @@ export * from './crud-sub-action-interfaces';
 
 export type SimpleQueryRunner = {
   type: RunnerType;
-  handle: Function;
+  handleQuery: Function;
 };
 
 export type QueryInfo<
@@ -32,18 +32,18 @@ export type ActionInfo<
 
 export type CommonConfig = {
   builtinCrudTypes: string[];
-  builtinQueryInfos : {
+  builtinQueryInfos: {
     [s : string]: QueryInfo<Function>;
   };
   builtinActionNames: string[];
-  builtinActionInfos : {
+  builtinActionInfos: {
     [s : string]: ActionInfo<Function>;
   };
-  defaultQueryRunner : SimpleQueryRunner;
+  defaultQueryRunner: SimpleQueryRunner;
   queryRunners?: { [s : string] : SimpleQueryRunner };
   queryPrefix?: string;
   getActionTypeName?: (queryPrefix: string, queryName: string) => string;
-  [s : string] : any;
+  [s : string]: any;
 };
 
 // ====================
@@ -65,6 +65,7 @@ export type ResourceModel<
     [s : string]: ActionInfo<Function>;
   };
   buildUrl?: (action: QcBasicAction) => string;
+  parseResponse?: (action: QcBasicAction) => {};
   queryCreator?: string;
   actionTypes?: ResourceModelActionTypes<
     ResourceModelQueryActions<Required<CommonConfigType['builtinQueryInfos']>>
