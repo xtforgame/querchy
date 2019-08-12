@@ -175,19 +175,19 @@ const resMerger : Merger<QcBasicAction> = (
 const basicQueryInfos : QueryInfos001 = {
   create: {
     actionCreator: (data, options?) => ({ data, options }),
-    merger: resMerger,
+    mergerCreator: resMerger,
   },
   read: {
     actionCreator: (resourceId, options?) => ({ resourceId, options }),
-    merger: resMerger,
+    mergerCreator: resMerger,
   },
   update: {
     actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
-    merger: resMerger,
+    mergerCreator: resMerger,
   },
   delete: {
     actionCreator: (resourceId, options?) => ({ resourceId, options }),
-    merger: resMerger,
+    mergerCreator: resMerger,
   },
 };
 

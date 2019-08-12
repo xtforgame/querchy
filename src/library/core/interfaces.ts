@@ -24,14 +24,14 @@ export type QueryInfo<
   RawActionCreator extends Function
 > = {
   actionCreator: RawActionCreator;
-  merger?: Merger<QcBasicAction>,
+  mergerCreator?: Merger<QcBasicAction>,
 };
 
 export type ActionInfo<
   RawActionCreator extends Function
 > = {
   actionCreator: RawActionCreator;
-  merger?: Merger<QcBasicAction>,
+  mergerCreator?: Merger<QcBasicAction>,
 };
 
 export type CommonConfig = {
@@ -63,8 +63,8 @@ export type ResourceModel<
   buildUrl?: (action: QcBasicAction) => string;
   parseResponse?: (action: QcBasicAction) => {};
   queryCreator?: string;
-  actionTypes?: {};
-  actions?: {},
+  actionTypes?: { [s : string]: string; };
+  actions?: { [s: string]: StartQueryActionCreatorWithProps<{}>; },
 };
 
 export type ModelMap<

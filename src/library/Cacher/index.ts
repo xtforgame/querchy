@@ -115,11 +115,11 @@ export default class Updater<
       const queryInfos = model.queryInfos! || {};
 
       Object.keys(queryInfos).forEach((actionKey) => {
-        if (queryInfos[actionKey] && queryInfos[actionKey].merger) {
+        if (queryInfos[actionKey] && queryInfos[actionKey].mergerCreator) {
           const { actionType } = actions[actionKey].creatorRefs.respond;
           const reducer : BasicMerger = <BasicMerger>this.createResponseMerger(
             actionType,
-            queryInfos[actionKey].merger!,
+            queryInfos[actionKey].mergerCreator!,
           );
           reducers[actionKey] = reducer;
           reducerArray.push(reducer);
