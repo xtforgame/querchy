@@ -118,11 +118,7 @@ export type ActionInfosXxx = {
   [s : string]: ActionInfo<Function>;
 };
 
-export type QueryInfosXxx = {
-  create: QueryInfo<RawActionCreatorCreate>;
-  read: QueryInfo<RawActionCreatorRead>;
-  update: QueryInfo<RawActionCreatorUpdate>;
-  delete: QueryInfo<RawActionCreatorDelete>;
+export type QueryInfosXxx = QueryInfos001 & {
   getCollection: QueryInfo<RawActionCreatorGetCollection>;
 } & {
   [s : string]: QueryInfo<Function>;

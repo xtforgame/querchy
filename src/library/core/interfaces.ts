@@ -3,6 +3,7 @@ import {
   QcAction,
   QcActionCreator,
   ResourceModelActions,
+  Merger,
 } from '~/common/interfaces';
 
 import {
@@ -23,12 +24,14 @@ export type QueryInfo<
   RawActionCreator extends Function
 > = {
   actionCreator: RawActionCreator;
+  merger?: Merger<QcBasicAction>,
 };
 
 export type ActionInfo<
   RawActionCreator extends Function
 > = {
   actionCreator: RawActionCreator;
+  merger?: Merger<QcBasicAction>,
 };
 
 export type CommonConfig = {

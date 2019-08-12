@@ -15,7 +15,7 @@ import {
 } from '~/common/interfaces';
 
 import {
-
+  QcBasicAction,
   QcDependencies,
   CommonConfig,
   ModelMap,
@@ -88,7 +88,7 @@ export default class Updater<
     this.init();
   }
 
-  createResponseMerger = (actionType : string) : Merger<QcResponseAction> => {
+  createResponseMerger = (actionType : string, merger : Merger<QcBasicAction>) : Merger<QcResponseAction> => {
     return (
       state = {
         metadataMap: {},
@@ -96,34 +96,8 @@ export default class Updater<
       },
       action,
     ) => {
-      const resourceId : string = (
-        action.response
-        && action.response.data
-        && action.response.data.args
-        && action.response.data.args.id
-      ) || '1';
-
-      const { metadataMap } = state;
-
       if (action.type === actionType) { /* action.crudSubType === 'respond' */
-        const metadata : ResourceMetadata = {
-          lastRequest: {
-            ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
-            requestTimestamp: action.requestTimestamp,
-            responseTimestamp: action.responseTimestamp,
-          },
-        };
-        return {
-          ...state,
-          metadataMap: {
-            ...metadataMap,
-            [resourceId]: metadata,
-          },
-          resourceMap: {
-            ...state.resourceMap,
-            [resourceId]: action.response.data,
-          },
-        };
+        return merger(state, action);
       }
       return state;
     };
@@ -133,19 +107,25 @@ export default class Updater<
     const { models } = this.querchy.querchyDefinition;
     Object.keys(models)
     .forEach((key) => {
-      const model = models[key];
-      const actions = model.actions!;
-
       const reducers : { [s : string] : SliceReducer } = {};
       const reducerArray : SliceReducer[] = [];
-      Object.keys(actions).forEach((actionKey) => {
-        if (actions[actionKey].creatorRefs) {
+
+      const model = models[key];
+      const actions = model.actions!;
+      const queryInfos = model.queryInfos! || {};
+
+      Object.keys(queryInfos).forEach((actionKey) => {
+        if (queryInfos[actionKey] && queryInfos[actionKey].merger) {
           const { actionType } = actions[actionKey].creatorRefs.respond;
-          const reducer : BasicMerger = <BasicMerger>this.createResponseMerger(actionType);
+          const reducer : BasicMerger = <BasicMerger>this.createResponseMerger(
+            actionType,
+            queryInfos[actionKey].merger!,
+          );
           reducers[actionKey] = reducer;
           reducerArray.push(reducer);
         }
       });
+
       (<any>this.reducerSet[key]) = reducers;
       this.allReducers[key] = (
         state = {

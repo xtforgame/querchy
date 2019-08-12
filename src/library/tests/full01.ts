@@ -2,6 +2,9 @@ import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import {
   QcAction,
   AnyQueryActionCreatorWithProps,
+  ResourceMetadata,
+  Merger,
+  QcBasicAction,
 } from '~/index';
 
 import {
@@ -15,6 +18,7 @@ import {
   MyAxiosRunner001,
   MyCacher001,
   createEpicMiddleware001,
+  QueryInfos001,
 } from './types001';
 
 export const crudToRestMap = {
@@ -132,6 +136,61 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
   // console.log('deleteAction :', deleteAction);
 };
 
+const resMerger : Merger<QcBasicAction> = (
+  state = {
+    metadataMap: {},
+    resourceMap: {},
+  },
+  action,
+) => {
+  const resourceId : string = (
+    action.response
+    && action.response.data
+    && action.response.data.args
+    && action.response.data.args.id
+  ) || '1';
+
+  const { metadataMap } = state;
+
+  const metadata : ResourceMetadata = {
+    lastRequest: {
+      ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
+      requestTimestamp: action.requestTimestamp,
+      responseTimestamp: action.responseTimestamp,
+    },
+  };
+  return {
+    ...state,
+    metadataMap: {
+      ...metadataMap,
+      [resourceId]: metadata,
+    },
+    resourceMap: {
+      ...state.resourceMap,
+      [resourceId]: action.response.data,
+    },
+  };
+};
+
+const basicQueryInfos : QueryInfos001 = {
+  create: {
+    actionCreator: (data, options?) => ({ data, options }),
+    merger: resMerger,
+  },
+  read: {
+    actionCreator: (resourceId, options?) => ({ resourceId, options }),
+    merger: resMerger,
+  },
+  update: {
+    actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
+    merger: resMerger,
+  },
+  delete: {
+    actionCreator: (resourceId, options?) => ({ resourceId, options }),
+    merger: resMerger,
+  },
+};
+
 export default () => {
   return new Promise((resolve) => {
     const querchy = new MyQuerchy001({
@@ -147,20 +206,7 @@ export default () => {
           url: 'https://httpbin.org/post',
           crudNames: ['create', 'read', 'update', 'delete'],
           queryCreator: 'customPath',
-          queryInfos: {
-            create: {
-              actionCreator: (data, options?) => ({ data, options }),
-            },
-            read: {
-              actionCreator: (resourceId, options?) => ({ resourceId, options }),
-            },
-            update: {
-              actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
-            },
-            delete: {
-              actionCreator: (resourceId, options?) => ({ resourceId, options }),
-            },
-          },
+          queryInfos: basicQueryInfos,
           actionNames: ['updateCache'],
           actionInfos: {
             updateCache: {
@@ -172,18 +218,7 @@ export default () => {
           url: 'https://httpbin.org/post',
           crudNames: ['create', 'read', 'update', 'delete', 'getCollection'],
           queryInfos: {
-            create: {
-              actionCreator: (data, options?) => ({ data, options }),
-            },
-            read: {
-              actionCreator: (resourceId, options?) => ({ resourceId, options }),
-            },
-            update: {
-              actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
-            },
-            delete: {
-              actionCreator: (resourceId, options?) => ({ resourceId, options }),
-            },
+            ...basicQueryInfos,
             getCollection: {
               actionCreator: (options?) => ({ options }),
             },
