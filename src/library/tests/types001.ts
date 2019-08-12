@@ -92,7 +92,7 @@ export type ActionInfos = {
 };
 
 export interface CommonConfig001 extends CommonConfig {
-  builtinCrudTypes : string[];
+  builtinCrudNames : string[];
   builtinQueryInfos : QueryInfos;
   builtinActionInfos : ActionInfos;
   defaultQueryRunner: SimpleQueryRunner;

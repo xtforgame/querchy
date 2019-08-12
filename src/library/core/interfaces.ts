@@ -31,7 +31,7 @@ export type ActionInfo<
 };
 
 export type CommonConfig = {
-  builtinCrudTypes: string[];
+  builtinCrudNames: string[];
   builtinQueryInfos: {
     [s : string]: QueryInfo<Function>;
   };

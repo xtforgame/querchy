@@ -136,7 +136,7 @@ export default () => {
   return new Promise((resolve) => {
     const querchy = new MyQuerchy001({
       commonConfig: {
-        builtinCrudTypes: ['create', 'read', 'update', 'delete'],
+        builtinCrudNames: ['create', 'read', 'update', 'delete'],
         builtinQueryInfos: {
           create: {
             actionCreator: (data, options?) => ({ data, options }),

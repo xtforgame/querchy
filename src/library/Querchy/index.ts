@@ -118,7 +118,7 @@ export default class Querchy<
     this.actionCreatorSets.extra = this.querchyDefinition.extraActionCreators!;
     Object.keys(models)
     .forEach((key) => {
-      models[key].crudNames = models[key].crudNames || commonConfig.builtinCrudTypes;
+      models[key].crudNames = models[key].crudNames || commonConfig.builtinCrudNames;
       Object.keys(models[key].queryInfos).forEach((key2) => {
         if (!models[key].crudNames!.includes(key2)) {
           models[key].crudNames!.push(key2);
