@@ -6,8 +6,7 @@ import { toUnderscore } from '~/common/common-functions';
 import {
   QcAction,
   QcState,
-  QcStore,
-  QcActionCreator,
+  QcActionCreatorWithProps,
 } from '~/common/interfaces';
 
 import {
@@ -112,19 +111,15 @@ export default class Querchy<
       queryCreator!.queryRunner = runner;
     });
 
-    // normalize extraActionCreators
-    this.querchyDefinition.extraActionCreators = this.querchyDefinition.extraActionCreators || <any>{ [INIT_FUNC] : () => {} };
-    this.querchyDefinition.extraActionCreators![INIT_FUNC](null);
-    this.actionCreatorSets.extra = this.querchyDefinition.extraActionCreators!;
     Object.keys(models)
     .forEach((key) => {
-      models[key].crudNames = models[key].crudNames || [];
+      models[key].crudNames = [];
       Object.keys(models[key].queryInfos).forEach((key2) => {
         if (!models[key].crudNames!.includes(key2)) {
           models[key].crudNames!.push(key2);
         }
       });
-      models[key].actionNames = models[key].actionNames || [];
+      models[key].actionNames = [];
       Object.keys(models[key].actionInfos).forEach((key2) => {
         if (!models[key].actionNames!.includes(key2)) {
           models[key].actionNames!.push(key2);
@@ -155,6 +150,28 @@ export default class Querchy<
         model.queryCreator = 'defaultCreator';
       }
     });
+
+    // normalize extraActionCreators
+    this.querchyDefinition.extraActionCreators = this.querchyDefinition.extraActionCreators || <any>{ [INIT_FUNC] : () => {} };
+    const extraActionCreators = this.querchyDefinition.extraActionCreators!;
+    extraActionCreators[INIT_FUNC](models, this);
+    const { queryPrefix = '' } = commonConfig;
+    this.actionCreatorSets.extra = Object.keys(extraActionCreators)
+    .reduce<typeof extraActionCreators>(
+      (extra, key) => {
+        if (typeof key === 'string') {
+          const type = commonConfig.getActionTypeName!(queryPrefix, `extra/${key}`);
+          const wrapper : QcActionCreatorWithProps = <any>((...args : any) => ({
+            ...extraActionCreators[key](...args),
+            type,
+          }));
+          wrapper.actionType = type;
+          return { ...extra, [key]: wrapper };
+        }
+        return extra;
+      },
+      <any>{},
+    );
   }
 
   getHandleQueryEpicFromQueryCreatorByActionType(
@@ -187,7 +204,7 @@ export default class Querchy<
     );
   }
 
-  getRootEpic() : Epic<
+  getEpicForModels() : Epic<
     QcAction,
     QcAction,
     QcState,
@@ -239,6 +256,81 @@ export default class Querchy<
           ),
         );
       }),
+    );
+  }
+
+  getEpicForExtraActions() : Epic<
+    QcAction,
+    QcAction,
+    QcState,
+    QcDependencies<
+      CommonConfigType,
+      ModelMapType,
+      QueryCreatorMapType,
+      ExtraActionCreatorsType,
+      QuerchyDefinitionType,
+      ExtraDependencies
+    >
+  > {
+    const { queryCreators, models } = this.querchyDefinition;
+    // console.log('this.actionCreatorSets.extra.extraAction1 :', this.actionCreatorSets.extra.extraAction1.actionType);
+    return combineEpics(
+      ...Object.values(models)
+      .map<Epic<
+        QcAction,
+        QcAction,
+        QcState,
+        QcDependencies<
+          CommonConfigType,
+          ModelMapType,
+          QueryCreatorMapType,
+          ExtraActionCreatorsType,
+          QuerchyDefinitionType,
+          ExtraDependencies
+        >
+      >>((model) => {
+        const queryCreator = queryCreators[model.queryCreator!];
+        // console.log('model.queryCreator :', model.queryCreator);
+        return combineEpics(
+          ...Object.values(model.actionTypes!)
+          .map<Epic<
+            QcAction,
+            QcAction,
+            QcState,
+            QcDependencies<
+              CommonConfigType,
+              ModelMapType,
+              QueryCreatorMapType,
+              ExtraActionCreatorsType,
+              QuerchyDefinitionType,
+              ExtraDependencies
+            >
+          >>(
+            actionType => this.getHandleQueryEpicFromQueryCreatorByActionType(
+              'EFWEWGE', queryCreator!,
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  getRootEpic() : Epic<
+    QcAction,
+    QcAction,
+    QcState,
+    QcDependencies<
+      CommonConfigType,
+      ModelMapType,
+      QueryCreatorMapType,
+      ExtraActionCreatorsType,
+      QuerchyDefinitionType,
+      ExtraDependencies
+    >
+  > {
+    return combineEpics(
+      this.getEpicForModels(),
+      this.getEpicForExtraActions(),
     );
   }
 }

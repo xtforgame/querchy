@@ -4,10 +4,8 @@ import {
 } from '~/utils/helper-functions';
 
 import {
-  RunnerType,
   QcTimestamp,
   QcAction,
-  QcActionCreator,
 } from '~/common/interfaces';
 
 export type QcTransferables = {

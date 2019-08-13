@@ -61,7 +61,6 @@ export type ResourceModel<
     [s : string]: ActionInfo<Function>;
   };
   buildUrl?: (action: QcBasicAction) => string;
-  parseResponse?: (action: QcBasicAction) => {};
   queryCreator?: string;
   actionTypes?: { [s : string]: string; };
   actions?: { [s: string]: StartQueryActionCreatorWithProps<{}>; },
@@ -136,7 +135,10 @@ export type QcDependencies<
 
 export const INIT_FUNC = Symbol('init');
 export type InitFunctionKeyType = typeof INIT_FUNC;
-export type ActionCreatorsInitFunction = (args: any) => void;
+export type ActionCreatorsInitFunction<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = (models: ModelMapType, args: any) => void;
 
 export interface ExtraActionCreators<
   CommonConfigType extends CommonConfig,
@@ -147,7 +149,7 @@ export interface ExtraActionCreators<
     CommonConfigType, ModelMapType
   >,
 > {
-  [INIT_FUNC] : ActionCreatorsInitFunction;
+  [INIT_FUNC] : ActionCreatorsInitFunction<CommonConfigType, ModelMapType>;
   [s : string] : QcActionCreator;
 }
 

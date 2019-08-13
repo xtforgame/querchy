@@ -21,6 +21,10 @@ export interface QcStore<StateType> {
 
 export type QcActionCreator = (...args : any) => QcAction;
 
+export type QcActionCreatorWithProps = QcActionCreator & {
+  actionType: string;
+};
+
 export interface ResourceMetadata {
   lastRequest?: {
     queryId?: string;

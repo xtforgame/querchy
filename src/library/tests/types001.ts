@@ -1,5 +1,6 @@
 import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import {
+  ExtraActionCreators,
   CommonConfig,
   ResourceModel,
   ModelMap,
@@ -35,51 +36,10 @@ import {
   ActionInfo,
 } from '~/index';
 
-export type RawActionCreatorCreate = (
-  data: any, options?: ResourceModelQueryActionOptions,
-) => {
-  data: any;
-  options?: ResourceModelQueryActionOptions;
-  [s : string] : any;
-};
-
-export type RawActionCreatorRead = (
-  resourceId: any, options?: ResourceModelQueryActionOptions,
-) => {
-  resourceId: any;
-  options?: ResourceModelQueryActionOptions;
-  [s : string] : any;
-};
-
-export type RawActionCreatorUpdate = (
-  resourceId: any, data: any, options?: ResourceModelQueryActionOptions,
-) => {
-  resourceId: any;
-  data: any;
-  options?: ResourceModelQueryActionOptions;
-  [s : string] : any;
-};
-
-export type RawActionCreatorDelete = (
-  resourceId: any, options?: ResourceModelQueryActionOptions,
-) => {
-  resourceId: any;
-  options?: ResourceModelQueryActionOptions;
-  [s : string] : any;
-};
-
-export type RawActionCreatorUpdateCache = (
-  cacheChange: any, options?: ResourceModelQueryActionOptions,
-) => {
-  cacheChange: any;
-  options?: ResourceModelQueryActionOptions;
-  [s : string] : any;
-};
-
-export type QueryInfosBase = {
-} & {
-  [s : string]: QueryInfo<Function>;
-};
+import {
+  ActionInfosT1,
+  QueryInfosT1,
+} from './builtin-t1';
 
 export interface CommonConfig001 extends CommonConfig {
   defaultQueryRunner: SimpleQueryRunner;
@@ -97,67 +57,43 @@ export type RawActionCreatorGetCollection = (
   [s : string] : any;
 };
 
-export type ActionInfos001 = {
-  updateCache: ActionInfo<RawActionCreatorUpdateCache>;
-} & {
-  [s : string]: ActionInfo<Function>;
-};
+export type ActionInfosXxx = ActionInfosT1;
 
-export type QueryInfos001 = {
-  create: QueryInfo<RawActionCreatorCreate>;
-  read: QueryInfo<RawActionCreatorRead>;
-  update: QueryInfo<RawActionCreatorUpdate>;
-  delete: QueryInfo<RawActionCreatorDelete>;
-} & {
-  [s : string]: QueryInfo<Function>;
-};
-
-export type ActionInfosXxx = {
-  updateCache: ActionInfo<RawActionCreatorUpdateCache>;
-} & {
-  [s : string]: ActionInfo<Function>;
-};
-
-export type QueryInfosXxx = QueryInfos001 & {
+export type QueryInfosXxx = QueryInfosT1 & {
   getCollection: QueryInfo<RawActionCreatorGetCollection>;
-} & {
-  [s : string]: QueryInfo<Function>;
 };
 
 export type ResourceModel001<
   CommonConfigType extends CommonConfig
-> = {
-  url: string;
-  crudNames?: string[];
-  queryInfos: QueryInfos001;
-  actionNames?: string[];
-  actionInfos: ActionInfos001;
-  buildUrl?: (action: QcBasicAction) => string;
-  parseResponse?: (action: QcBasicAction) => {};
-  queryCreator?: string;
+> = ResourceModel<CommonConfigType> & {
+  // url: string;
+  // crudNames?: string[];
+  queryInfos: QueryInfosT1;
+  // actionNames?: string[];
+  actionInfos: ActionInfosT1;
+  // buildUrl?: (action: QcBasicAction) => string;
+  // queryCreator?: string;
   actionTypes?: ResourceModelActionTypes<
-    ResourceModelQueryActions<Required<QueryInfos001>>
+    ResourceModelQueryActions<Required<QueryInfosT1>>
   > & ResourceModelActionTypes<
-    ResourceModelActions<Required<ActionInfos001>>
+    ResourceModelActions<Required<ActionInfosT1>>
   >,
   actions?: ResourceModelQueryActions<
-    Required<QueryInfos001>
+    Required<QueryInfosT1>
   > & ResourceModelActions<
-    Required<ActionInfos001>
+    Required<ActionInfosT1>
   >,
 };
 
 export type ResourceModelXxx<
   CommonConfigType extends CommonConfig
-> = {
-  url: string;
-  crudNames?: string[];
+> = ResourceModel<CommonConfigType> & {
+  // crudNames?: string[];
   queryInfos: QueryInfosXxx;
-  actionNames?: string[];
+  // actionNames?: string[];
   actionInfos: ActionInfosXxx;
-  buildUrl?: (action: QcBasicAction) => string;
-  parseResponse?: (action: QcBasicAction) => {};
-  queryCreator?: string;
+  // buildUrl?: (action: QcBasicAction) => string;
+  // queryCreator?: string;
   actionTypes?: ResourceModelActionTypes<
     ResourceModelQueryActions<Required<QueryInfosXxx>>
   > & ResourceModelActionTypes<
@@ -180,18 +116,22 @@ export type QcQueryCreatorMap001 = {
   customPath : QueryCreatorDefinition<CommonConfig001, QcModelMap001>;
 };
 
-export class QcExtraActionCreators001 {
-  [INIT_FUNC] : ActionCreatorsInitFunction;
+export class QcExtraActionCreators001 implements ExtraActionCreators<
+  CommonConfig001,
+  QcModelMap001,
+  QcQueryCreatorMap001
+> {
+  [INIT_FUNC] : ActionCreatorsInitFunction<CommonConfig001, QcModelMap001>;
   [s : string] : QcActionCreator;
 
   constructor() {
-    this[INIT_FUNC] = () => {
-      // console.log('constructor()');
+    this[INIT_FUNC] = (models) => {
+      // console.log('models :', models);
     };
   }
 
-  xxxx = (xxx : string, sss : number) : QcAction => {
-    return <QcAction>{ type: 'xxxx' };
+  extraAction1 = (xxx : string, sss : number) : any => {
+    return {};
   }
 }
 
@@ -239,8 +179,6 @@ export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware
   MyQcStore001,
   QcDependencies001
 >(...args);
-
-export class MyQcExtraActionCreators001 extends QcExtraActionCreators001 {}
 
 export class MyCacher001 extends Cacher<
   CommonConfig001,

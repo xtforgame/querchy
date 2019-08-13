@@ -10,16 +10,19 @@ import {
 import {
   MyState001,
   MyQcStore001,
-  QcExtraActionCreators001,
   QcModelMap001,
   QcQueryCreatorMap001,
-  MyQcExtraActionCreators001,
+  QcExtraActionCreators001,
   MyQuerchy001,
   MyAxiosRunner001,
   MyCacher001,
   createEpicMiddleware001,
-  QueryInfos001,
 } from './types001';
+
+import {
+  basicQueryInfos,
+  basicActionInfos,
+} from './builtin-t1';
 
 export const crudToRestMap = {
   create: 'post',
@@ -126,6 +129,11 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
     1,
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
+
+  store.dispatch(querchy.actionCreatorSets.extra.extraAction1(
+    'ddd',
+    1,
+  ));
   // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
   // const readAction = querchy.actionCreatorSets.httpBinRes.read('ss');
@@ -134,61 +142,6 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
   // console.log('updateAction :', updateAction);
   // const deleteAction = querchy.actionCreatorSets.httpBinRes.delete('ss');
   // console.log('deleteAction :', deleteAction);
-};
-
-const resMerger : Merger<QcBasicAction> = (
-  state = {
-    metadataMap: {},
-    resourceMap: {},
-  },
-  action,
-) => {
-  const resourceId : string = (
-    action.response
-    && action.response.data
-    && action.response.data.args
-    && action.response.data.args.id
-  ) || '1';
-
-  const { metadataMap } = state;
-
-  const metadata : ResourceMetadata = {
-    lastRequest: {
-      ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
-      requestTimestamp: action.requestTimestamp,
-      responseTimestamp: action.responseTimestamp,
-    },
-  };
-  return {
-    ...state,
-    metadataMap: {
-      ...metadataMap,
-      [resourceId]: metadata,
-    },
-    resourceMap: {
-      ...state.resourceMap,
-      [resourceId]: action.response.data,
-    },
-  };
-};
-
-const basicQueryInfos : QueryInfos001 = {
-  create: {
-    actionCreator: (data, options?) => ({ data, options }),
-    mergerCreator: resMerger,
-  },
-  read: {
-    actionCreator: (resourceId, options?) => ({ resourceId, options }),
-    mergerCreator: resMerger,
-  },
-  update: {
-    actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
-    mergerCreator: resMerger,
-  },
-  delete: {
-    actionCreator: (resourceId, options?) => ({ resourceId, options }),
-    mergerCreator: resMerger,
-  },
 };
 
 export default () => {
@@ -204,32 +157,20 @@ export default () => {
       models: {
         httpBinRes: {
           url: 'https://httpbin.org/post',
-          crudNames: ['create', 'read', 'update', 'delete'],
           queryCreator: 'customPath',
           queryInfos: basicQueryInfos,
-          actionNames: ['updateCache'],
-          actionInfos: {
-            updateCache: {
-              actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
-            },
-          },
+          actionInfos: basicActionInfos,
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
-          crudNames: ['create', 'read', 'update', 'delete', 'getCollection'],
+          queryCreator: 'customPath',
           queryInfos: {
             ...basicQueryInfos,
             getCollection: {
               actionCreator: (options?) => ({ options }),
             },
           },
-          actionNames: ['updateCache'],
-          actionInfos: {
-            updateCache: {
-              actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
-            },
-          },
-          queryCreator: 'customPath',
+          actionInfos: basicActionInfos,
         },
       },
       queryCreators: {
@@ -265,10 +206,9 @@ export default () => {
           },
         },
       },
-      extraActionCreators: new MyQcExtraActionCreators001(),
+      extraActionCreators: new QcExtraActionCreators001(),
     });
     const cacher = new MyCacher001(querchy);
     testRun(querchy, cacher, resolve);
-    querchy.actionCreatorSets.extra.xxxx('ddd', 1);
   });
 };

@@ -1,13 +1,9 @@
 import {
-  RunnerType,
   QcTimestamp,
-  QcAction,
-  QcActionCreator,
 } from '~/common/interfaces';
 
 import {
   QcRequestAction,
-  QueryActionCreatorWithProps,
   ResourceModelQueryActionOptions,
 } from '~/core/crud-sub-action-interfaces';
 

@@ -88,7 +88,10 @@ export default class Updater<
     this.init();
   }
 
-  createResponseMerger = (actionType : string, merger : Merger<QcBasicAction>) : Merger<QcResponseAction> => {
+  createResponseMerger = (
+    actionType : string,
+    merger : Merger<QcBasicAction>,
+  ) : Merger<QcResponseAction> => {
     return (
       state = {
         metadataMap: {},
