@@ -72,7 +72,7 @@ export type ResourceModel001<
   // actionNames?: string[];
   actionInfos: ActionInfosT1;
   // buildUrl?: (action: QcBasicAction) => string;
-  // queryCreator?: string;
+  // queryCreatorName?: string;
   actionTypes?: ResourceModelActionTypes<
     ResourceModelQueryActions<Required<QueryInfosT1>>
   > & ResourceModelActionTypes<
@@ -93,7 +93,7 @@ export type ResourceModelXxx<
   // actionNames?: string[];
   actionInfos: ActionInfosXxx;
   // buildUrl?: (action: QcBasicAction) => string;
-  // queryCreator?: string;
+  // queryCreatorName?: string;
   actionTypes?: ResourceModelActionTypes<
     ResourceModelQueryActions<Required<QueryInfosXxx>>
   > & ResourceModelActionTypes<

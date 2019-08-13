@@ -142,12 +142,12 @@ export default class Querchy<
     Object.keys(models)
     .forEach((key) => {
       const model = models[key];
-      if (model.queryCreator) {
-        if (!queryCreators[model.queryCreator]) {
-          throw new Error(`no queryCreator found: ${model.queryCreator}`);
+      if (model.queryCreatorName) {
+        if (!queryCreators[model.queryCreatorName]) {
+          throw new Error(`no queryCreator found: ${model.queryCreatorName}`);
         }
       } else {
-        model.queryCreator = 'defaultCreator';
+        model.queryCreatorName = 'defaultCreator';
       }
     });
 
@@ -233,7 +233,7 @@ export default class Querchy<
           ExtraDependencies
         >
       >>((model) => {
-        const queryCreator = queryCreators[model.queryCreator!];
+        const queryCreator = queryCreators[model.queryCreatorName!];
         // console.log('model.queryCreator :', model.queryCreator);
         return combineEpics(
           ...Object.values(model.actionTypes!)
@@ -289,8 +289,7 @@ export default class Querchy<
           ExtraDependencies
         >
       >>((model) => {
-        const queryCreator = queryCreators[model.queryCreator!];
-        // console.log('model.queryCreator :', model.queryCreator);
+        const queryCreator = queryCreators[model.queryCreatorName!];
         return combineEpics(
           ...Object.values(model.actionTypes!)
           .map<Epic<

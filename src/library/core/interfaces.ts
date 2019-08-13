@@ -61,7 +61,7 @@ export type ResourceModel<
     [s : string]: ActionInfo<Function>;
   };
   buildUrl?: (action: QcBasicAction) => string;
-  queryCreator?: string;
+  queryCreatorName?: string;
   actionTypes?: { [s : string]: string; };
   actions?: { [s: string]: StartQueryActionCreatorWithProps<{}>; },
 };

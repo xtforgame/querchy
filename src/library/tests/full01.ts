@@ -163,7 +163,7 @@ export default () => {
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
-          queryCreator: 'customPath',
+          queryCreatorName: 'customPath',
           queryInfos: {
             ...basicQueryInfos,
             getCollection: {
