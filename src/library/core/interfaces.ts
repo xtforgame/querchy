@@ -81,15 +81,20 @@ export type BuildRequestConfigOption<
   models: ModelMapType,
 };
 
+export type BuildRequestConfig<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = (
+  action: QcBasicAction,
+  options: BuildRequestConfigOption<CommonConfigType, ModelMapType>,
+) => QcRequestConfig;
+
 export type QueryCreatorDefinition<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>
 > = {
   queryRunner?: string | SimpleQueryRunner,
-  buildRequestConfig : (
-    action: QcBasicAction,
-    options: BuildRequestConfigOption<CommonConfigType, ModelMapType>,
-  ) => QcRequestConfig;
+  buildRequestConfig : BuildRequestConfig<CommonConfigType, ModelMapType>;
 };
 
 export type QueryCreatorMap<
