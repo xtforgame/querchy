@@ -156,8 +156,8 @@ export default () => {
       },
       models: {
         httpBinRes: {
-          url: 'https://httpbin.org/post',
-          queryCreator: 'customPath',
+          url: 'https://httpbin.org',
+          buildUrl: action => `https://httpbin.org/${crudToRestMap[action.crudType]}`,
           queryInfos: basicQueryInfos,
           actionInfos: basicActionInfos,
         },
