@@ -11,7 +11,7 @@ import {
   MyState001,
   MyQcStore001,
   QcModelMap001,
-  QcQueryCreatorMap001,
+  QcQueryBuilderMap001,
   QcExtraActionCreators001,
   MyQuerchy001,
   MyAxiosRunner001,
@@ -29,6 +29,7 @@ export const crudToRestMap = {
   read: 'get',
   update: 'patch',
   delete: 'delete',
+  getCollection: 'get',
 };
 
 export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
@@ -111,7 +112,7 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
   const epicMiddlewareCb = store.epicMiddlewareCb;
   epicMiddleware.run(rootEpic);
 
-  const { httpBinRes } = querchy.actionCreatorSets;
+  const { httpBinRes, httpBinRes2 } = querchy.actionCreatorSets;
   store.dispatch(httpBinRes.create(
     {},
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
@@ -125,14 +126,16 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
     {},
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
+  store.dispatch(httpBinRes2.getCollection(
+    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+  ));
   store.dispatch(httpBinRes.delete(
     1,
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
 
   store.dispatch(querchy.actionCreatorSets.extra.extraAction1(
-    'ddd',
-    1,
+    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
   // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
@@ -152,7 +155,7 @@ export default () => {
         queryRunners: {
           customRunner: new MyAxiosRunner001(),
         },
-        queryPrefix: 'XX/',
+        actionTypePrefix: 'XX/',
       },
       models: {
         httpBinRes: {
@@ -163,7 +166,7 @@ export default () => {
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
-          queryCreatorName: 'customPath',
+          queryBuilderName: 'customPath',
           queryInfos: {
             ...basicQueryInfos,
             getCollection: {
@@ -173,8 +176,8 @@ export default () => {
           actionInfos: basicActionInfos,
         },
       },
-      queryCreators: {
-        defaultCreator: {
+      queryBuilders: {
+        defaultBuilder: {
           buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
             // console.log('action', action);
             if (!action.modelName) {
@@ -199,6 +202,18 @@ export default () => {
             return ({
               method: crudToRestMap[action.crudType],
               url: `https://httpbin.org/${crudToRestMap[action.crudType]}`,
+              headers: action.options.headers,
+              query: action.options.query,
+              body: action.data,
+            });
+          },
+        },
+        forExtra: {
+          queryRunner: 'customRunner',
+          buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
+            return ({
+              method: 'get',
+              url: 'https://httpbin.org/get',
               headers: action.options.headers,
               query: action.options.query,
               body: action.data,

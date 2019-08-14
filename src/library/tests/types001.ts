@@ -4,9 +4,9 @@ import {
   CommonConfig,
   ResourceModel,
   ModelMap,
-  QueryCreatorMap,
+  QueryBuilderMap,
   QuerchyDefinition,
-  QueryCreatorDefinition,
+  QueryBuilderDefinition,
   QcAction,
   QcBasicAction,
   QcState,
@@ -34,6 +34,8 @@ import {
   StartQueryActionCreatorWithProps,
   QueryInfo,
   ActionInfo,
+  ExtraQueryInfo,
+  ExtraActionInfo,
 } from '~/index';
 
 import {
@@ -72,7 +74,7 @@ export type ResourceModel001<
   // actionNames?: string[];
   actionInfos: ActionInfosT1;
   // buildUrl?: (action: QcBasicAction) => string;
-  // queryCreatorName?: string;
+  // queryBuilderName?: string;
   actionTypes?: ResourceModelActionTypes<
     ResourceModelQueryActions<Required<QueryInfosT1>>
   > & ResourceModelActionTypes<
@@ -93,7 +95,7 @@ export type ResourceModelXxx<
   // actionNames?: string[];
   actionInfos: ActionInfosXxx;
   // buildUrl?: (action: QcBasicAction) => string;
-  // queryCreatorName?: string;
+  // queryBuilderName?: string;
   actionTypes?: ResourceModelActionTypes<
     ResourceModelQueryActions<Required<QueryInfosXxx>>
   > & ResourceModelActionTypes<
@@ -111,32 +113,94 @@ export type QcModelMap001 = {
   httpBinRes2: ResourceModelXxx<CommonConfig001>;
 };
 
-export type QcQueryCreatorMap001 = {
-  defaultCreator : QueryCreatorDefinition<CommonConfig001, QcModelMap001>;
-  customPath : QueryCreatorDefinition<CommonConfig001, QcModelMap001>;
+export type QcQueryBuilderMap001 = {
+  defaultBuilder : QueryBuilderDefinition<CommonConfig001, QcModelMap001>;
+  customPath : QueryBuilderDefinition<CommonConfig001, QcModelMap001>;
+  forExtra : QueryBuilderDefinition<CommonConfig001, QcModelMap001>;
+};
+
+export type RawActionCreatorExtraAction1 = (
+  options?: ResourceModelQueryActionOptions,
+) => {
+  options?: ResourceModelQueryActionOptions;
+  [s : string] : any;
+};
+
+export type QueryInfosExtra = {
+  extraAction1: ExtraQueryInfo<RawActionCreatorExtraAction1>;
+};
+
+export type RawActionCreatorUpdateCacheExtra = (
+  cacheChange: any, options?: ResourceModelQueryActionOptions,
+) => {
+  cacheChange: any;
+  options?: ResourceModelQueryActionOptions;
+  [s : string] : any;
+};
+export type ActionInfosExtra = {
+  updateCacheExtra: ExtraActionInfo<RawActionCreatorUpdateCacheExtra>;
 };
 
 export class QcExtraActionCreators001 implements ExtraActionCreators<
   CommonConfig001,
   QcModelMap001,
-  QcQueryCreatorMap001
+  QcQueryBuilderMap001
 > {
   [INIT_FUNC] : ActionCreatorsInitFunction<CommonConfig001, QcModelMap001>;
-  [s : string] : QcActionCreator;
+  extraQueryCreators: {
+    extraAction1 : QcActionCreator;
+  };
+
+  queryInfos: QueryInfosExtra;
+
+  actionInfos: ActionInfosExtra;
+
+  actionTypes?: ResourceModelActionTypes<
+    ResourceModelQueryActions<Required<QueryInfosExtra>>
+  > & ResourceModelActionTypes<
+    ResourceModelActions<Required<ActionInfosExtra>>
+  >;
+
+  actions?: ResourceModelQueryActions<
+    Required<QueryInfosExtra>
+  > & ResourceModelActions<
+    Required<ActionInfosExtra>
+  >;
 
   constructor() {
     this[INIT_FUNC] = (models) => {
       // console.log('models :', models);
     };
-  }
 
-  extraAction1 = (xxx : string, sss : number) : any => {
-    return {};
+    this.queryInfos = {
+      extraAction1: {
+        actionCreator: (options) : any => {
+          return {};
+        },
+        queryBuilderName: 'forExtra',
+      },
+    };
+
+    this.actionInfos = {
+      updateCacheExtra: {
+        actionCreator: (options) => {
+          return {
+            cacheChange: null,
+          };
+        },
+      },
+    };
+
+    this.extraQueryCreators = {
+      extraAction1: (xxx : string, sss : number) : any => {
+        return {};
+      },
+    };
   }
 }
 
 export type QuerchyDefinition001 = QuerchyDefinition<
-  CommonConfig001, QcModelMap001, QcQueryCreatorMap001, QcExtraActionCreators001
+  CommonConfig001, QcModelMap001, QcQueryBuilderMap001, QcExtraActionCreators001
 >;
 
 export type MyState001 = any;
@@ -149,7 +213,7 @@ export class MyAxiosRunner001 extends AxiosRunner<
   MyState001,
   CommonConfig001,
   QcModelMap001,
-  QcQueryCreatorMap001,
+  QcQueryBuilderMap001,
   QcExtraActionCreators001,
   QuerchyDefinition001,
   ExtraDependencies001
@@ -158,7 +222,7 @@ export class MyAxiosRunner001 extends AxiosRunner<
 export class MyQuerchy001 extends Querchy<
   CommonConfig001,
   QcModelMap001,
-  QcQueryCreatorMap001,
+  QcQueryBuilderMap001,
   QcExtraActionCreators001,
   QuerchyDefinition001,
   ExtraDependencies001
@@ -167,7 +231,7 @@ export class MyQuerchy001 extends Querchy<
 export type QcDependencies001 = QcDependencies<
   CommonConfig001,
   QcModelMap001,
-  QcQueryCreatorMap001,
+  QcQueryBuilderMap001,
   QcExtraActionCreators001,
   QuerchyDefinition001,
   ExtraDependencies001
@@ -183,7 +247,7 @@ export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware
 export class MyCacher001 extends Cacher<
   CommonConfig001,
   QcModelMap001,
-  QcQueryCreatorMap001,
+  QcQueryBuilderMap001,
   QcExtraActionCreators001,
   QuerchyDefinition001,
   ExtraDependencies001

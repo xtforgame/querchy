@@ -19,7 +19,7 @@ import {
   QcDependencies,
   CommonConfig,
   ModelMap,
-  QueryCreatorMap,
+  QueryBuilderMap,
   ExtraActionCreators,
   QuerchyDefinition,
 
@@ -39,15 +39,15 @@ export default class Updater<
   ModelMapType extends ModelMap<
     CommonConfigType
   >,
-  QueryCreatorMapType extends QueryCreatorMap<
+  QueryBuilderMapType extends QueryBuilderMap<
     CommonConfigType, ModelMapType
   >,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryBuilderMapType
   >,
 
   QuerchyDefinitionType extends QuerchyDefinition<
-    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
   >,
 
   ExtraDependencies = any,
@@ -55,7 +55,7 @@ export default class Updater<
   querchy : Querchy<
     CommonConfigType,
     ModelMapType,
-    QueryCreatorMapType,
+    QueryBuilderMapType,
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependencies
@@ -74,7 +74,7 @@ export default class Updater<
     querchy : Querchy<
       CommonConfigType,
       ModelMapType,
-      QueryCreatorMapType,
+      QueryBuilderMapType,
       ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
@@ -152,7 +152,7 @@ export default class Updater<
     QcDependencies<
       CommonConfigType,
       ModelMapType,
-      QueryCreatorMapType,
+      QueryBuilderMapType,
       ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
@@ -179,7 +179,7 @@ export default class Updater<
     QcDependencies<
       CommonConfigType,
       ModelMapType,
-      QueryCreatorMapType,
+      QueryBuilderMapType,
       ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
@@ -195,7 +195,7 @@ export default class Updater<
         QcDependencies<
           CommonConfigType,
           ModelMapType,
-          QueryCreatorMapType,
+          QueryBuilderMapType,
           ExtraActionCreatorsType,
           QuerchyDefinitionType,
           ExtraDependencies
@@ -211,7 +211,7 @@ export default class Updater<
             QcDependencies<
               CommonConfigType,
               ModelMapType,
-              QueryCreatorMapType,
+              QueryBuilderMapType,
               ExtraActionCreatorsType,
               QuerchyDefinitionType,
               ExtraDependencies

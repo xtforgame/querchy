@@ -16,7 +16,7 @@ import {
 import {
   CommonConfig,
   ModelMap,
-  QueryCreatorMap,
+  QueryBuilderMap,
   QuerchyDefinition,
   QcDependencies,
   QcRequestConfig,
@@ -39,24 +39,24 @@ export default class AxiosRunner<
 
   CommonConfigType extends CommonConfig = CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
-  QueryCreatorMapType extends QueryCreatorMap<
+  QueryBuilderMapType extends QueryBuilderMap<
     CommonConfigType, ModelMapType
-  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
+  > = QueryBuilderMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryBuilderMapType
   > = ExtraActionCreators<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryBuilderMapType
   >,
   QuerchyDefinitionType extends QuerchyDefinition<
-    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
-  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType>,
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
 > implements QueryRunner<
   StateType,
   CommonConfigType,
   ModelMapType,
-  QueryCreatorMapType,
+  QueryBuilderMapType,
   ExtraActionCreatorsType,
   QuerchyDefinitionType,
   ExtraDependencies
@@ -77,12 +77,12 @@ export default class AxiosRunner<
     StateType,
     CommonConfigType,
     ModelMapType,
-    QueryCreatorMapType,
+    QueryBuilderMapType,
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependencies
   > = (
-    action, queryCreator, { store$, action$, dependencies },
+    action, queryBuilder, { store$, action$, dependencies },
   ) => {
     // console.log('action :', action);
     // console.log('store :', store$.value);
@@ -90,8 +90,8 @@ export default class AxiosRunner<
 
     const { querchyDef: { commonConfig, models } } = dependencies!;
 
-    if (!queryCreator) {
-      throw new Error(`QueryCreator not found: ${action.type}`);
+    if (!queryBuilder) {
+      throw new Error(`QueryBuilder not found: ${action.type}`);
     }
 
     const createSuccessAction = action.actionCreator.creatorRefs.respond;
@@ -102,7 +102,7 @@ export default class AxiosRunner<
 
     let requestConfig : QcRequestConfig;
     try {
-      requestConfig = queryCreator.buildRequestConfig(action, {
+      requestConfig = queryBuilder.buildRequestConfig(action, {
         runnerType: this.type,
         commonConfig,
         models,

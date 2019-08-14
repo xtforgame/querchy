@@ -13,14 +13,15 @@ import {
   CommonConfig,
   SimpleQueryRunner,
   ModelMap,
-  QueryCreatorDefinition,
-  QueryCreatorMap,
+  QueryBuilderDefinition,
+  QueryBuilderMap,
   ExtraActionCreators,
   QuerchyDefinition,
   QcDependencies,
   INIT_FUNC,
   ModelQueryActionCreatorSet,
   ActionCreatorSets,
+  ExtraActionInfoBase,
 } from '~/core/interfaces';
 
 import {
@@ -30,6 +31,8 @@ import {
 import {
   createModelActionTypes,
   createModelActionCreators,
+  createExtraActionTypes,
+  createExtraActionCreators,
 } from './actionCreatorHelpers';
 
 export default class Querchy<
@@ -37,34 +40,32 @@ export default class Querchy<
   ModelMapType extends ModelMap<
     CommonConfigType
   > = ModelMap<CommonConfigType>,
-  QueryCreatorMapType extends QueryCreatorMap<
+  QueryBuilderMapType extends QueryBuilderMap<
     CommonConfigType, ModelMapType
-  > = QueryCreatorMap<CommonConfigType, ModelMapType>,
+  > = QueryBuilderMap<CommonConfigType, ModelMapType>,
   ExtraActionCreatorsType extends ExtraActionCreators<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryBuilderMapType
   > = ExtraActionCreators<
-    CommonConfigType, ModelMapType, QueryCreatorMapType
+    CommonConfigType, ModelMapType, QueryBuilderMapType
   >,
 
   QuerchyDefinitionType extends QuerchyDefinition<
-    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
   > = QuerchyDefinition<
-    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
   >,
 
   ExtraDependencies = any,
 > {
   querchyDefinition : QuerchyDefinitionType;
   deps : QcDependencies<
-    CommonConfigType, ModelMapType, QueryCreatorMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
   >;
 
   actionCreatorSets: ActionCreatorSets<
     CommonConfigType,
     ModelMapType,
-    ModelQueryActionCreatorSet<
-      CommonConfigType, {}, ExtraActionCreatorsType
-    >
+    ExtraActionCreatorsType
   >;
 
   constructor(
@@ -81,21 +82,21 @@ export default class Querchy<
   }
 
   normalizeQuerchyDefinition() {
-    const { queryCreators, commonConfig, models } = this.querchyDefinition;
+    const { queryBuilders, commonConfig, models } = this.querchyDefinition;
 
     // normalize commonConfig
     if (!commonConfig.getActionTypeName) {
       commonConfig.getActionTypeName = (
-        queryPrefix, queryName,
-      ) => `${queryPrefix}${toUnderscore(queryName).toUpperCase()}`;
+        actionTypePrefix, queryName,
+      ) => `${actionTypePrefix}${toUnderscore(queryName).toUpperCase()}`;
     }
     commonConfig.queryRunners = commonConfig.queryRunners || {};
 
-    // normalize queryCreators
-    Object.keys(queryCreators)
+    // normalize queryBuilders
+    Object.keys(queryBuilders)
     .forEach((key) => {
-      const queryCreator = queryCreators[key];
-      const { queryRunner } = queryCreator!;
+      const queryBuilder = queryBuilders[key];
+      const { queryRunner } = queryBuilder!;
       let runner : any = queryRunner;
       if (typeof queryRunner === 'string') {
         runner = commonConfig.queryRunners![queryRunner];
@@ -108,7 +109,7 @@ export default class Querchy<
       if (!runner) {
         throw new Error(`no runner found: ${key}`);
       }
-      queryCreator!.queryRunner = runner;
+      queryBuilder!.queryRunner = runner;
     });
 
     Object.keys(models)
@@ -136,18 +137,14 @@ export default class Querchy<
           return `${models[key].url}/${action.id}`;
         }
       );
-    });
 
-    // normalize models P2
-    Object.keys(models)
-    .forEach((key) => {
       const model = models[key];
-      if (model.queryCreatorName) {
-        if (!queryCreators[model.queryCreatorName]) {
-          throw new Error(`no queryCreator found: ${model.queryCreatorName}`);
+      if (model.queryBuilderName) {
+        if (!queryBuilders[model.queryBuilderName]) {
+          throw new Error(`no queryBuilder found: ${model.queryBuilderName}`);
         }
       } else {
-        model.queryCreatorName = 'defaultCreator';
+        model.queryBuilderName = 'defaultBuilder';
       }
     });
 
@@ -155,28 +152,36 @@ export default class Querchy<
     this.querchyDefinition.extraActionCreators = this.querchyDefinition.extraActionCreators || <any>{ [INIT_FUNC] : () => {} };
     const extraActionCreators = this.querchyDefinition.extraActionCreators!;
     extraActionCreators[INIT_FUNC](models, this);
-    const { queryPrefix = '' } = commonConfig;
-    this.actionCreatorSets.extra = Object.keys(extraActionCreators)
-    .reduce<typeof extraActionCreators>(
+    const { actionTypePrefix = '' } = commonConfig;
+    extraActionCreators.actionTypes = createExtraActionTypes(commonConfig, extraActionCreators);
+    extraActionCreators.actions = createExtraActionCreators<CommonConfigType, ExtraActionCreatorsType>(commonConfig, extraActionCreators);
+    this.actionCreatorSets.extra = Object.keys(extraActionCreators.actions!)
+    .reduce(
       (extra, key) => {
         if (typeof key === 'string') {
-          const type = commonConfig.getActionTypeName!(queryPrefix, `extra/${key}`);
-          const wrapper : QcActionCreatorWithProps = <any>((...args : any) => ({
-            ...extraActionCreators[key](...args),
-            type,
-          }));
-          wrapper.actionType = type;
-          return { ...extra, [key]: wrapper };
+          const type = commonConfig.getActionTypeName!(actionTypePrefix, `extra/${key}`);
+          return { ...extra, [key]: extraActionCreators.actions![key] };
         }
         return extra;
       },
       <any>{},
     );
+
+    Object.values(extraActionCreators.queryInfos!)
+    .forEach((actionInfo) => {
+      if (actionInfo.queryBuilderName) {
+        if (!queryBuilders[actionInfo.queryBuilderName]) {
+          throw new Error(`no queryBuilder found: ${actionInfo.queryBuilderName}`);
+        }
+      } else {
+        actionInfo.queryBuilderName = 'defaultBuilder';
+      }
+    });
   }
 
-  getHandleQueryEpicFromQueryCreatorByActionType(
+  getHandleQueryEpicFromQueryBuilderByActionType(
     actionType : string,
-    queryCreator: QueryCreatorDefinition<
+    queryBuilder: QueryBuilderDefinition<
       CommonConfigType,
       ModelMapType
     >,
@@ -187,17 +192,17 @@ export default class Querchy<
     QcDependencies<
       CommonConfigType,
       ModelMapType,
-      QueryCreatorMapType,
+      QueryBuilderMapType,
       ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
     >
   > {
-    const runner = (<SimpleQueryRunner>queryCreator!.queryRunner!);
+    const runner = (<SimpleQueryRunner>queryBuilder!.queryRunner!);
     return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
     .pipe(
       mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        return runner.handleQuery(action, queryCreator, {
+        return runner.handleQuery(action, queryBuilder, {
           action$, store$, dependencies, args,
         });
       }),
@@ -211,13 +216,13 @@ export default class Querchy<
     QcDependencies<
       CommonConfigType,
       ModelMapType,
-      QueryCreatorMapType,
+      QueryBuilderMapType,
       ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
     >
   > {
-    const { queryCreators, models } = this.querchyDefinition;
+    const { queryBuilders, models } = this.querchyDefinition;
     return combineEpics(
       ...Object.values(models)
       .map<Epic<
@@ -227,14 +232,14 @@ export default class Querchy<
         QcDependencies<
           CommonConfigType,
           ModelMapType,
-          QueryCreatorMapType,
+          QueryBuilderMapType,
           ExtraActionCreatorsType,
           QuerchyDefinitionType,
           ExtraDependencies
         >
       >>((model) => {
-        const queryCreator = queryCreators[model.queryCreatorName!];
-        // console.log('model.queryCreator :', model.queryCreator);
+        const queryBuilder = queryBuilders[model.queryBuilderName!];
+        // console.log('model.queryBuilder :', model.queryBuilder);
         return combineEpics(
           ...Object.values(model.actionTypes!)
           .map<Epic<
@@ -244,14 +249,14 @@ export default class Querchy<
             QcDependencies<
               CommonConfigType,
               ModelMapType,
-              QueryCreatorMapType,
+              QueryBuilderMapType,
               ExtraActionCreatorsType,
               QuerchyDefinitionType,
               ExtraDependencies
             >
           >>(
-            actionType => this.getHandleQueryEpicFromQueryCreatorByActionType(
-              actionType!, queryCreator!,
+            actionType => this.getHandleQueryEpicFromQueryBuilderByActionType(
+              actionType!, queryBuilder!,
             ),
           ),
         );
@@ -266,16 +271,16 @@ export default class Querchy<
     QcDependencies<
       CommonConfigType,
       ModelMapType,
-      QueryCreatorMapType,
+      QueryBuilderMapType,
       ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
     >
   > {
-    const { queryCreators, models } = this.querchyDefinition;
-    // console.log('this.actionCreatorSets.extra.extraAction1 :', this.actionCreatorSets.extra.extraAction1.actionType);
+    const { queryBuilders } = this.querchyDefinition;
+    const extraActionCreators = this.querchyDefinition.extraActionCreators!;
     return combineEpics(
-      ...Object.values(models)
+      ...Object.values(extraActionCreators.queryInfos!)
       .map<Epic<
         QcAction,
         QcAction,
@@ -283,32 +288,29 @@ export default class Querchy<
         QcDependencies<
           CommonConfigType,
           ModelMapType,
-          QueryCreatorMapType,
+          QueryBuilderMapType,
           ExtraActionCreatorsType,
           QuerchyDefinitionType,
           ExtraDependencies
         >
-      >>((model) => {
-        const queryCreator = queryCreators[model.queryCreatorName!];
-        return combineEpics(
-          ...Object.values(model.actionTypes!)
-          .map<Epic<
-            QcAction,
-            QcAction,
-            QcState,
-            QcDependencies<
-              CommonConfigType,
-              ModelMapType,
-              QueryCreatorMapType,
-              ExtraActionCreatorsType,
-              QuerchyDefinitionType,
-              ExtraDependencies
-            >
-          >>(
-            actionType => this.getHandleQueryEpicFromQueryCreatorByActionType(
-              'EFWEWGE', queryCreator!,
-            ),
-          ),
+      >>((actionInfo) => {
+        console.log('extraActionCreators.actionTypes :', extraActionCreators.actionTypes);
+        const queryBuilder = queryBuilders[actionInfo.queryBuilderName!];
+        // console.log('actionInfo.queryBuilder :', actionInfo.queryBuilder);
+        return <Epic<
+          QcAction,
+          QcAction,
+          QcState,
+          QcDependencies<
+            CommonConfigType,
+            ModelMapType,
+            QueryBuilderMapType,
+            ExtraActionCreatorsType,
+            QuerchyDefinitionType,
+            ExtraDependencies
+          >
+        >>this.getHandleQueryEpicFromQueryBuilderByActionType(
+          actionInfo.actionType!, queryBuilder!,
         );
       }),
     );
@@ -321,7 +323,7 @@ export default class Querchy<
     QcDependencies<
       CommonConfigType,
       ModelMapType,
-      QueryCreatorMapType,
+      QueryBuilderMapType,
       ExtraActionCreatorsType,
       QuerchyDefinitionType,
       ExtraDependencies
