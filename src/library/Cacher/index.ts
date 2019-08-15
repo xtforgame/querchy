@@ -73,7 +73,7 @@ export default class Updater<
     [s : string]: SliceReducer,
   };
 
-  extraGlobalReducers?: GlobalReducer;
+  extraGlobalReducer?: GlobalReducer;
 
   rootReducer : RootReducer;
 
@@ -184,7 +184,7 @@ export default class Updater<
         }
       });
       (<any>this.reducerSet.extra) = reducers;
-      this.extraGlobalReducers = (
+      this.extraGlobalReducer = (
         state = {},
         action,
       ) => {
@@ -194,7 +194,7 @@ export default class Updater<
     const resourceReducerRoot = combineReducers(this.allResourceReducers);
     this.rootReducer = (state : any, ...args : any) => {
       const newState = resourceReducerRoot(state, ...args);
-      return (<any>this.extraGlobalReducers!)(newState, ...args);
+      return (<any>this.extraGlobalReducer!)(newState, ...args);
     };
   }
 
