@@ -3,11 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MyCacher001 = exports.createEpicMiddleware001 = exports.MyQuerchy001 = exports.MyAxiosRunner001 = void 0;
+exports.MyCacher001 = exports.MyQuerchy001 = exports.MyAxiosRunner001 = void 0;
 
-var _pureEpic = require("pure-epic");
-
-var _index = require("../index");
+var _typesDef = require("./typesDef001");
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -31,8 +29,8 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-var MyAxiosRunner001 = function (_AxiosRunner) {
-  _inherits(MyAxiosRunner001, _AxiosRunner);
+var MyAxiosRunner001 = function (_typeHelperClass001$G) {
+  _inherits(MyAxiosRunner001, _typeHelperClass001$G);
 
   function MyAxiosRunner001() {
     _classCallCheck(this, MyAxiosRunner001);
@@ -41,12 +39,12 @@ var MyAxiosRunner001 = function (_AxiosRunner) {
   }
 
   return MyAxiosRunner001;
-}(_index.AxiosRunner);
+}(_typesDef.typeHelperClass001.GetAxiosRunnerClass());
 
 exports.MyAxiosRunner001 = MyAxiosRunner001;
 
-var MyQuerchy001 = function (_Querchy) {
-  _inherits(MyQuerchy001, _Querchy);
+var MyQuerchy001 = function (_typeHelperClass001$G2) {
+  _inherits(MyQuerchy001, _typeHelperClass001$G2);
 
   function MyQuerchy001() {
     _classCallCheck(this, MyQuerchy001);
@@ -55,18 +53,12 @@ var MyQuerchy001 = function (_Querchy) {
   }
 
   return MyQuerchy001;
-}(_index.Querchy);
+}(_typesDef.typeHelperClass001.GetQuerchyClass());
 
 exports.MyQuerchy001 = MyQuerchy001;
 
-var createEpicMiddleware001 = function createEpicMiddleware001() {
-  return _pureEpic.createEpicMiddleware.apply(void 0, arguments);
-};
-
-exports.createEpicMiddleware001 = createEpicMiddleware001;
-
-var MyCacher001 = function (_Cacher) {
-  _inherits(MyCacher001, _Cacher);
+var MyCacher001 = function (_typeHelperClass001$G3) {
+  _inherits(MyCacher001, _typeHelperClass001$G3);
 
   function MyCacher001() {
     _classCallCheck(this, MyCacher001);
@@ -82,6 +74,6 @@ var MyCacher001 = function (_Cacher) {
   }]);
 
   return MyCacher001;
-}(_index.Cacher);
+}(_typesDef.typeHelperClass001.GetCacherClass());
 
 exports.MyCacher001 = MyCacher001;

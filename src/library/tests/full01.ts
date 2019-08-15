@@ -12,7 +12,6 @@ import {
 } from './types001';
 
 import {
-  MyState001,
   MyQcStore001,
   Types,
 } from './typesDef001';

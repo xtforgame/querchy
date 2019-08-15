@@ -1,5 +1,6 @@
 import { QcAction } from '../index';
-import { MyState001, MyQcStore001, MyCacher001 } from './types001';
+import { MyCacher001 } from './types001';
+import { MyQcStore001, Types } from './typesDef001';
 export declare const crudToRestMap: {
     create: string;
     read: string;
@@ -7,9 +8,13 @@ export declare const crudToRestMap: {
     delete: string;
     getCollection: string;
 };
+export declare const createEpicMiddleware001: (...args: any[]) => {
+    (_store: import("..").QcStore<any>): (next: Function) => (action: QcAction) => any;
+    run(rootEpic: import("pure-epic").Epic<QcAction, QcAction, any, any>): void;
+};
 export declare type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 export declare class MyStore implements MyQcStore001 {
-    state: MyState001;
+    state: Types['StateType'];
     cacher: MyCacher001;
     epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
     epicMiddlewareCb: EpicMiddlewareCb;

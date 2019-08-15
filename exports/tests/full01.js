@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = exports.MyStore = exports.crudToRestMap = void 0;
+exports["default"] = exports.MyStore = exports.createEpicMiddleware001 = exports.crudToRestMap = void 0;
 
 var _pureEpic = require("pure-epic");
 
@@ -29,6 +29,12 @@ var crudToRestMap = {
   getCollection: 'get'
 };
 exports.crudToRestMap = crudToRestMap;
+
+var createEpicMiddleware001 = function createEpicMiddleware001() {
+  return _pureEpic.createEpicMiddleware.apply(void 0, arguments);
+};
+
+exports.createEpicMiddleware001 = createEpicMiddleware001;
 
 var MyStore = function MyStore(cacher, epicMiddleware, cb) {
   var _this = this;
@@ -84,7 +90,7 @@ var testRun = function testRun(querchy, cacher, resolve) {
   var querchyRootEpic = querchy.getRootEpic();
   var cacherRootEpic = cacher.getRootEpic();
   var rootEpic = (0, _pureEpic.combineEpics)(querchyRootEpic, cacherRootEpic);
-  var epicMiddleware = (0, _types.createEpicMiddleware001)({
+  var epicMiddleware = createEpicMiddleware001({
     dependencies: querchy.deps
   });
 

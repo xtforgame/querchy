@@ -53,6 +53,19 @@ Object.keys(_utils).forEach(function (key) {
   });
 });
 
+var _typeHelpers = require("./type-helpers");
+
+Object.keys(_typeHelpers).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _typeHelpers[key];
+    }
+  });
+});
+
 var _Querchy = _interopRequireDefault(require("./Querchy"));
 
 var _Cacher = _interopRequireDefault(require("./Cacher"));

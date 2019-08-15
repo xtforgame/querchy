@@ -6,3 +6,6 @@ export declare type WithOptional = ReplaceReturnType<(n?: number) => string, Pro
 export declare type OmitNever<T> = Pick<T, {
     [P in keyof T]: T[P] extends never ? never : P;
 }[keyof T]>;
+export interface Constructor<T> {
+    new (...args: any[]): T;
+}

@@ -1,21 +1,25 @@
-import { Epic } from 'pure-epic';
-import { QcAction, QcState, RootReducer, SliceReducer, GlobalReducer, ResourceMerger, GlobalMerger } from '../common/interfaces';
-import { QcBasicAction, QcDependencies, CommonConfig, ModelMap, QueryBuilderMap, ExtraActionCreators, QuerchyDefinition, QcResponseAction } from '../core/interfaces';
+import { QcAction, RootReducer, SliceReducer, GlobalReducer, ResourceMerger, GlobalMerger } from '../common/interfaces';
+import { QcBasicAction, CommonConfig, ModelMap, QueryBuilderMap, ExtraActionCreators, QuerchyDefinition, QcResponseAction } from '../core/interfaces';
 import { ReducerSets } from './interfaces';
-import Querchy from '../Querchy';
-export default class Updater<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>, QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>, ExtraDependencies = any> {
-    querchy: Querchy<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies>;
-    reducerSet: ReducerSets<CommonConfigType, ModelMapType>;
+import Querchy, { QuerchyTypeGroup } from '../Querchy';
+export declare type CacherTypeGroup<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>, QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>, ExtraDependenciesType> = QuerchyTypeGroup<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType> & {
+    QuerchyType: Querchy<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType>;
+    ReducerSetsType: ReducerSets<CommonConfigType, ModelMapType>;
+    GlobalMerger: GlobalMerger<ModelMapType, QcBasicAction>;
+};
+export default class Updater<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>, QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>, ExtraDependenciesType = any, CacherTypeGroupType extends CacherTypeGroup<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType> = CacherTypeGroup<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType>> {
+    querchy: CacherTypeGroupType['QuerchyType'];
+    reducerSet: CacherTypeGroupType['ReducerSetsType'];
     allResourceReducers: {
         [s: string]: SliceReducer;
     };
     extraGlobalReducer?: GlobalReducer;
     rootReducer: RootReducer;
-    constructor(querchy: Querchy<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies>);
+    constructor(querchy: CacherTypeGroupType['QuerchyType']);
     createResourceMergerForResponse: (actionType: string, merger: ResourceMerger<QcBasicAction>) => ResourceMerger<QcResponseAction>;
-    createGlobalMergerForResponse: (actionType: string, merger: GlobalMerger<ModelMapType, QcBasicAction>) => GlobalMerger<ModelMapType, QcResponseAction>;
+    createGlobalMergerForResponse: (actionType: string, merger: CacherTypeGroupType["GlobalMerger"]) => CacherTypeGroupType["GlobalMerger"];
     init(): void;
-    getEpicByActionType(actionType: string): Epic<QcAction, QcAction, QcState, QcDependencies<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies>>;
-    getRootEpic(): Epic<QcAction, QcAction, QcState, QcDependencies<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies>>;
+    getEpicByActionType(actionType: string): CacherTypeGroupType['EpicType'];
+    getRootEpic(): CacherTypeGroupType['EpicType'];
     reduce(state: any, action: QcAction): any;
 }
