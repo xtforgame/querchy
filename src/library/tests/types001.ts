@@ -137,9 +137,32 @@ export type RawActionCreatorUpdateCacheExtra = (
   options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
+
 export type ExtraActionInfoT1 = {
   updateCacheExtra: ExtraActionInfo<QcModelMap001, RawActionCreatorUpdateCacheExtra>;
 };
+
+export type QcExtraActionCreatorsT1 = {
+  [INIT_FUNC] : ActionCreatorsInitFunction<CommonConfig001, QcModelMap001>;
+
+  queryInfos: ExtraQueryInfoT1;
+
+  actionInfos: ExtraActionInfoT1;
+
+  actionTypes?: ResourceModelActionTypes<
+    ResourceModelQueryActions<Required<ExtraQueryInfoT1>>
+  > & ResourceModelActionTypes<
+    ResourceModelActions<Required<ExtraActionInfoT1>>
+  >;
+
+  actions?: ResourceModelQueryActions<
+    Required<ExtraQueryInfoT1>
+  > & ResourceModelActions<
+    Required<ExtraActionInfoT1>
+  >;
+};
+
+/*
 
 export class QcExtraActionCreators001 implements ExtraActionCreators<
   CommonConfig001,
@@ -196,8 +219,10 @@ export class QcExtraActionCreators001 implements ExtraActionCreators<
   }
 }
 
+*/
+
 export type QuerchyDefinition001 = QuerchyDefinition<
-  CommonConfig001, QcModelMap001, QcQueryBuilderMap001, QcExtraActionCreators001
+  CommonConfig001, QcModelMap001, QcQueryBuilderMap001, QcExtraActionCreatorsT1
 >;
 
 export type MyState001 = any;
@@ -211,7 +236,7 @@ export class MyAxiosRunner001 extends AxiosRunner<
   CommonConfig001,
   QcModelMap001,
   QcQueryBuilderMap001,
-  QcExtraActionCreators001,
+  QcExtraActionCreatorsT1,
   QuerchyDefinition001,
   ExtraDependencies001
 > {}
@@ -220,7 +245,7 @@ export class MyQuerchy001 extends Querchy<
   CommonConfig001,
   QcModelMap001,
   QcQueryBuilderMap001,
-  QcExtraActionCreators001,
+  QcExtraActionCreatorsT1,
   QuerchyDefinition001,
   ExtraDependencies001
 > {}
@@ -229,7 +254,7 @@ export type QcDependencies001 = QcDependencies<
   CommonConfig001,
   QcModelMap001,
   QcQueryBuilderMap001,
-  QcExtraActionCreators001,
+  QcExtraActionCreatorsT1,
   QuerchyDefinition001,
   ExtraDependencies001
 >;
@@ -245,7 +270,7 @@ export class MyCacher001 extends Cacher<
   CommonConfig001,
   QcModelMap001,
   QcQueryBuilderMap001,
-  QcExtraActionCreators001,
+  QcExtraActionCreatorsT1,
   QuerchyDefinition001,
   ExtraDependencies001
 > {

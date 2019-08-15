@@ -77,7 +77,7 @@ export type GlobalMerger<
   ActionType extends QcAction
 > = (state: ModelRootState<QcRootState>, action: ActionType) => ModelRootState<QcRootState>;
 
-export type BasicGlobalMerger = GlobalMerger<{}, QcAction>;
+export type BasicGlobalMerger = GlobalMerger<any, QcAction>;
 
 export type GlobalReducer = BasicGlobalMerger;
 

@@ -175,7 +175,7 @@ export default class Updater<
       Object.keys(extraActionCreators.queryInfos).forEach((actionKey) => {
         if (queryInfos[actionKey] && queryInfos[actionKey].globalMerger) {
           const { actionType } = actions[actionKey].creatorRefs.respond;
-          const reducer : BasicGlobalMerger = <BasicGlobalMerger>this.createGlobalMergerForResponse(
+          const reducer = <BasicGlobalMerger>this.createGlobalMergerForResponse(
             actionType,
             queryInfos[actionKey].globalMerger!,
           );

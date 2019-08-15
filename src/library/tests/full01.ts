@@ -5,6 +5,7 @@ import {
   ResourceMetadata,
   ResourceMerger,
   QcBasicAction,
+  INIT_FUNC,
 } from '~/index';
 
 import {
@@ -12,7 +13,7 @@ import {
   MyQcStore001,
   QcModelMap001,
   QcQueryBuilderMap001,
-  QcExtraActionCreators001,
+  QcExtraActionCreatorsT1,
   MyQuerchy001,
   MyAxiosRunner001,
   MyCacher001,
@@ -227,7 +228,34 @@ export default () => {
           },
         },
       },
-      extraActionCreators: new QcExtraActionCreators001(),
+      extraActionCreators: {
+        [INIT_FUNC]: (models) => {
+          // console.log('models :', models);
+        },
+        queryInfos: {
+          extraQuery1: {
+            actionCreator: (options?) => ({ options }),
+            queryBuilderName: 'forExtra',
+            globalMerger: (s) => {
+              delete s.httpBinRes.resourceMap['1'];
+              delete s.httpBinRes.resourceMap['2'];
+              delete s.httpBinRes2.resourceMap['1'];
+              delete s.httpBinRes2.resourceMap['2'];
+              console.log('===================== s :', s);
+              return s;
+            },
+          },
+        },
+        actionInfos: {
+          updateCacheExtra: {
+            actionCreator: (options) => {
+              return {
+                cacheChange: null,
+              };
+            },
+          },
+        },
+      },
     });
     const cacher = new MyCacher001(querchy);
     testRun(querchy, cacher, resolve);
