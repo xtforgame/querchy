@@ -1,9 +1,4 @@
 import {
-  QcAction,
-  ResourceMetadata,
-  ResourceMetadataMap,
-  ResourceState,
-
   SliceReducer,
 } from '~/common/interfaces';
 

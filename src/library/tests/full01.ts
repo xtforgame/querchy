@@ -24,7 +24,7 @@ import {
   getBasicQueryInfos,
   getBasicActionInfos,
   resMergerForColl,
-} from './builtin-t1';
+} from './helpers';
 
 export const crudToRestMap = {
   create: 'post',
@@ -161,7 +161,7 @@ export default () => {
         queryRunners: {
           customRunner: new MyAxiosRunner001(),
         },
-        actionTypePrefix: 'XX/',
+        actionTypePrefix: 'QC_ACTS/',
       },
       models: {
         httpBinRes: {

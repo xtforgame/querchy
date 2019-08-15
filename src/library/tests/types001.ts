@@ -41,7 +41,7 @@ import {
 import {
   ActionInfosT1,
   QueryInfosT1,
-} from './builtin-t1';
+} from '~/templates/builtin-t1';
 
 export interface CommonConfig001 extends CommonConfig {
   defaultQueryRunner: SimpleQueryRunner;
