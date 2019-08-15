@@ -101,7 +101,7 @@ export default class Updater<
   ) : ResourceMerger<QcResponseAction> => {
     return (
       state = {
-        metadataMap: {},
+        queryMap: {},
         resourceMap: {},
       },
       action,
@@ -115,10 +115,10 @@ export default class Updater<
 
   createGlobalMergerForResponse = (
     actionType : string,
-    merger : GlobalMerger<QcBasicAction>,
-  ) : GlobalMerger<QcResponseAction> => {
+    merger : GlobalMerger<ModelMapType, QcBasicAction>,
+  ) : GlobalMerger<ModelMapType, QcResponseAction> => {
     return (
-      state = {},
+      state = <any>{},
       action,
     ) => {
       if (action.type === actionType) { /* action.crudSubType === 'respond' */
@@ -144,7 +144,7 @@ export default class Updater<
       Object.keys(queryInfos).forEach((actionKey) => {
         if (queryInfos[actionKey] && queryInfos[actionKey].resourceMerger) {
           const { actionType } = actions[actionKey].creatorRefs.respond;
-          const reducer : BasicResourceMerger = <BasicResourceMerger>this.createResourceMergerForResponse(
+          const reducer = <BasicResourceMerger>this.createResourceMergerForResponse(
             actionType,
             queryInfos[actionKey].resourceMerger!,
           );
@@ -156,7 +156,7 @@ export default class Updater<
       (<any>this.reducerSet[key]) = reducers;
       this.allResourceReducers[key] = (
         state = {
-          metadataMap: {},
+          queryMap: {},
           resourceMap: {},
         },
         action,

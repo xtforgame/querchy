@@ -72,7 +72,7 @@ export type ActionInfosT1 = {
 
 export const resMerger : ResourceMerger<QcBasicAction> = (
   state = {
-    metadataMap: {},
+    queryMap: {},
     resourceMap: {},
   },
   action,
@@ -84,28 +84,26 @@ export const resMerger : ResourceMerger<QcBasicAction> = (
     && action.response.data.args.id
   ) || '1';
 
-  const { metadataMap } = state;
+  const { queryMap } = state;
 
   const metadata : ResourceMetadata = {
     lastRequest: {
-      ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
+      ...(queryMap[resourceId] && queryMap[resourceId].lastRequest),
       requestTimestamp: action.requestTimestamp,
       responseTimestamp: action.responseTimestamp,
     },
   };
   const result = {
     ...state,
-    metadataMap: {
-      ...metadataMap,
-      [resourceId]: metadata,
-    },
     resourceMap: {
       ...state.resourceMap,
-      [resourceId]: action.response.data,
+      [resourceId]: {
+        metadata,
+        value: action.response.data,
+      },
     },
   };
   if (action.crudType === 'delete') {
-    delete result.metadataMap[resourceId];
     delete result.resourceMap[resourceId];
   }
   return result;
@@ -113,7 +111,7 @@ export const resMerger : ResourceMerger<QcBasicAction> = (
 
 export const resMergerForColl : ResourceMerger<QcBasicAction> = (
   state = {
-    metadataMap: {},
+    queryMap: {},
     resourceMap: {},
   },
   action,
@@ -125,32 +123,29 @@ export const resMergerForColl : ResourceMerger<QcBasicAction> = (
     && action.response.data.args.id
   ) || '1';
 
-  const { metadataMap } = state;
+  const { queryMap } = state;
 
   const metadata : ResourceMetadata = {
     lastRequest: {
-      ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
+      ...(queryMap[resourceId] && queryMap[resourceId].lastRequest),
       requestTimestamp: action.requestTimestamp,
       responseTimestamp: action.responseTimestamp,
     },
   };
   const result = {
     ...state,
-    metadataMap: {
-      ...metadataMap,
-      [resourceId]: metadata,
-      '2': metadata,
-    },
     resourceMap: {
       ...state.resourceMap,
-      [resourceId]: action.response.data,
-      '2': action.response.data,
+      '1': {
+        metadata,
+        value: action.response.data,
+      },
+      '2': {
+        metadata,
+        value: action.response.data,
+      },
     },
   };
-  if (action.crudType === 'delete') {
-    delete result.metadataMap[resourceId];
-    delete result.resourceMap[resourceId];
-  }
   return result;
 };
 

@@ -38,19 +38,23 @@ export interface ResourceMetadata {
   [s : string] : any;
 }
 
-export interface ResourceMetadataMap {
-  [s : string] : ResourceMetadata;
-}
-
 export interface ResourceState {
-  metadataMap: ResourceMetadataMap;
-  resourceMap: { [s : string] : any };
-  [s : string] : any;
+  resourceMap : {
+    [s : string] : {
+      metadata: ResourceMetadata;
+      value: any;
+    };
+  };
+  queryMap : {
+    [s : string] : any;
+  };
 }
 
-export interface ResourceMapState {
+export type ModelRootState<QcRootState> = {
+  [P in keyof QcRootState] : ResourceState;
+} & {
   [s : string] : ResourceState;
-}
+};
 
 export type RunnerType = string;
 
@@ -69,10 +73,11 @@ export type SliceReducer = BasicResourceMerger;
   // ==========================
 
 export type GlobalMerger<
+  QcRootState,
   ActionType extends QcAction
-> = (state: ResourceMapState, action: ActionType) => ResourceMapState;
+> = (state: ModelRootState<QcRootState>, action: ActionType) => ModelRootState<QcRootState>;
 
-export type BasicGlobalMerger = GlobalMerger<QcAction>;
+export type BasicGlobalMerger = GlobalMerger<{}, QcAction>;
 
 export type GlobalReducer = BasicGlobalMerger;
 

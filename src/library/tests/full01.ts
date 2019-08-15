@@ -117,7 +117,7 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
   const epicMiddlewareCb = store.epicMiddlewareCb;
   epicMiddleware.run(rootEpic);
 
-  const { httpBinRes, httpBinRes2 } = querchy.actionCreatorSets;
+  const { httpBinRes, httpBinRes2, extra } = querchy.actionCreatorSets;
   store.dispatch(httpBinRes.create(
     {},
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
@@ -139,7 +139,7 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
 
-  store.dispatch(querchy.actionCreatorSets.extra.extraQuery1(
+  store.dispatch(extra.extraQuery1(
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
   // epicMiddlewareCb(() => {})({ type: 'CANCEL' });

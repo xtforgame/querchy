@@ -127,7 +127,7 @@ export type RawActionCreatorExtraAction1 = (
 };
 
 export type ExtraQueryInfoT1 = {
-  extraQuery1: ExtraQueryInfo<RawActionCreatorExtraAction1>;
+  extraQuery1: ExtraQueryInfo<QcModelMap001, RawActionCreatorExtraAction1>;
 };
 
 export type RawActionCreatorUpdateCacheExtra = (
@@ -138,7 +138,7 @@ export type RawActionCreatorUpdateCacheExtra = (
   [s : string] : any;
 };
 export type ExtraActionInfoT1 = {
-  updateCacheExtra: ExtraActionInfo<RawActionCreatorUpdateCacheExtra>;
+  updateCacheExtra: ExtraActionInfo<QcModelMap001, RawActionCreatorUpdateCacheExtra>;
 };
 
 export class QcExtraActionCreators001 implements ExtraActionCreators<
@@ -147,9 +147,6 @@ export class QcExtraActionCreators001 implements ExtraActionCreators<
   QcQueryBuilderMap001
 > {
   [INIT_FUNC] : ActionCreatorsInitFunction<CommonConfig001, QcModelMap001>;
-  extraQueryCreators: {
-    extraQuery1 : QcActionCreator;
-  };
 
   queryInfos: ExtraQueryInfoT1;
 
@@ -177,7 +174,11 @@ export class QcExtraActionCreators001 implements ExtraActionCreators<
         actionCreator: (options?) => ({ options }),
         queryBuilderName: 'forExtra',
         globalMerger: (s) => {
-          console.log('s :', s);
+          delete s.httpBinRes.resourceMap['1'];
+          delete s.httpBinRes.resourceMap['2'];
+          delete s.httpBinRes2.resourceMap['1'];
+          delete s.httpBinRes2.resourceMap['2'];
+          console.log('===================== s :', s);
           return s;
         },
       },
@@ -190,12 +191,6 @@ export class QcExtraActionCreators001 implements ExtraActionCreators<
             cacheChange: null,
           };
         },
-      },
-    };
-
-    this.extraQueryCreators = {
-      extraQuery1: (xxx : string, sss : number) : any => {
-        return {};
       },
     };
   }

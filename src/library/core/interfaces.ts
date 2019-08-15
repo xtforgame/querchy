@@ -47,20 +47,23 @@ export type ActionInfo<
 // ==================
 
 export type ExtraActionInfoBase<
+  QcRootState,
   RawActionCreator extends Function
 > = ActionInfoBase<RawActionCreator> & {
-  globalMerger?: GlobalMerger<QcBasicAction>,
+  globalMerger?: GlobalMerger<QcRootState, QcBasicAction>,
 };
 
 export type ExtraQueryInfo<
+  QcRootState,
   RawActionCreator extends Function
-> = ExtraActionInfoBase<RawActionCreator> & {
+> = ExtraActionInfoBase<QcRootState, RawActionCreator> & {
   queryBuilderName?: string,
 };
 
 export type ExtraActionInfo<
+  QcRootState,
   RawActionCreator extends Function
-> = ExtraActionInfoBase<RawActionCreator>;
+> = ExtraActionInfoBase<QcRootState, RawActionCreator>;
 
 export type CommonConfig = {
   defaultQueryRunner: SimpleQueryRunner;
@@ -175,13 +178,10 @@ export type ActionCreatorsInitFunction<
 
 export interface ExtraActionCreatorsLike {
   queryInfos: {
-    [s : string]: ExtraQueryInfo<Function>;
+    [s : string]: ExtraQueryInfo<any, Function>;
   };
   actionInfos: {
-    [s : string]: ExtraActionInfo<Function>;
-  };
-  extraQueryCreators: {
-    [s : string] : QcActionCreator;
+    [s : string]: ExtraActionInfo<any, Function>;
   };
   actionTypes?: { [s : string]: string; };
   actions?: { [s: string]: StartQueryActionCreatorWithProps<{}>; };
