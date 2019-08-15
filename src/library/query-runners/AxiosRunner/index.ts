@@ -35,8 +35,6 @@ import {
 import AxiosObservable, { AxiosObservableOptions } from './AxiosObservable';
 
 export default class AxiosRunner<
-  StateType extends State = QcState,
-
   CommonConfigType extends CommonConfig = CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
   QueryBuilderMapType extends QueryBuilderMap<
@@ -52,6 +50,8 @@ export default class AxiosRunner<
   > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>,
 
   ExtraDependencies = any,
+
+  StateType extends State = QcState,
 > implements QueryRunner<
   StateType,
   CommonConfigType,

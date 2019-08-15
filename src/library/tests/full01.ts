@@ -1,24 +1,21 @@
-import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
+import { createEpicMiddleware, combineEpics } from 'pure-epic';
 import {
   QcAction,
   AnyQueryActionCreatorWithProps,
-  ResourceMetadata,
-  ResourceMerger,
-  QcBasicAction,
   INIT_FUNC,
 } from '../index';
 
 import {
-  MyState001,
-  MyQcStore001,
-  QcModelMap001,
-  QcQueryBuilderMap001,
-  QcExtraActionCreatorsT1,
   MyQuerchy001,
   MyAxiosRunner001,
   MyCacher001,
-  createEpicMiddleware001,
 } from './types001';
+
+import {
+  MyState001,
+  MyQcStore001,
+  Types,
+} from './typesDef001';
 
 import {
   getBasicQueryInfos,
@@ -34,10 +31,17 @@ export const crudToRestMap = {
   getCollection: 'get',
 };
 
+export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware<
+  QcAction,
+  Types['StateType'],
+  MyQcStore001,
+  Types['QcDependenciesType']
+>(...args);
+
 export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 
 export class MyStore implements MyQcStore001 {
-  state: MyState001;
+  state: Types['StateType'];
   cacher: MyCacher001;
   epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
   epicMiddlewareCb: EpicMiddlewareCb;

@@ -34,6 +34,58 @@ import {
   createExtraActionCreators,
 } from './actionCreatorHelpers';
 
+export type QuerchyTypeGroup<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<
+    CommonConfigType
+  >,
+  QueryBuilderMapType extends QueryBuilderMap<
+    CommonConfigType, ModelMapType
+  >,
+  ExtraActionCreatorsType extends ExtraActionCreators<
+    CommonConfigType, ModelMapType, QueryBuilderMapType
+  >,
+
+  QuerchyDefinitionType extends QuerchyDefinition<
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
+  >,
+
+  ExtraDependenciesType,
+> = {
+  CommonConfigType: CommonConfigType;
+  ModelMapType: ModelMapType;
+  QueryBuilderMapType: QueryBuilderMapType;
+  ExtraActionCreatorsType: ExtraActionCreatorsType;
+  QuerchyDefinitionType: QuerchyDefinitionType;
+  ExtraDependenciesType: ExtraDependenciesType;
+
+  // ========================
+
+  QcDependenciesType: QcDependencies<
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType
+  >;
+
+  ActionCreatorSetsType: ActionCreatorSets<
+    CommonConfigType,
+    ModelMapType,
+    ExtraActionCreatorsType
+  >;
+
+  QueryBuilderDefinitionType: QueryBuilderDefinition<
+    CommonConfigType,
+    ModelMapType
+  >;
+
+  EpicType: Epic<
+    QcAction,
+    QcAction,
+    QcState,
+    QcDependencies<
+      CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType
+    >
+  >
+};
+
 export default class Querchy<
   CommonConfigType extends CommonConfig = CommonConfig,
   ModelMapType extends ModelMap<
@@ -55,17 +107,27 @@ export default class Querchy<
   >,
 
   ExtraDependencies = any,
-> {
-  querchyDefinition : QuerchyDefinitionType;
-  deps : QcDependencies<
-    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies
-  >;
 
-  actionCreatorSets: ActionCreatorSets<
+  QuerchyTypeGroupType extends QuerchyTypeGroup<
     CommonConfigType,
     ModelMapType,
-    ExtraActionCreatorsType
-  >;
+    QueryBuilderMapType,
+    ExtraActionCreatorsType,
+    QuerchyDefinitionType,
+    ExtraDependencies
+  > = QuerchyTypeGroup<
+    CommonConfigType,
+    ModelMapType,
+    QueryBuilderMapType,
+    ExtraActionCreatorsType,
+    QuerchyDefinitionType,
+    ExtraDependencies
+  >
+> {
+  querchyDefinition : QuerchyDefinitionType;
+  deps : QuerchyTypeGroupType['QcDependenciesType'];
+
+  actionCreatorSets: QuerchyTypeGroupType['ActionCreatorSetsType'];
 
   constructor(
     querchyDefinition : QuerchyDefinitionType,
@@ -180,23 +242,8 @@ export default class Querchy<
 
   getHandleQueryEpicFromQueryBuilderByActionType(
     actionType : string,
-    queryBuilder: QueryBuilderDefinition<
-      CommonConfigType,
-      ModelMapType
-    >,
-  ) : Epic<
-    QcAction,
-    QcAction,
-    QcState,
-    QcDependencies<
-      CommonConfigType,
-      ModelMapType,
-      QueryBuilderMapType,
-      ExtraActionCreatorsType,
-      QuerchyDefinitionType,
-      ExtraDependencies
-    >
-  > {
+    queryBuilder: QuerchyTypeGroupType['QueryBuilderDefinitionType'],
+  ) : QuerchyTypeGroupType['EpicType'] {
     const runner = (<SimpleQueryRunner>queryBuilder!.queryRunner!);
     return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
     .pipe(
@@ -208,52 +255,16 @@ export default class Querchy<
     );
   }
 
-  getEpicForModels() : Epic<
-    QcAction,
-    QcAction,
-    QcState,
-    QcDependencies<
-      CommonConfigType,
-      ModelMapType,
-      QueryBuilderMapType,
-      ExtraActionCreatorsType,
-      QuerchyDefinitionType,
-      ExtraDependencies
-    >
-  > {
+  getEpicForModels() : QuerchyTypeGroupType['EpicType'] {
     const { queryBuilders, models } = this.querchyDefinition;
     return combineEpics(
       ...Object.values(models)
-      .map<Epic<
-        QcAction,
-        QcAction,
-        QcState,
-        QcDependencies<
-          CommonConfigType,
-          ModelMapType,
-          QueryBuilderMapType,
-          ExtraActionCreatorsType,
-          QuerchyDefinitionType,
-          ExtraDependencies
-        >
-      >>((model) => {
+      .map<QuerchyTypeGroupType['EpicType']>((model) => {
         const queryBuilder = queryBuilders[model.queryBuilderName!];
         // console.log('model.queryBuilder :', model.queryBuilder);
         return combineEpics(
           ...Object.values(model.actionTypes!)
-          .map<Epic<
-            QcAction,
-            QcAction,
-            QcState,
-            QcDependencies<
-              CommonConfigType,
-              ModelMapType,
-              QueryBuilderMapType,
-              ExtraActionCreatorsType,
-              QuerchyDefinitionType,
-              ExtraDependencies
-            >
-          >>(
+          .map<QuerchyTypeGroupType['EpicType']>(
             actionType => this.getHandleQueryEpicFromQueryBuilderByActionType(
               actionType!, queryBuilder!,
             ),
@@ -263,70 +274,22 @@ export default class Querchy<
     );
   }
 
-  getEpicForExtraActions() : Epic<
-    QcAction,
-    QcAction,
-    QcState,
-    QcDependencies<
-      CommonConfigType,
-      ModelMapType,
-      QueryBuilderMapType,
-      ExtraActionCreatorsType,
-      QuerchyDefinitionType,
-      ExtraDependencies
-    >
-  > {
+  getEpicForExtraActions() : QuerchyTypeGroupType['EpicType'] {
     const { queryBuilders } = this.querchyDefinition;
     const extraActionCreators = this.querchyDefinition.extraActionCreators!;
     return combineEpics(
       ...Object.values(extraActionCreators.queryInfos!)
-      .map<Epic<
-        QcAction,
-        QcAction,
-        QcState,
-        QcDependencies<
-          CommonConfigType,
-          ModelMapType,
-          QueryBuilderMapType,
-          ExtraActionCreatorsType,
-          QuerchyDefinitionType,
-          ExtraDependencies
-        >
-      >>((actionInfo) => {
+      .map<QuerchyTypeGroupType['EpicType']>((actionInfo) => {
         const queryBuilder = queryBuilders[actionInfo.queryBuilderName!];
         // console.log('actionInfo.queryBuilder :', actionInfo.queryBuilder);
-        return <Epic<
-          QcAction,
-          QcAction,
-          QcState,
-          QcDependencies<
-            CommonConfigType,
-            ModelMapType,
-            QueryBuilderMapType,
-            ExtraActionCreatorsType,
-            QuerchyDefinitionType,
-            ExtraDependencies
-          >
-        >>this.getHandleQueryEpicFromQueryBuilderByActionType(
+        return <QuerchyTypeGroupType['EpicType']>this.getHandleQueryEpicFromQueryBuilderByActionType(
           actionInfo.actionType!, queryBuilder!,
         );
       }),
     );
   }
 
-  getRootEpic() : Epic<
-    QcAction,
-    QcAction,
-    QcState,
-    QcDependencies<
-      CommonConfigType,
-      ModelMapType,
-      QueryBuilderMapType,
-      ExtraActionCreatorsType,
-      QuerchyDefinitionType,
-      ExtraDependencies
-    >
-  > {
+  getRootEpic() : QuerchyTypeGroupType['EpicType'] {
     return combineEpics(
       this.getEpicForModels(),
       this.getEpicForExtraActions(),

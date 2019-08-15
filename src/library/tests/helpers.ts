@@ -2,9 +2,6 @@ import {
   ResourceMetadata,
   ResourceMerger,
   QcBasicAction,
-  ResourceModelQueryActionOptions,
-  ActionInfo,
-  QueryInfo,
 } from '../index';
 
 import {

@@ -35,7 +35,52 @@ import {
   ReducerSets,
 } from './interfaces';
 
-import Querchy from '../Querchy';
+import Querchy, { QuerchyTypeGroup } from '../Querchy';
+
+export type CacherTypeGroup<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<
+    CommonConfigType
+  >,
+  QueryBuilderMapType extends QueryBuilderMap<
+    CommonConfigType, ModelMapType
+  >,
+  ExtraActionCreatorsType extends ExtraActionCreators<
+    CommonConfigType, ModelMapType, QueryBuilderMapType
+  >,
+
+  QuerchyDefinitionType extends QuerchyDefinition<
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
+  >,
+
+  ExtraDependenciesType,
+> = QuerchyTypeGroup<
+  CommonConfigType,
+  ModelMapType,
+  QueryBuilderMapType,
+  ExtraActionCreatorsType,
+  QuerchyDefinitionType,
+  ExtraDependenciesType
+> & {
+  QuerchyType: Querchy<
+    CommonConfigType,
+    ModelMapType,
+    QueryBuilderMapType,
+    ExtraActionCreatorsType,
+    QuerchyDefinitionType,
+    ExtraDependenciesType
+  >;
+
+  ReducerSetsType: ReducerSets<
+    CommonConfigType,
+    ModelMapType
+  >;
+
+  GlobalMerger: GlobalMerger<
+    ModelMapType,
+    QcBasicAction
+  >;
+};
 
 export default class Updater<
   CommonConfigType extends CommonConfig,
@@ -53,21 +98,29 @@ export default class Updater<
     CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
   >,
 
-  ExtraDependencies = any,
-> {
-  querchy : Querchy<
+  ExtraDependenciesType = any,
+
+  // =============
+
+  CacherTypeGroupType extends CacherTypeGroup<
     CommonConfigType,
     ModelMapType,
     QueryBuilderMapType,
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
-    ExtraDependencies
-  >;
-
-  reducerSet : ReducerSets<
+    ExtraDependenciesType
+  > = CacherTypeGroup<
     CommonConfigType,
-    ModelMapType
-  >;
+    ModelMapType,
+    QueryBuilderMapType,
+    ExtraActionCreatorsType,
+    QuerchyDefinitionType,
+    ExtraDependenciesType
+  >
+> {
+  querchy : CacherTypeGroupType['QuerchyType'];
+
+  reducerSet : CacherTypeGroupType['ReducerSetsType'];
 
   allResourceReducers : {
     [s : string]: SliceReducer,
@@ -78,14 +131,7 @@ export default class Updater<
   rootReducer : RootReducer;
 
   constructor(
-    querchy : Querchy<
-      CommonConfigType,
-      ModelMapType,
-      QueryBuilderMapType,
-      ExtraActionCreatorsType,
-      QuerchyDefinitionType,
-      ExtraDependencies
-    >,
+    querchy : CacherTypeGroupType['QuerchyType'],
   ) {
     this.querchy = querchy;
     // console.log('querchy :', querchy.querchyDefinition);
@@ -115,8 +161,8 @@ export default class Updater<
 
   createGlobalMergerForResponse = (
     actionType : string,
-    merger : GlobalMerger<ModelMapType, QcBasicAction>,
-  ) : GlobalMerger<ModelMapType, QcResponseAction> => {
+    merger : CacherTypeGroupType['GlobalMerger'],
+  ) : CacherTypeGroupType['GlobalMerger'] => {
     return (
       state = <any>{},
       action,
@@ -200,19 +246,7 @@ export default class Updater<
 
   getEpicByActionType(
     actionType : string,
-  ) : Epic<
-    QcAction,
-    QcAction,
-    QcState,
-    QcDependencies<
-      CommonConfigType,
-      ModelMapType,
-      QueryBuilderMapType,
-      ExtraActionCreatorsType,
-      QuerchyDefinitionType,
-      ExtraDependencies
-    >
-  > {
+  ) : CacherTypeGroupType['EpicType'] {
     return (action$, store$, dependencies, ...args) => action$.pipe(
       filter<QcAction>((action) => {
         // console.log('action :', action);
@@ -227,53 +261,17 @@ export default class Updater<
     );
   }
 
-  getRootEpic() : Epic<
-    QcAction,
-    QcAction,
-    QcState,
-    QcDependencies<
-      CommonConfigType,
-      ModelMapType,
-      QueryBuilderMapType,
-      ExtraActionCreatorsType,
-      QuerchyDefinitionType,
-      ExtraDependencies
-    >
-  > {
+  getRootEpic() : CacherTypeGroupType['EpicType'] {
     const { models } = this.querchy.querchyDefinition;
     const extraActionCreators = this.querchy.querchyDefinition.extraActionCreators!;
     return combineEpics(
       ...Object.keys(models)
       .filter(modelName => models[modelName].actionTypes!['updateCache'])
-      .map<Epic<
-        QcAction,
-        QcAction,
-        QcState,
-        QcDependencies<
-          CommonConfigType,
-          ModelMapType,
-          QueryBuilderMapType,
-          ExtraActionCreatorsType,
-          QuerchyDefinitionType,
-          ExtraDependencies
-        >
-      >>(modelName => this.getEpicByActionType(
+      .map<CacherTypeGroupType['EpicType']>(modelName => this.getEpicByActionType(
         models[modelName].actionTypes!['updateCache'],
       )),
       // ...Object.values(extraActionCreators.queryInfos)
-      // .map<Epic<
-      //   QcAction,
-      //   QcAction,
-      //   QcState,
-      //   QcDependencies<
-      //     CommonConfigType,
-      //     ModelMapType,
-      //     QueryBuilderMapType,
-      //     ExtraActionCreatorsType,
-      //     QuerchyDefinitionType,
-      //     ExtraDependencies
-      //   >
-      // >>(
+      // .map<CacherTypeGroupType['EpicType']>(
       //   (queryInfo) => {
       //     return this.getEpicByActionType(
       //       queryInfo.querySubActionTypes!.respond,
