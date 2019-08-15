@@ -1,7 +1,7 @@
 import {
   ModelActionCreator,
   ResourceModelActions,
-} from '~/common/interfaces';
+} from '../common/interfaces';
 
 import {
   CrudType,
@@ -17,7 +17,7 @@ import {
   ModelQueryActionCreator,
   ActionInfoBase,
   ExtraActionCreatorsLike,
-} from '~/core/interfaces';
+} from '../core/interfaces';
 
 export const createActionTypes = <
   CommonConfigType extends CommonConfig

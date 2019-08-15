@@ -5,12 +5,12 @@ import {
   ResourceModelQueryActionOptions,
   ActionInfo,
   QueryInfo,
-} from '~/index';
+} from '../index';
 
 import {
   ActionInfosT1,
   QueryInfosT1,
-} from '~/templates/builtin-t1';
+} from '../templates/builtin-t1';
 
 export const resMerger : ResourceMerger<QcBasicAction> = (
   state = {

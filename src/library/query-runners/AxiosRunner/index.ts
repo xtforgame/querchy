@@ -4,14 +4,14 @@ import axios, { AxiosStatic } from 'axios';
 import { mergeMap, filter } from 'rxjs/operators';
 import {
   toNull,
-} from '~/utils/helper-functions';
+} from '../../utils/helper-functions';
 
 import {
   QcAction,
   QcState,
   QcStore,
   RunnerType,
-} from '~/common/interfaces';
+} from '../../common/interfaces';
 
 import {
   CommonConfig,
@@ -22,7 +22,7 @@ import {
   QcRequestConfig,
   QcRequestActionCreators,
   ExtraActionCreators,
-} from '~/core/interfaces';
+} from '../../core/interfaces';
 
 import {
   RunnerRun,
@@ -30,7 +30,7 @@ import {
   QueryRunner,
   Canceler,
   CancelTokenSource,
-} from '~/query-runners/interfaces';
+} from '../../query-runners/interfaces';
 
 import AxiosObservable, { AxiosObservableOptions } from './AxiosObservable';
 

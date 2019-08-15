@@ -1,5 +1,5 @@
-import { QcTimestamp } from '~/common/interfaces';
-import { QcRequestAction, ResourceModelQueryActionOptions } from '~/core/crud-sub-action-interfaces';
+import { QcTimestamp } from '../common/interfaces';
+import { QcRequestAction, ResourceModelQueryActionOptions } from '../core/crud-sub-action-interfaces';
 export interface QcCacheChange {
 }
 export declare type UpdateCacheActionCreator = (cacheChange: QcCacheChange) => QcUpdateCacheAction;

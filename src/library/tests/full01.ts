@@ -6,7 +6,7 @@ import {
   ResourceMerger,
   QcBasicAction,
   INIT_FUNC,
-} from '~/index';
+} from '../index';
 
 import {
   MyState001,

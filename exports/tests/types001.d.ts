@@ -1,6 +1,6 @@
 import { Epic } from 'pure-epic';
-import { CommonConfig, ResourceModel, QuerchyDefinition, QueryBuilderDefinition, QcAction, QcStore, QcDependencies, INIT_FUNC, ActionCreatorsInitFunction, SimpleQueryRunner, Querchy, AxiosRunner, Cacher, ResourceModelActions, ResourceModelActionTypes, ResourceModelQueryActionOptions, ResourceModelQueryActions, QueryInfo, ExtraQueryInfo, ExtraActionInfo } from '~/index';
-import { ActionInfosT1, QueryInfosT1 } from '~/templates/builtin-t1';
+import { CommonConfig, ResourceModel, QuerchyDefinition, QueryBuilderDefinition, QcAction, QcStore, QcDependencies, INIT_FUNC, ActionCreatorsInitFunction, SimpleQueryRunner, Querchy, AxiosRunner, Cacher, ResourceModelActions, ResourceModelActionTypes, ResourceModelQueryActionOptions, ResourceModelQueryActions, QueryInfo, ExtraQueryInfo, ExtraActionInfo } from '../index';
+import { ActionInfosT1, QueryInfosT1 } from '../templates/builtin-t1';
 export interface CommonConfig001 extends CommonConfig {
     defaultQueryRunner: SimpleQueryRunner;
     queryRunners: {

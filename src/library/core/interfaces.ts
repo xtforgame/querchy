@@ -5,7 +5,7 @@ import {
   ResourceModelActions,
   ResourceMerger,
   GlobalMerger,
-} from '~/common/interfaces';
+} from '../common/interfaces';
 
 import {
   QcBasicAction,

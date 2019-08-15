@@ -1,4 +1,4 @@
-import { ArgumentTypes, ReturnType } from '~/utils/helper-functions';
+import { ArgumentTypes, ReturnType } from '../utils/helper-functions';
 export declare type QcTimestamp = number;
 export declare type QcAction = {
     type: string;

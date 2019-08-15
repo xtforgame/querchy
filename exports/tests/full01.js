@@ -7,7 +7,7 @@ exports["default"] = exports.MyStore = exports.crudToRestMap = void 0;
 
 var _pureEpic = require("pure-epic");
 
-var _ = require("./..");
+var _index = require("../index");
 
 var _types = require("./types001");
 
@@ -253,7 +253,7 @@ var _default = function _default() {
           }
         }
       },
-      extraActionCreators: (_extraActionCreators = {}, _defineProperty(_extraActionCreators, _.INIT_FUNC, function (models) {}), _defineProperty(_extraActionCreators, "queryInfos", {
+      extraActionCreators: (_extraActionCreators = {}, _defineProperty(_extraActionCreators, _index.INIT_FUNC, function (models) {}), _defineProperty(_extraActionCreators, "queryInfos", {
         extraQuery1: {
           actionCreator: function actionCreator(options) {
             return {

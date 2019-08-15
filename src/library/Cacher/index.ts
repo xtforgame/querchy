@@ -1,7 +1,7 @@
 import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap, filter } from 'rxjs/operators';
-import { toUnderscore } from '~/common/common-functions';
+import { toUnderscore } from '../common/common-functions';
 
 import {
   QcAction,
@@ -15,7 +15,7 @@ import {
   BasicResourceMerger,
   GlobalMerger,
   BasicGlobalMerger,
-} from '~/common/interfaces';
+} from '../common/interfaces';
 
 import {
   QcBasicAction,
@@ -27,15 +27,15 @@ import {
   QuerchyDefinition,
 
   QcResponseAction,
-} from '~/core/interfaces';
+} from '../core/interfaces';
 
-import combineReducers from '~/redux/combineReducers';
+import combineReducers from '../redux/combineReducers';
 
 import {
   ReducerSets,
 } from './interfaces';
 
-import Querchy from '~/Querchy';
+import Querchy from '../Querchy';
 
 export default class Updater<
   CommonConfigType extends CommonConfig,

@@ -1,5 +1,5 @@
-import { SliceReducer } from '~/common/interfaces';
-import { CommonConfig, ModelMap } from '~/core/interfaces';
+import { SliceReducer } from '../common/interfaces';
+import { CommonConfig, ModelMap } from '../core/interfaces';
 export * from './update-cache-action-interfaces';
 export declare type ReducerSet<T> = {
     [P in keyof T]: SliceReducer;

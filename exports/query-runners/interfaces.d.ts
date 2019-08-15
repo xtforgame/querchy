@@ -1,7 +1,7 @@
 import { State, ActionsObservable, StateObservable } from 'pure-epic';
 import { Observable } from 'rxjs';
-import { QcAction, QcState, RunnerType } from '~/common/interfaces';
-import { CommonConfig, ModelMap, QueryBuilderDefinition, QueryBuilderMap, QuerchyDefinition, QcDependencies, ExtraActionCreators, QcBasicAction } from '~/core/interfaces';
+import { QcAction, QcState, RunnerType } from '../common/interfaces';
+import { CommonConfig, ModelMap, QueryBuilderDefinition, QueryBuilderMap, QuerchyDefinition, QcDependencies, ExtraActionCreators, QcBasicAction } from '../core/interfaces';
 export interface Canceler {
     (message?: string): void;
 }

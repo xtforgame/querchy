@@ -1,5 +1,5 @@
-import { ModelActionCreator, ResourceModelActions } from '~/common/interfaces';
-import { CommonConfig, ResourceModel, ResourceModelQueryActions, QueryActionCreatorWithProps, ActionInfoBase, ExtraActionCreatorsLike } from '~/core/interfaces';
+import { ModelActionCreator, ResourceModelActions } from '../common/interfaces';
+import { CommonConfig, ResourceModel, ResourceModelQueryActions, QueryActionCreatorWithProps, ActionInfoBase, ExtraActionCreatorsLike } from '../core/interfaces';
 export declare const createActionTypes: <CommonConfigType extends CommonConfig>(actionTypePrefix2: string, commonConfig: CommonConfigType, names: string[]) => {
     [s: string]: string;
 };

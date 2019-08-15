@@ -1,11 +1,11 @@
 import {
   SliceReducer,
-} from '~/common/interfaces';
+} from '../common/interfaces';
 
 import {
   CommonConfig,
   ModelMap,
-} from '~/core/interfaces';
+} from '../core/interfaces';
 
 export * from './update-cache-action-interfaces';
 

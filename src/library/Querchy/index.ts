@@ -1,13 +1,13 @@
 import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { toUnderscore } from '~/common/common-functions';
+import { toUnderscore } from '../common/common-functions';
 
 import {
   QcAction,
   QcState,
   QcActionCreatorWithProps,
-} from '~/common/interfaces';
+} from '../common/interfaces';
 
 import {
   CommonConfig,
@@ -21,11 +21,11 @@ import {
   INIT_FUNC,
   ModelQueryActionCreatorSet,
   ActionCreatorSets,
-} from '~/core/interfaces';
+} from '../core/interfaces';
 
 import {
   ReplaceReturnType,
-} from '~/utils/helper-functions';
+} from '../utils/helper-functions';
 
 import {
   createModelActionTypes,

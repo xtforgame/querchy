@@ -1,4 +1,4 @@
-import { QcAction } from '~/index';
+import { QcAction } from '../index';
 import { MyState001, MyQcStore001, MyCacher001 } from './types001';
 export declare const crudToRestMap: {
     create: string;

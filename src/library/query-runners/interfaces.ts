@@ -5,7 +5,7 @@ import {
   QcAction,
   QcState,
   RunnerType,
-} from '~/common/interfaces';
+} from '../common/interfaces';
 
 import {
   CommonConfig,
@@ -18,7 +18,7 @@ import {
 
   QcBasicAction,
   StartQueryActionCreatorWithProps,
-} from '~/core/interfaces';
+} from '../core/interfaces';
 
 export interface Canceler {
   (message?: string): void;

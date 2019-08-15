@@ -2,7 +2,7 @@ import {
   ResourceModelQueryActionOptions,
   ActionInfo,
   QueryInfo,
-} from '~/core/interfaces';
+} from '../core/interfaces';
 
 export const crudToRestMap = {
   create: 'post',

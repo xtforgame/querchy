@@ -1,6 +1,6 @@
 import { AxiosStatic, AxiosRequestConfig, CancelTokenSource } from 'axios';
 import { Observable } from 'rxjs';
-import { QcRequestActionCreators } from '~/core/interfaces';
+import { QcRequestActionCreators } from '../../core/interfaces';
 export interface AxiosObservableOptions {
     cancelStream$?: Observable<any>;
     axiosCancelTokenSource?: CancelTokenSource;

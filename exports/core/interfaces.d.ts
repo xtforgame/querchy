@@ -1,4 +1,4 @@
-import { RunnerType, QcActionCreator, ResourceMerger, GlobalMerger } from '~/common/interfaces';
+import { RunnerType, QcActionCreator, ResourceMerger, GlobalMerger } from '../common/interfaces';
 import { QcBasicAction, QcRequestConfig, StartQueryActionCreatorWithProps } from './crud-sub-action-interfaces';
 export * from './crud-sub-action-interfaces';
 export declare type SimpleQueryRunner = {

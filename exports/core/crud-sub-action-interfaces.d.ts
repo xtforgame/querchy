@@ -1,5 +1,5 @@
-import { ArgumentTypes, ReturnType } from '~/utils/helper-functions';
-import { QcTimestamp, QcAction } from '~/common/interfaces';
+import { ArgumentTypes, ReturnType } from '../utils/helper-functions';
+import { QcTimestamp, QcAction } from '../common/interfaces';
 export declare type QcTransferables = {
     requestTimestamp: QcTimestamp;
     requestAction?: QcRequestAction;

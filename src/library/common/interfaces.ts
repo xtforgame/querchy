@@ -1,7 +1,7 @@
 import {
   ArgumentTypes,
   ReturnType,
-} from '~/utils/helper-functions';
+} from '../utils/helper-functions';
 
 export type QcTimestamp = number;
 

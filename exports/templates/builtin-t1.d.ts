@@ -1,4 +1,4 @@
-import { ResourceModelQueryActionOptions, ActionInfo, QueryInfo } from '~/core/interfaces';
+import { ResourceModelQueryActionOptions, ActionInfo, QueryInfo } from '../core/interfaces';
 export declare const crudToRestMap: {
     create: string;
     read: string;

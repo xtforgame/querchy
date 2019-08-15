@@ -6,15 +6,15 @@ import {
 
 import {
   QcAction,
-} from '~/common/interfaces';
+} from '../../common/interfaces';
 
 import {
   QcRequestActionCreators,
-} from '~/core/interfaces';
+} from '../../core/interfaces';
 
 import {
   toNull,
-} from '~/utils/helper-functions';
+} from '../../utils/helper-functions';
 
 export interface AxiosObservableOptions {
   cancelStream$?: Observable<any>;

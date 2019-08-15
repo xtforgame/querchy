@@ -7,7 +7,7 @@ exports.MyCacher001 = exports.createEpicMiddleware001 = exports.MyQuerchy001 = e
 
 var _pureEpic = require("pure-epic");
 
-var _ = require("./..");
+var _index = require("../index");
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -41,7 +41,7 @@ var MyAxiosRunner001 = function (_AxiosRunner) {
   }
 
   return MyAxiosRunner001;
-}(_.AxiosRunner);
+}(_index.AxiosRunner);
 
 exports.MyAxiosRunner001 = MyAxiosRunner001;
 
@@ -55,7 +55,7 @@ var MyQuerchy001 = function (_Querchy) {
   }
 
   return MyQuerchy001;
-}(_.Querchy);
+}(_index.Querchy);
 
 exports.MyQuerchy001 = MyQuerchy001;
 
@@ -82,6 +82,6 @@ var MyCacher001 = function (_Cacher) {
   }]);
 
   return MyCacher001;
-}(_.Cacher);
+}(_index.Cacher);
 
 exports.MyCacher001 = MyCacher001;

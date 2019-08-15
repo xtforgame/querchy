@@ -1,11 +1,11 @@
 import {
   QcTimestamp,
-} from '~/common/interfaces';
+} from '../common/interfaces';
 
 import {
   QcRequestAction,
   ResourceModelQueryActionOptions,
-} from '~/core/crud-sub-action-interfaces';
+} from '../core/crud-sub-action-interfaces';
 
 export interface QcCacheChange {
 }
