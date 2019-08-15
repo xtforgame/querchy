@@ -3,7 +3,8 @@ import {
   QcAction,
   QcActionCreator,
   ResourceModelActions,
-  Merger,
+  ResourceMerger,
+  GlobalMerger,
 } from '~/common/interfaces';
 
 import {
@@ -26,22 +27,30 @@ export type ActionInfoBase<
   name?: string;
   actionType?: string;
   actionCreator: RawActionCreator;
-  mergerCreator?: Merger<QcBasicAction>,
+  querySubActionTypes?: { [s : string]: string },
+};
+
+export type ModelActionInfoBase<
+  RawActionCreator extends Function
+> = ActionInfoBase<RawActionCreator> & {
+  resourceMerger?: ResourceMerger<QcBasicAction>,
 };
 
 export type QueryInfo<
   RawActionCreator extends Function
-> = ActionInfoBase<RawActionCreator>;
+> = ModelActionInfoBase<RawActionCreator>;
 
 export type ActionInfo<
   RawActionCreator extends Function
-> = ActionInfoBase<RawActionCreator>;
+> = ModelActionInfoBase<RawActionCreator>;
 
 // ==================
 
 export type ExtraActionInfoBase<
   RawActionCreator extends Function
-> = ActionInfoBase<RawActionCreator>;
+> = ActionInfoBase<RawActionCreator> & {
+  globalMerger?: GlobalMerger<QcBasicAction>,
+};
 
 export type ExtraQueryInfo<
   RawActionCreator extends Function

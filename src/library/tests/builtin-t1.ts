@@ -1,6 +1,6 @@
 import {
   ResourceMetadata,
-  Merger,
+  ResourceMerger,
   QcBasicAction,
   ResourceModelQueryActionOptions,
   ActionInfo,
@@ -70,7 +70,7 @@ export type ActionInfosT1 = {
 
 // ===============================================================
 
-export const resMerger : Merger<QcBasicAction> = (
+export const resMerger : ResourceMerger<QcBasicAction> = (
   state = {
     metadataMap: {},
     resourceMap: {},
@@ -93,7 +93,7 @@ export const resMerger : Merger<QcBasicAction> = (
       responseTimestamp: action.responseTimestamp,
     },
   };
-  return {
+  const result = {
     ...state,
     metadataMap: {
       ...metadataMap,
@@ -104,29 +104,77 @@ export const resMerger : Merger<QcBasicAction> = (
       [resourceId]: action.response.data,
     },
   };
+  if (action.crudType === 'delete') {
+    delete result.metadataMap[resourceId];
+    delete result.resourceMap[resourceId];
+  }
+  return result;
 };
 
-export const basicQueryInfos : QueryInfosT1 = {
+export const resMergerForColl : ResourceMerger<QcBasicAction> = (
+  state = {
+    metadataMap: {},
+    resourceMap: {},
+  },
+  action,
+) => {
+  const resourceId : string = (
+    action.response
+    && action.response.data
+    && action.response.data.args
+    && action.response.data.args.id
+  ) || '1';
+
+  const { metadataMap } = state;
+
+  const metadata : ResourceMetadata = {
+    lastRequest: {
+      ...(metadataMap[resourceId] && metadataMap[resourceId].lastRequest),
+      requestTimestamp: action.requestTimestamp,
+      responseTimestamp: action.responseTimestamp,
+    },
+  };
+  const result = {
+    ...state,
+    metadataMap: {
+      ...metadataMap,
+      [resourceId]: metadata,
+      '2': metadata,
+    },
+    resourceMap: {
+      ...state.resourceMap,
+      [resourceId]: action.response.data,
+      '2': action.response.data,
+    },
+  };
+  if (action.crudType === 'delete') {
+    delete result.metadataMap[resourceId];
+    delete result.resourceMap[resourceId];
+  }
+  return result;
+};
+
+export const getBasicQueryInfos : () => QueryInfosT1 = () => ({
   create: {
     actionCreator: (data, options?) => ({ data, options }),
-    mergerCreator: resMerger,
+    resourceMerger: resMerger,
   },
   read: {
     actionCreator: (resourceId, options?) => ({ resourceId, options }),
-    mergerCreator: resMerger,
+    resourceMerger: resMerger,
   },
   update: {
     actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
-    mergerCreator: resMerger,
+    resourceMerger: resMerger,
   },
   delete: {
     actionCreator: (resourceId, options?) => ({ resourceId, options }),
-    mergerCreator: resMerger,
+    resourceMerger: resMerger,
   },
-};
+});
 
-export const basicActionInfos : ActionInfosT1 = {
+export const getBasicActionInfos : () => ActionInfosT1 = () => ({
   updateCache: {
     actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
   },
-};
+});

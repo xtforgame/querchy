@@ -126,8 +126,8 @@ export type RawActionCreatorExtraAction1 = (
   [s : string] : any;
 };
 
-export type QueryInfosExtra = {
-  extraAction1: ExtraQueryInfo<RawActionCreatorExtraAction1>;
+export type ExtraQueryInfoT1 = {
+  extraQuery1: ExtraQueryInfo<RawActionCreatorExtraAction1>;
 };
 
 export type RawActionCreatorUpdateCacheExtra = (
@@ -137,7 +137,7 @@ export type RawActionCreatorUpdateCacheExtra = (
   options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
-export type ActionInfosExtra = {
+export type ExtraActionInfoT1 = {
   updateCacheExtra: ExtraActionInfo<RawActionCreatorUpdateCacheExtra>;
 };
 
@@ -148,23 +148,23 @@ export class QcExtraActionCreators001 implements ExtraActionCreators<
 > {
   [INIT_FUNC] : ActionCreatorsInitFunction<CommonConfig001, QcModelMap001>;
   extraQueryCreators: {
-    extraAction1 : QcActionCreator;
+    extraQuery1 : QcActionCreator;
   };
 
-  queryInfos: QueryInfosExtra;
+  queryInfos: ExtraQueryInfoT1;
 
-  actionInfos: ActionInfosExtra;
+  actionInfos: ExtraActionInfoT1;
 
   actionTypes?: ResourceModelActionTypes<
-    ResourceModelQueryActions<Required<QueryInfosExtra>>
+    ResourceModelQueryActions<Required<ExtraQueryInfoT1>>
   > & ResourceModelActionTypes<
-    ResourceModelActions<Required<ActionInfosExtra>>
+    ResourceModelActions<Required<ExtraActionInfoT1>>
   >;
 
   actions?: ResourceModelQueryActions<
-    Required<QueryInfosExtra>
+    Required<ExtraQueryInfoT1>
   > & ResourceModelActions<
-    Required<ActionInfosExtra>
+    Required<ExtraActionInfoT1>
   >;
 
   constructor() {
@@ -173,11 +173,13 @@ export class QcExtraActionCreators001 implements ExtraActionCreators<
     };
 
     this.queryInfos = {
-      extraAction1: {
-        actionCreator: (options) : any => {
-          return {};
-        },
+      extraQuery1: {
+        actionCreator: (options?) => ({ options }),
         queryBuilderName: 'forExtra',
+        globalMerger: (s) => {
+          console.log('s :', s);
+          return s;
+        },
       },
     };
 
@@ -192,7 +194,7 @@ export class QcExtraActionCreators001 implements ExtraActionCreators<
     };
 
     this.extraQueryCreators = {
-      extraAction1: (xxx : string, sss : number) : any => {
+      extraQuery1: (xxx : string, sss : number) : any => {
         return {};
       },
     };

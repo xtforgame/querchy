@@ -10,8 +10,11 @@ import {
 
   RootReducer,
   SliceReducer,
-  Merger,
-  BasicMerger,
+  GlobalReducer,
+  ResourceMerger,
+  BasicResourceMerger,
+  GlobalMerger,
+  BasicGlobalMerger,
 } from '~/common/interfaces';
 
 import {
@@ -66,7 +69,11 @@ export default class Updater<
     ModelMapType
   >;
 
-  allReducers : { [s : string]: SliceReducer };
+  allResourceReducers : {
+    [s : string]: SliceReducer,
+  };
+
+  extraGlobalReducers?: GlobalReducer;
 
   rootReducer : RootReducer;
 
@@ -83,15 +90,15 @@ export default class Updater<
     this.querchy = querchy;
     // console.log('querchy :', querchy.querchyDefinition);
     this.reducerSet = <any>{};
-    this.allReducers = {};
+    this.allResourceReducers = {};
     this.rootReducer = () => {};
     this.init();
   }
 
-  createResponseMerger = (
+  createResourceMergerForResponse = (
     actionType : string,
-    merger : Merger<QcBasicAction>,
-  ) : Merger<QcResponseAction> => {
+    merger : ResourceMerger<QcBasicAction>,
+  ) : ResourceMerger<QcResponseAction> => {
     return (
       state = {
         metadataMap: {},
@@ -106,8 +113,25 @@ export default class Updater<
     };
   }
 
+  createGlobalMergerForResponse = (
+    actionType : string,
+    merger : GlobalMerger<QcBasicAction>,
+  ) : GlobalMerger<QcResponseAction> => {
+    return (
+      state = {},
+      action,
+    ) => {
+      if (action.type === actionType) { /* action.crudSubType === 'respond' */
+        return merger(state, action);
+      }
+      return state;
+    };
+  }
+
   init() {
     const { models } = this.querchy.querchyDefinition;
+    const extraActionCreators = this.querchy.querchyDefinition.extraActionCreators!;
+
     Object.keys(models)
     .forEach((key) => {
       const reducers : { [s : string] : SliceReducer } = {};
@@ -118,11 +142,11 @@ export default class Updater<
       const queryInfos = model.queryInfos! || {};
 
       Object.keys(queryInfos).forEach((actionKey) => {
-        if (queryInfos[actionKey] && queryInfos[actionKey].mergerCreator) {
+        if (queryInfos[actionKey] && queryInfos[actionKey].resourceMerger) {
           const { actionType } = actions[actionKey].creatorRefs.respond;
-          const reducer : BasicMerger = <BasicMerger>this.createResponseMerger(
+          const reducer : BasicResourceMerger = <BasicResourceMerger>this.createResourceMergerForResponse(
             actionType,
-            queryInfos[actionKey].mergerCreator!,
+            queryInfos[actionKey].resourceMerger!,
           );
           reducers[actionKey] = reducer;
           reducerArray.push(reducer);
@@ -130,7 +154,7 @@ export default class Updater<
       });
 
       (<any>this.reducerSet[key]) = reducers;
-      this.allReducers[key] = (
+      this.allResourceReducers[key] = (
         state = {
           metadataMap: {},
           resourceMap: {},
@@ -140,7 +164,38 @@ export default class Updater<
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
     });
-    this.rootReducer = combineReducers(this.allReducers);
+
+    {
+      const reducers : { [s : string] : GlobalReducer } = {};
+      const reducerArray : GlobalReducer[] = [];
+
+      const actions = extraActionCreators.actions!;
+      const queryInfos = extraActionCreators.queryInfos! || {};
+
+      Object.keys(extraActionCreators.queryInfos).forEach((actionKey) => {
+        if (queryInfos[actionKey] && queryInfos[actionKey].globalMerger) {
+          const { actionType } = actions[actionKey].creatorRefs.respond;
+          const reducer : BasicGlobalMerger = <BasicGlobalMerger>this.createGlobalMergerForResponse(
+            actionType,
+            queryInfos[actionKey].globalMerger!,
+          );
+          reducers[actionKey] = reducer;
+          reducerArray.push(reducer);
+        }
+      });
+      (<any>this.reducerSet.extra) = reducers;
+      this.extraGlobalReducers = (
+        state = {},
+        action,
+      ) => {
+        return reducerArray.reduce((s, r) => r(s, action), state);
+      };
+    }
+    const resourceReducerRoot = combineReducers(this.allResourceReducers);
+    this.rootReducer = (state : any, ...args : any) => {
+      const newState = resourceReducerRoot(state, ...args);
+      return (<any>this.extraGlobalReducers!)(newState, ...args);
+    };
   }
 
   getEpicByActionType(
@@ -167,7 +222,7 @@ export default class Updater<
         return true;
       }),
       mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        return [{ type: 'XXX' }];
+        return [{ type: `${actionType}_XXX` }];
       }),
     );
   }
@@ -186,8 +241,10 @@ export default class Updater<
     >
   > {
     const { models } = this.querchy.querchyDefinition;
+    const extraActionCreators = this.querchy.querchyDefinition.extraActionCreators!;
     return combineEpics(
-      ...Object.values(models)
+      ...Object.keys(models)
+      .filter(modelName => models[modelName].actionTypes!['updateCache'])
       .map<Epic<
         QcAction,
         QcAction,
@@ -200,31 +257,29 @@ export default class Updater<
           QuerchyDefinitionType,
           ExtraDependencies
         >
-      >>((model) => {
-        return combineEpics(
-          ...Object.values(model.actions!)
-          .filter(a => a.creatorRefs)
-          .map<Epic<
-            QcAction,
-            QcAction,
-            QcState,
-            QcDependencies<
-              CommonConfigType,
-              ModelMapType,
-              QueryBuilderMapType,
-              ExtraActionCreatorsType,
-              QuerchyDefinitionType,
-              ExtraDependencies
-            >
-          >>(
-            (action) => {
-              return this.getEpicByActionType(
-                action.creatorRefs.respond.actionType,
-              );
-            },
-          ),
-        );
-      }),
+      >>(modelName => this.getEpicByActionType(
+        models[modelName].actionTypes!['updateCache'],
+      )),
+      // ...Object.values(extraActionCreators.queryInfos)
+      // .map<Epic<
+      //   QcAction,
+      //   QcAction,
+      //   QcState,
+      //   QcDependencies<
+      //     CommonConfigType,
+      //     ModelMapType,
+      //     QueryBuilderMapType,
+      //     ExtraActionCreatorsType,
+      //     QuerchyDefinitionType,
+      //     ExtraDependencies
+      //   >
+      // >>(
+      //   (queryInfo) => {
+      //     return this.getEpicByActionType(
+      //       queryInfo.querySubActionTypes!.respond,
+      //     );
+      //   },
+      // ),
     );
   }
 

@@ -3,7 +3,7 @@ import {
   QcAction,
   AnyQueryActionCreatorWithProps,
   ResourceMetadata,
-  Merger,
+  ResourceMerger,
   QcBasicAction,
 } from '~/index';
 
@@ -20,8 +20,9 @@ import {
 } from './types001';
 
 import {
-  basicQueryInfos,
-  basicActionInfos,
+  getBasicQueryInfos,
+  getBasicActionInfos,
+  resMergerForColl,
 } from './builtin-t1';
 
 export const crudToRestMap = {
@@ -57,6 +58,8 @@ export class MyStore implements MyQcStore001 {
     console.log('action.type :', action.type);
     if (action.crudSubType === 'respond') {
       // console.log('action.response.data :', action.response.data);
+    } else if (action.crudSubType === 'respondError') {
+      // console.log('action :', action);
     }
     if (action.response) {
       if (action.response.data.headers) {
@@ -69,7 +72,9 @@ export class MyStore implements MyQcStore001 {
     }
     this.state = this.cacher.reduce(this.getState(), action);
     this.epicMiddlewareCb(() => {})(action);
-    // console.log('this.state :', this.state);
+    if (action.response) {
+      console.log('this.state :', this.state);
+    }
 
     this.cb(action);
   }
@@ -134,7 +139,7 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
 
-  store.dispatch(querchy.actionCreatorSets.extra.extraAction1(
+  store.dispatch(querchy.actionCreatorSets.extra.extraQuery1(
     { query: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
   // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
@@ -161,19 +166,20 @@ export default () => {
         httpBinRes: {
           url: 'https://httpbin.org',
           buildUrl: action => `https://httpbin.org/${crudToRestMap[action.crudType]}`,
-          queryInfos: basicQueryInfos,
-          actionInfos: basicActionInfos,
+          queryInfos: getBasicQueryInfos(),
+          actionInfos: getBasicActionInfos(),
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
           queryBuilderName: 'customPath',
           queryInfos: {
-            ...basicQueryInfos,
+            ...getBasicQueryInfos(),
             getCollection: {
               actionCreator: (options?) => ({ options }),
+              resourceMerger: resMergerForColl,
             },
           },
-          actionInfos: basicActionInfos,
+          actionInfos: getBasicActionInfos(),
         },
       },
       queryBuilders: {

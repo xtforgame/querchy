@@ -92,6 +92,12 @@ export const wrapQueryActionCreator = <
   const actionType = actionTypes[crudType]!;
   actionInfo.name = crudType;
   actionInfo.actionType = actionType;
+  actionInfo.querySubActionTypes = {
+    start: actionType,
+    respond: `${actionType}_RESPOND`,
+    respondError: `${actionType}_ERROR`,
+    cancel: `${actionType}_CANCEL`,
+  };
 
   const startFunc : QueryActionCreatorWithProps<
     Function, Function

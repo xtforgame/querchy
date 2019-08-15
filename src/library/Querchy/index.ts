@@ -21,7 +21,6 @@ import {
   INIT_FUNC,
   ModelQueryActionCreatorSet,
   ActionCreatorSets,
-  ExtraActionInfoBase,
 } from '~/core/interfaces';
 
 import {
@@ -294,7 +293,6 @@ export default class Querchy<
           ExtraDependencies
         >
       >>((actionInfo) => {
-        console.log('extraActionCreators.actionTypes :', extraActionCreators.actionTypes);
         const queryBuilder = queryBuilders[actionInfo.queryBuilderName!];
         // console.log('actionInfo.queryBuilder :', actionInfo.queryBuilder);
         return <Epic<

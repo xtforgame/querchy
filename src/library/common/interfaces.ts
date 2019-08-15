@@ -48,21 +48,37 @@ export interface ResourceState {
   [s : string] : any;
 }
 
+export interface ResourceMapState {
+  [s : string] : ResourceState;
+}
+
 export type RunnerType = string;
 
 // ==========
 
 // for cacher
 
-export type Merger<
+export type ResourceMerger<
   ActionType extends QcAction
 > = (state: ResourceState, action: ActionType) => ResourceState;
 
-export type BasicMerger = Merger<QcAction>;
+export type BasicResourceMerger = ResourceMerger<QcAction>;
+
+export type SliceReducer = BasicResourceMerger;
+
+  // ==========================
+
+export type GlobalMerger<
+  ActionType extends QcAction
+> = (state: ResourceMapState, action: ActionType) => ResourceMapState;
+
+export type BasicGlobalMerger = GlobalMerger<QcAction>;
+
+export type GlobalReducer = BasicGlobalMerger;
+
+  // ==========================
 
 export type RootReducer = (state: any, action: QcAction) => any;
-
-export type SliceReducer = BasicMerger;
 
 // ========================================
 
