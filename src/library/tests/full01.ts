@@ -34,7 +34,7 @@ export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware
   QcAction,
   Types['StateType'],
   MyQcStore001,
-  Types['QcDependenciesType']
+  any
 >(...args);
 
 export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
@@ -92,9 +92,7 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
 
   const rootEpic = combineEpics(querchyRootEpic, cacherRootEpic);
 
-  const epicMiddleware = createEpicMiddleware001({
-    dependencies: querchy.deps,
-  });
+  const epicMiddleware = createEpicMiddleware001();
   const cb = (action : QcAction) => {
     const actionCreator : AnyQueryActionCreatorWithProps = action.actionCreator;
     if (actionCreator) {

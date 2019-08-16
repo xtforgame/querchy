@@ -82,10 +82,10 @@ export default class AxiosRunner<
     QuerchyDefinitionType,
     ExtraDependencies
   > = (
-    action, queryBuilder, { store$, action$, dependencies },
+    action, queryBuilder, dependencies, { state$, action$ },
   ) => {
     // console.log('action :', action);
-    // console.log('store :', store$.value);
+    // console.log('state :', state$.value);
     // console.log('dependencies :', dependencies);
 
     const { querchyDef: { commonConfig, models } } = dependencies!;

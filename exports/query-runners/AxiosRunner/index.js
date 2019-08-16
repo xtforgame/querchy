@@ -32,10 +32,9 @@ var AxiosRunner = function AxiosRunner(a) {
 
   _defineProperty(this, "axiosObservable", void 0);
 
-  _defineProperty(this, "handleQuery", function (action, queryBuilder, _ref) {
-    var store$ = _ref.store$,
-        action$ = _ref.action$,
-        dependencies = _ref.dependencies;
+  _defineProperty(this, "handleQuery", function (action, queryBuilder, dependencies, _ref) {
+    var state$ = _ref.state$,
+        action$ = _ref.action$;
     var _ref2 = dependencies,
         _ref2$querchyDef = _ref2.querchyDef,
         commonConfig = _ref2$querchyDef.commonConfig,

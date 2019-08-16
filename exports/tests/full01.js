@@ -90,9 +90,7 @@ var testRun = function testRun(querchy, cacher, resolve) {
   var querchyRootEpic = querchy.getRootEpic();
   var cacherRootEpic = cacher.getRootEpic();
   var rootEpic = (0, _pureEpic.combineEpics)(querchyRootEpic, cacherRootEpic);
-  var epicMiddleware = createEpicMiddleware001({
-    dependencies: querchy.deps
-  });
+  var epicMiddleware = createEpicMiddleware001();
 
   var cb = function cb(action) {
     var actionCreator = action.actionCreator;

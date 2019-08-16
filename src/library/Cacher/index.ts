@@ -247,7 +247,7 @@ export default class Updater<
   getEpicByActionType(
     actionType : string,
   ) : CacherTypeGroupType['EpicType'] {
-    return (action$, store$, dependencies, ...args) => action$.pipe(
+    return (action$, state$, ...args) => action$.pipe(
       filter<QcAction>((action) => {
         // console.log('action :', action);
         if (action.type !== actionType) {

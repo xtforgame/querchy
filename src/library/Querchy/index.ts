@@ -80,9 +80,7 @@ export type QuerchyTypeGroup<
     QcAction,
     QcAction,
     QcState,
-    QcDependencies<
-      CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType
-    >
+    any
   >
 };
 
@@ -245,11 +243,11 @@ export default class Querchy<
     queryBuilder: QuerchyTypeGroupType['QueryBuilderDefinitionType'],
   ) : QuerchyTypeGroupType['EpicType'] {
     const runner = (<SimpleQueryRunner>queryBuilder!.queryRunner!);
-    return (action$, store$, dependencies, ...args) => action$.ofType(actionType)
+    return (action$, state$, ...args) => action$.ofType(actionType)
     .pipe(
       mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        return runner.handleQuery(action, queryBuilder, {
-          action$, store$, dependencies, args,
+        return runner.handleQuery(action, queryBuilder, this.deps, {
+          action$, state$, args,
         });
       }),
     );

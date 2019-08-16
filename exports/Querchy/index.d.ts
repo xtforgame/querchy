@@ -11,7 +11,7 @@ export declare type QuerchyTypeGroup<CommonConfigType extends CommonConfig, Mode
     QcDependenciesType: QcDependencies<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType>;
     ActionCreatorSetsType: ActionCreatorSets<CommonConfigType, ModelMapType, ExtraActionCreatorsType>;
     QueryBuilderDefinitionType: QueryBuilderDefinition<CommonConfigType, ModelMapType>;
-    EpicType: Epic<QcAction, QcAction, QcState, QcDependencies<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType>>;
+    EpicType: Epic<QcAction, QcAction, QcState, any>;
 };
 export default class Querchy<CommonConfigType extends CommonConfig = CommonConfig, ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType> = QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType> = ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>, QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType> = QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>, ExtraDependencies = any, QuerchyTypeGroupType extends QuerchyTypeGroup<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies> = QuerchyTypeGroup<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependencies>> {
     querchyDefinition: QuerchyDefinitionType;

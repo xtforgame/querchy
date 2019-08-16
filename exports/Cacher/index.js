@@ -156,7 +156,7 @@ var Updater = function () {
   }, {
     key: "getEpicByActionType",
     value: function getEpicByActionType(actionType) {
-      return function (action$, store$, dependencies) {
+      return function (action$, state$) {
         return action$.pipe((0, _operators.filter)(function (action) {
           if (action.type !== actionType) {
             return false;

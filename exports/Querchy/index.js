@@ -157,17 +157,18 @@ var Querchy = function () {
   }, {
     key: "getHandleQueryEpicFromQueryBuilderByActionType",
     value: function getHandleQueryEpicFromQueryBuilderByActionType(actionType, queryBuilder) {
+      var _this2 = this;
+
       var runner = queryBuilder.queryRunner;
-      return function (action$, store$, dependencies) {
-        for (var _len = arguments.length, args = new Array(_len > 3 ? _len - 3 : 0), _key = 3; _key < _len; _key++) {
-          args[_key - 3] = arguments[_key];
+      return function (action$, state$) {
+        for (var _len = arguments.length, args = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+          args[_key - 2] = arguments[_key];
         }
 
         return action$.ofType(actionType).pipe((0, _operators.mergeMap)(function (action) {
-          return runner.handleQuery(action, queryBuilder, {
+          return runner.handleQuery(action, queryBuilder, _this2.deps, {
             action$: action$,
-            store$: store$,
-            dependencies: dependencies,
+            state$: state$,
             args: args
           });
         }));
@@ -176,7 +177,7 @@ var Querchy = function () {
   }, {
     key: "getEpicForModels",
     value: function getEpicForModels() {
-      var _this2 = this;
+      var _this3 = this;
 
       var _this$querchyDefiniti2 = this.querchyDefinition,
           queryBuilders = _this$querchyDefiniti2.queryBuilders,
@@ -184,20 +185,20 @@ var Querchy = function () {
       return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(models).map(function (model) {
         var queryBuilder = queryBuilders[model.queryBuilderName];
         return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(model.actionTypes).map(function (actionType) {
-          return _this2.getHandleQueryEpicFromQueryBuilderByActionType(actionType, queryBuilder);
+          return _this3.getHandleQueryEpicFromQueryBuilderByActionType(actionType, queryBuilder);
         })));
       })));
     }
   }, {
     key: "getEpicForExtraActions",
     value: function getEpicForExtraActions() {
-      var _this3 = this;
+      var _this4 = this;
 
       var queryBuilders = this.querchyDefinition.queryBuilders;
       var extraActionCreators = this.querchyDefinition.extraActionCreators;
       return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(extraActionCreators.queryInfos).map(function (actionInfo) {
         var queryBuilder = queryBuilders[actionInfo.queryBuilderName];
-        return _this3.getHandleQueryEpicFromQueryBuilderByActionType(actionInfo.actionType, queryBuilder);
+        return _this4.getHandleQueryEpicFromQueryBuilderByActionType(actionInfo.actionType, queryBuilder);
       })));
     }
   }, {
