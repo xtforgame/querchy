@@ -47,7 +47,9 @@ export default class AxiosRunner<
   >,
   QuerchyDefinitionType extends QuerchyDefinition<
     CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
-  > = QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>,
+  > = QuerchyDefinition<
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
+  >,
 
   ExtraDependencies = any,
 
@@ -70,7 +72,7 @@ export default class AxiosRunner<
 
   constructor(a?: AxiosStatic) {
     this.type = 'axios';
-    this.axiosObservable = AxiosObservable<any>(a || axios);
+    this.axiosObservable = AxiosObservable(a || axios);
   }
 
   handleQuery : RunnerRun<
