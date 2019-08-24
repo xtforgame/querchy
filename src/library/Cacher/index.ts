@@ -82,7 +82,46 @@ export type CacherTypeGroup<
   >;
 };
 
-export default class Updater<
+export type CacherConstructor<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<
+    CommonConfigType
+  >,
+  QueryBuilderMapType extends QueryBuilderMap<
+    CommonConfigType, ModelMapType
+  >,
+  ExtraActionCreatorsType extends ExtraActionCreators<
+    CommonConfigType, ModelMapType, QueryBuilderMapType
+  >,
+
+  QuerchyDefinitionType extends QuerchyDefinition<
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
+  >,
+
+  ExtraDependenciesType = any,
+
+  // =============
+
+  CacherTypeGroupType extends CacherTypeGroup<
+    CommonConfigType,
+    ModelMapType,
+    QueryBuilderMapType,
+    ExtraActionCreatorsType,
+    QuerchyDefinitionType,
+    ExtraDependenciesType
+  > = CacherTypeGroup<
+    CommonConfigType,
+    ModelMapType,
+    QueryBuilderMapType,
+    ExtraActionCreatorsType,
+    QuerchyDefinitionType,
+    ExtraDependenciesType
+  >
+> = (
+  querchy : CacherTypeGroupType['QuerchyType'],
+) => any;
+
+export default class Cacher<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<
     CommonConfigType

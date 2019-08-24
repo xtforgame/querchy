@@ -1,10 +1,10 @@
 import { State } from 'pure-epic';
-import Querchy, { QuerchyTypeGroup } from './Querchy';
-import Cacher, { CacherTypeGroup } from './Cacher';
+import Querchy, { QuerchyTypeGroup, QuerchyConstructor } from './Querchy';
+import Cacher, { CacherTypeGroup, CacherConstructor } from './Cacher';
 
 export { default as Querchy } from './Querchy';
 export { default as Cacher } from './Cacher';
-import AxiosRunner from './query-runners/AxiosRunner';
+import AxiosRunner, { AxiosRunnerConstructor } from './query-runners/AxiosRunner';
 
 import {
   ResourceModelActions,
@@ -31,6 +31,7 @@ import {
 
 import {
   Constructor,
+  ConstructorWithFunction,
 } from './utils/helper-functions';
 
 export {
@@ -208,7 +209,16 @@ export class TypeHelperClass<
   >;
 
   GetAxiosRunnerClass = () : (
-    Constructor<AxiosRunner<
+    ConstructorWithFunction<AxiosRunner<
+      this['Types']['CommonConfigType'],
+      this['Types']['ModelMapType'],
+      this['Types']['QueryBuilderMapType'],
+      this['Types']['ExtraActionCreatorsType'],
+      this['Types']['QuerchyDefinitionType'],
+      this['Types']['ExtraDependenciesType'],
+
+      this['Types']['StateType']
+    >, AxiosRunnerConstructor<
       this['Types']['CommonConfigType'],
       this['Types']['ModelMapType'],
       this['Types']['QueryBuilderMapType'],
@@ -223,7 +233,14 @@ export class TypeHelperClass<
   }
 
   GetQuerchyClass = () : (
-    Constructor<Querchy<
+    ConstructorWithFunction<Querchy<
+      this['Types']['CommonConfigType'],
+      this['Types']['ModelMapType'],
+      this['Types']['QueryBuilderMapType'],
+      this['Types']['ExtraActionCreatorsType'],
+      this['Types']['QuerchyDefinitionType'],
+      this['Types']['ExtraDependenciesType']
+    >, QuerchyConstructor<
       this['Types']['CommonConfigType'],
       this['Types']['ModelMapType'],
       this['Types']['QueryBuilderMapType'],
@@ -236,7 +253,14 @@ export class TypeHelperClass<
   }
 
   GetCacherClass = () : (
-    Constructor<Cacher<
+    ConstructorWithFunction<Cacher<
+      this['Types']['CommonConfigType'],
+      this['Types']['ModelMapType'],
+      this['Types']['QueryBuilderMapType'],
+      this['Types']['ExtraActionCreatorsType'],
+      this['Types']['QuerchyDefinitionType'],
+      this['Types']['ExtraDependenciesType']
+    >, CacherConstructor<
       this['Types']['CommonConfigType'],
       this['Types']['ModelMapType'],
       this['Types']['QueryBuilderMapType'],

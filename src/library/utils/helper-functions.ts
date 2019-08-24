@@ -9,8 +9,14 @@ export type WithOptional = ReplaceReturnType<(n?: number) => string, Promise<str
 // https://juejin.im/post/5cb96c65e51d4578c35e7287
 export type OmitNever<T> = Pick<T, {[P in keyof T]: T[P] extends never ? never : P}[keyof T]>;
 
+export type GetConstructorArgs<T> = T extends new (...args: infer U) => any ? U : never;
+
 export interface Constructor<T> {
   new (...args): T;
+}
+
+export interface ConstructorWithFunction<T, ConstructorFunction> {
+  new (...args : ArgumentTypes<ConstructorFunction>): T;
 }
 
 // https://medium.com/dailyjs/typescript-create-a-condition-based-subset-types-9d902cea5b8c
