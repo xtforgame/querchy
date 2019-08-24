@@ -5,6 +5,7 @@ import {
   QcAction,
   QcState,
   RunnerType,
+  ModelRootState,
 } from '../common/interfaces';
 
 import {
@@ -52,6 +53,7 @@ export type RunnerRunOption<
 > = {
   action$: ActionsObservable<QcAction>;
   state$: StateObservable<StateType>;
+  modelRootState: ModelRootState<ModelMapType>;
   args: any[];
 };
 

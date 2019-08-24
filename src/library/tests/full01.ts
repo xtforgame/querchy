@@ -5,6 +5,8 @@ import {
   INIT_FUNC,
 } from '../index';
 
+import combineReducers from '../redux/combineReducers';
+
 import {
   MyQuerchy001,
   MyAxiosRunner001,
@@ -39,12 +41,15 @@ export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware
 
 export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 
+const rootSliceKey = 'cache';
+
 export class MyStore implements MyQcStore001 {
   state: Types['StateType'];
   cacher: MyCacher001;
   epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
   epicMiddlewareCb: EpicMiddlewareCb;
   cb: (action : QcAction) => any;
+  rootReducer: (state: Types['StateType'], action : QcAction) => any;
 
   constructor(
     cacher : MyCacher001,
@@ -56,6 +61,9 @@ export class MyStore implements MyQcStore001 {
     this.epicMiddleware = epicMiddleware;
     this.epicMiddlewareCb = this.epicMiddleware(this);
     this.cb = cb;
+    this.rootReducer = combineReducers({
+      [rootSliceKey]: this.cacher.rootReducer,
+    });
   }
 
   dispatch = (action : QcAction) => {
@@ -74,10 +82,10 @@ export class MyStore implements MyQcStore001 {
       }
       // console.log();
     }
-    this.state = this.cacher.reduce(this.getState(), action);
+    this.state = this.rootReducer(this.getState(), action);
     this.epicMiddlewareCb(() => {})(action);
     if (action.response) {
-      console.log('this.state :', this.state);
+      console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
     }
 
     this.cb(action);
@@ -146,6 +154,13 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
   ));
   // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
+  setTimeout(() => {
+    store.dispatch(httpBinRes.read(
+      1,
+      { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+    ));
+  }, 5000);
+
   // const readAction = querchy.actionCreatorSets.httpBinRes.read('ss');
   // console.log('readAction :', readAction);
   // const updateAction = querchy.actionCreatorSets.httpBinRes.update('ss', {});
@@ -163,6 +178,9 @@ export default () => {
           customRunner: new MyAxiosRunner001(),
         },
         actionTypePrefix: 'QC_ACTS/',
+      },
+      baseSelector: (s) => {
+        return s[rootSliceKey];
       },
       models: {
         httpBinRes: {
@@ -186,7 +204,19 @@ export default () => {
       },
       queryBuilders: {
         defaultBuilder: {
-          buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
+          buildRequestConfig: (action, { runnerType, commonConfig, models, modelRootState }) => {
+            if (
+              modelRootState.httpBinRes.resourceMap['1']
+              && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest
+              && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse
+            ) {
+              return {
+                fromCache: true,
+                responseFromCache: modelRootState
+                  .httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse,
+              };
+            }
+
             // console.log('action', action);
             if (!action.modelName) {
               return null;
@@ -238,11 +268,11 @@ export default () => {
             actionCreator: (options?) => ({ options }),
             queryBuilderName: 'forExtra',
             globalMerger: (s) => {
-              delete s.httpBinRes.resourceMap['1'];
+              // delete s.httpBinRes.resourceMap['1'];
               delete s.httpBinRes.resourceMap['2'];
               delete s.httpBinRes2.resourceMap['1'];
               delete s.httpBinRes2.resourceMap['2'];
-              console.log('===================== s :', s);
+              // console.log('===================== s :', s);
               return s;
             },
           },

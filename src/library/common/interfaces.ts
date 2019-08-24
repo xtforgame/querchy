@@ -29,9 +29,13 @@ export interface ResourceMetadata {
   lastRequest?: {
     queryId?: string;
     requestTimestamp: QcTimestamp;
+
+    lastResponse?: any
     responseTimestamp?: QcTimestamp;
+
     lastError?: any
     errorTimestamp?: QcTimestamp;
+
     lastCancelReason?: any
     cancelTimestamp?: QcTimestamp;
   };
@@ -53,8 +57,12 @@ export interface ResourceState {
 export type ModelRootState<QcRootState> = {
   [P in keyof QcRootState] : ResourceState;
 } & {
+  extra: ResourceState;
+} & {
   [s : string] : ResourceState;
 };
+
+export type BaseSelector<QcRootState> = (state : any) => ModelRootState<QcRootState>;
 
 export type RunnerType = string;
 
@@ -77,9 +85,9 @@ export type GlobalMerger<
   ActionType extends QcAction
 > = (state: ModelRootState<QcRootState>, action: ActionType) => ModelRootState<QcRootState>;
 
-export type BasicGlobalMerger = GlobalMerger<any, QcAction>;
+export type BasicGlobalMerger<ModelMapType = any> = GlobalMerger<ModelMapType, QcAction>;
 
-export type GlobalReducer = BasicGlobalMerger;
+export type GlobalReducer<ModelMapType = any> = BasicGlobalMerger<ModelMapType>;
 
   // ==========================
 

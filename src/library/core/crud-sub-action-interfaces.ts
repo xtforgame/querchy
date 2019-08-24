@@ -43,15 +43,24 @@ export interface QcRequestAction extends QcBasicAction {
   [s : string] : any;
 }
 
-export type QcRequestConfig = {
-  rawConfigs?: any;
-  overwriteConfigs?: any;
+export type QcRequestConfigNormal = {
   method : string;
   url : string;
+  rawConfigs?: any;
+  overwriteConfigs?: any;
   headers?: { [s : string] : string };
   query?: { [s : string] : any };
   body?: any;
-} | null;
+};
+
+export type QcRequestConfigFromCache = {
+  fromCache : boolean;
+  responseFromCache : any;
+};
+
+export type QcRequestConfig = QcRequestConfigNormal
+  | QcRequestConfigFromCache
+  | null;
 
 export interface QcResponse {
   rawResponse: any;

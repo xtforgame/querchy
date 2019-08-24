@@ -5,6 +5,8 @@ import {
   ResourceModelActions,
   ResourceMerger,
   GlobalMerger,
+  BaseSelector,
+  ModelRootState,
 } from '../common/interfaces';
 
 import {
@@ -110,6 +112,7 @@ export type BuildRequestConfigOption<
   runnerType : RunnerType,
   commonConfig : CommonConfigType,
   models: ModelMapType,
+  modelRootState : ModelRootState<ModelMapType>;
 };
 
 export type BuildRequestConfig<
@@ -148,6 +151,7 @@ export interface QuerchyDefinition<
 > {
   commonConfig : CommonConfigType;
   models : ModelMapType;
+  baseSelector : BaseSelector<ModelMapType>;
   queryBuilders : QueryBuilderMapType;
   extraActionCreators?: ExtraActionCreatorsType;
 }

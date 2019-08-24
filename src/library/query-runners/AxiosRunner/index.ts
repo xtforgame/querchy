@@ -22,6 +22,8 @@ import {
   QcRequestConfig,
   QcRequestActionCreators,
   ExtraActionCreators,
+  QcRequestConfigNormal,
+  QcRequestConfigFromCache,
 } from '../../core/interfaces';
 
 import {
@@ -106,7 +108,7 @@ export default class AxiosRunner<
     QuerchyDefinitionType,
     ExtraDependencies
   > = (
-    action, queryBuilder, dependencies, { state$, action$ },
+    action, queryBuilder, dependencies, { state$, action$, modelRootState },
   ) => {
     // console.log('action :', action);
     // console.log('state :', state$.value);
@@ -118,11 +120,25 @@ export default class AxiosRunner<
       throw new Error(`QueryBuilder not found: ${action.type}`);
     }
 
-    const createSuccessAction = action.actionCreator.creatorRefs.respond;
+    const {
+      respond,
+      respondError,
+      cancel,
+    } = action.actionCreator.creatorRefs;
 
-    const createErrorAction = action.actionCreator.creatorRefs.respondError;
+    const options = {
+      transferables: {
+        requestTimestamp: action.transferables
+          && action.transferables.requestTimestamp,
+        requestAction: action,
+      },
+    };
 
-    const createCancelAction = action.actionCreator.creatorRefs.cancel;
+    const createSuccessAction = (response, responseType) => respond(response, responseType, options);
+
+    const createErrorAction = (error) => respondError(error, options);
+
+    const createCancelAction = (reason) => cancel(reason, options);
 
     let requestConfig : QcRequestConfig;
     try {
@@ -130,6 +146,7 @@ export default class AxiosRunner<
         runnerType: this.type,
         commonConfig,
         models,
+        modelRootState,
       });
     } catch (error) {
       return [createErrorAction(error)];
@@ -139,6 +156,12 @@ export default class AxiosRunner<
       return [toNull()];
     }
 
+    if ((<any>requestConfig).fromCache) {
+      return [createSuccessAction((<QcRequestConfigFromCache>requestConfig).responseFromCache, 'from-cache')];
+    }
+
+    const normalRequestConfig = <QcRequestConfigNormal>requestConfig;
+
     const {
       overwriteConfigs,
       method,
@@ -146,9 +169,9 @@ export default class AxiosRunner<
       headers,
       query,
       body,
-    } = requestConfig;
+    } = normalRequestConfig;
 
-    requestConfig.rawConfigs = {
+    normalRequestConfig.rawConfigs = {
       method,
       url,
       headers: { ...headers },
@@ -160,7 +183,7 @@ export default class AxiosRunner<
     const source = axios.CancelToken.source();
     const cancelActionType = action.actionCreator.creatorRefs.cancel.actionType;
     return this.axiosObservable(
-      requestConfig.rawConfigs,
+      normalRequestConfig.rawConfigs,
       {
         success: createSuccessAction,
         error: createErrorAction,

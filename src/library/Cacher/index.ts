@@ -165,9 +165,9 @@ export default class Cacher<
     [s : string]: SliceReducer,
   };
 
-  extraGlobalReducer?: GlobalReducer;
+  extraGlobalReducer?: GlobalReducer<ModelMapType>;
 
-  rootReducer : RootReducer;
+  rootReducer : GlobalReducer<ModelMapType>;
 
   constructor(
     querchy : CacherTypeGroupType['QuerchyType'],
@@ -176,7 +176,7 @@ export default class Cacher<
     // console.log('querchy :', querchy.querchyDefinition);
     this.reducerSet = <any>{};
     this.allResourceReducers = {};
-    this.rootReducer = () => {};
+    this.rootReducer = s => s;
     this.init();
   }
 
@@ -251,8 +251,8 @@ export default class Cacher<
     });
 
     {
-      const reducers : { [s : string] : GlobalReducer } = {};
-      const reducerArray : GlobalReducer[] = [];
+      const reducers : { [s : string] : GlobalReducer<ModelMapType> } = {};
+      const reducerArray : GlobalReducer<ModelMapType>[] = [];
 
       const actions = extraActionCreators.actions!;
       const queryInfos = extraActionCreators.queryInfos! || {};
@@ -270,16 +270,25 @@ export default class Cacher<
       });
       (<any>this.reducerSet.extra) = reducers;
       this.extraGlobalReducer = (
-        state = {},
+        state = <any>{},
         action,
       ) => {
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
     }
+    this.allResourceReducers.extra = (
+      state = {
+        queryMap: {},
+        resourceMap: {},
+      },
+      action,
+    ) => {
+      return state;
+    };
     const resourceReducerRoot = combineReducers(this.allResourceReducers);
-    this.rootReducer = (state : any, ...args : any) => {
-      const newState = resourceReducerRoot(state, ...args);
-      return (<any>this.extraGlobalReducer!)(newState, ...args);
+    this.rootReducer = (state, action) => {
+      const newState = resourceReducerRoot(state, action);
+      return this.extraGlobalReducer!(newState, action);
     };
   }
 

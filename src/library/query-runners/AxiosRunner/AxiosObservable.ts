@@ -44,7 +44,7 @@ export default <
   )
   .pipe(
     map<AxiosResponse<any>, any>((response) => {
-      return successAction(response, 'from-request');
+      return successAction(response, 'normal');
     }),
     catchError<AxiosError, any>(error => of(errorAction(error))),
   );

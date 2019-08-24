@@ -32,6 +32,9 @@ export const resMerger : ResourceMerger<QcBasicAction> = (
       responseTimestamp: action.responseTimestamp,
     },
   };
+  if (action.response) {
+    metadata.lastRequest!.lastResponse = action.response;
+  }
   const result = {
     ...state,
     resourceMap: {
@@ -43,7 +46,10 @@ export const resMerger : ResourceMerger<QcBasicAction> = (
     },
   };
   if (action.crudType === 'delete') {
-    delete result.resourceMap[resourceId];
+    if (result.resourceMap[resourceId]) {
+      delete result.resourceMap[resourceId].value;
+    }
+    // delete result.resourceMap[resourceId];
   }
   return result;
 };
