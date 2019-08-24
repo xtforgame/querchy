@@ -88,8 +88,8 @@ export class MyStore implements MyQcStore001 {
       console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
     }
 
-    const xxxx = this.cacher.selectorSet.httpBinRes.resourceMapSelector(this.state);
-    console.log('xxxx :', xxxx);
+    // const xxxx = this.cacher.selectorSet.httpBinRes.resourceMapSelector(this.state);
+    // console.log('xxxx :', xxxx);
 
     this.cb(action);
   }
