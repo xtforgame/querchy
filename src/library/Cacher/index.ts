@@ -1,6 +1,7 @@
 import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap, filter } from 'rxjs/operators';
+import { createSelector } from 'reselect';
 import { toUnderscore } from '../common/common-functions';
 
 import {
@@ -15,6 +16,9 @@ import {
   BasicResourceMerger,
   GlobalMerger,
   BasicGlobalMerger,
+  ModelRootState,
+  ResourceStateResourceMap,
+  ResourceStateQueryMap,
 } from '../common/interfaces';
 
 import {
@@ -33,6 +37,8 @@ import combineReducers from '../redux/combineReducers';
 
 import {
   ReducerSets,
+  SelectorCreatorSets,
+  SelectorSets,
 } from './interfaces';
 
 import Querchy, { QuerchyTypeGroup } from '../Querchy';
@@ -72,6 +78,16 @@ export type CacherTypeGroup<
   >;
 
   ReducerSetsType: ReducerSets<
+    CommonConfigType,
+    ModelMapType
+  >;
+
+  SelectorCreatorSetsType: SelectorCreatorSets<
+    CommonConfigType,
+    ModelMapType
+  >;
+
+  SelectorSetsType: SelectorSets<
     CommonConfigType,
     ModelMapType
   >;
@@ -161,6 +177,10 @@ export default class Cacher<
 
   reducerSet : CacherTypeGroupType['ReducerSetsType'];
 
+  selectorCreatorSet : CacherTypeGroupType['SelectorCreatorSetsType'];
+
+  selectorSet : CacherTypeGroupType['SelectorSetsType'];
+
   allResourceReducers : {
     [s : string]: SliceReducer,
   };
@@ -175,6 +195,8 @@ export default class Cacher<
     this.querchy = querchy;
     // console.log('querchy :', querchy.querchyDefinition);
     this.reducerSet = <any>{};
+    this.selectorCreatorSet = <any>{};
+    this.selectorSet = <any>{};
     this.allResourceReducers = {};
     this.rootReducer = s => s;
     this.init();
@@ -213,6 +235,26 @@ export default class Cacher<
     };
   }
 
+  createSelectorAndSectorCreatorForResource(key) {
+    (<any>this.selectorCreatorSet)[key] = {};
+    this.selectorCreatorSet[key].resourceMapSelectorCreator = () => createSelector<
+      any, ModelRootState<ModelMapType>, ResourceStateResourceMap
+    >(
+      this.querchy.querchyDefinition.baseSelector,
+      s => (s[key] && s[key].resourceMap) || {},
+    );
+    this.selectorCreatorSet[key].queryMapSelectorCreator = () => createSelector<
+      any, ModelRootState<ModelMapType>, ResourceStateQueryMap
+    >(
+      this.querchy.querchyDefinition.baseSelector,
+      s => (s[key] && s[key].queryMap) || {},
+    );
+
+    (<any>this.selectorSet)[key] = {};
+    this.selectorSet[key].resourceMapSelector = this.selectorCreatorSet[key].resourceMapSelectorCreator();
+    this.selectorSet[key].queryMapSelector = this.selectorCreatorSet[key].queryMapSelectorCreator();
+  }
+
   init() {
     const { models } = this.querchy.querchyDefinition;
     const extraActionCreators = this.querchy.querchyDefinition.extraActionCreators!;
@@ -248,6 +290,7 @@ export default class Cacher<
       ) => {
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
+      this.createSelectorAndSectorCreatorForResource(key);
     });
 
     {
@@ -275,6 +318,7 @@ export default class Cacher<
       ) => {
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
+      this.createSelectorAndSectorCreatorForResource('extra');
     }
     this.allResourceReducers.extra = (
       state = {
@@ -329,7 +373,7 @@ export default class Cacher<
     );
   }
 
-  reduce(state: any, action: QcAction) : any {
-    return this.rootReducer(state, action);
-  }
+  // reduce(state: any, action: QcAction) : any {
+  //   return this.rootReducer(state, action);
+  // }
 }

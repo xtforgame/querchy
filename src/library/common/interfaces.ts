@@ -42,16 +42,22 @@ export interface ResourceMetadata {
   [s : string] : any;
 }
 
-export interface ResourceState {
-  resourceMap : {
-    [s : string] : {
-      metadata: ResourceMetadata;
-      value: any;
-    };
+export interface ResourceStateResourceMap {
+  [s : string] : {
+    metadata: ResourceMetadata;
+    value: any;
   };
-  queryMap : {
+}
+
+export interface ResourceStateQueryMap {
+  [s : string] : {
     [s : string] : any;
   };
+}
+
+export interface ResourceState {
+  resourceMap : ResourceStateResourceMap;
+  queryMap : ResourceStateQueryMap;
 }
 
 export type ModelRootState<QcRootState> = {

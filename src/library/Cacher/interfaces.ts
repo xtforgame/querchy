@@ -1,5 +1,7 @@
 import {
   SliceReducer,
+  ResourceStateResourceMap,
+  ResourceStateQueryMap,
 } from '../common/interfaces';
 
 import {
@@ -22,4 +24,40 @@ export type ReducerSets<
   [P in keyof T] : ReducerSet<Required<T[P]>['actions']>;
 } & {
   [s : string] : { [s : string] : SliceReducer };
+};
+
+// ======================================
+
+export type SliceSelectorCreator = any;
+
+export type SelectorCreatorSet = {
+  queryMapSelectorCreator: () => (state : any) => ResourceStateQueryMap;
+  resourceMapSelectorCreator: () => (state : any) => ResourceStateResourceMap;
+};
+
+export type SelectorCreatorSets<
+  CommonConfigType extends CommonConfig,
+  T extends ModelMap<CommonConfigType>
+> = {
+  [P in keyof T] : SelectorCreatorSet;
+} & {
+  [s : string] : SelectorCreatorSet;
+};
+
+// ======================================
+
+export type SliceSelector = any;
+
+export type SelectorSet = {
+  queryMapSelector: (state : any) => ResourceStateQueryMap;
+  resourceMapSelector: (state : any) => ResourceStateResourceMap;
+};
+
+export type SelectorSets<
+  CommonConfigType extends CommonConfig,
+  T extends ModelMap<CommonConfigType>
+> = {
+  [P in keyof T] : SelectorSet;
+} & {
+  [s : string] : SelectorSet;
 };
