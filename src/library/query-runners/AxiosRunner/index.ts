@@ -126,19 +126,23 @@ export default class AxiosRunner<
       cancel,
     } = action.actionCreator.creatorRefs;
 
-    const options = {
+    const overwriteOptions : any = {};
+
+    const getOptions = () => ({
+      ...overwriteOptions,
       transferables: {
         requestTimestamp: action.transferables
           && action.transferables.requestTimestamp,
         requestAction: action,
+        ...overwriteOptions.transferables,
       },
-    };
+    });
 
-    const createSuccessAction = (response, responseType) => respond(response, responseType, options);
+    const createSuccessAction = (response, responseType) => respond(response, responseType, getOptions());
 
-    const createErrorAction = (error) => respondError(error, options);
+    const createErrorAction = (error) => respondError(error, getOptions());
 
-    const createCancelAction = (reason) => cancel(reason, options);
+    const createCancelAction = (reason) => cancel(reason, getOptions());
 
     let requestConfig : QcRequestConfig;
     try {
@@ -156,8 +160,12 @@ export default class AxiosRunner<
       return [toNull()];
     }
 
-    if ((<any>requestConfig).fromCache) {
-      return [createSuccessAction((<QcRequestConfigFromCache>requestConfig).responseFromCache, 'from-cache')];
+    const fromCacheRequestConfig = <QcRequestConfigFromCache>requestConfig;
+    if (fromCacheRequestConfig.fromCache) {
+      if ('overwriteQueryId' in fromCacheRequestConfig) {
+        overwriteOptions.queryId = fromCacheRequestConfig.overwriteQueryId;
+      }
+      return [createSuccessAction(fromCacheRequestConfig.responseFromCache, 'from-cache')];
     }
 
     const normalRequestConfig = <QcRequestConfigNormal>requestConfig;
@@ -170,6 +178,9 @@ export default class AxiosRunner<
       query,
       body,
     } = normalRequestConfig;
+    if ('overwriteQueryId' in normalRequestConfig) {
+      overwriteOptions.queryId = normalRequestConfig.overwriteQueryId;
+    }
 
     normalRequestConfig.rawConfigs = {
       method,

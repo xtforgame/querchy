@@ -6,16 +6,19 @@ import {
 import {
   QcTimestamp,
   QcAction,
+  QueryId,
 } from '../common/interfaces';
 
 export type QcTransferables = {
+  queryId?: QueryId;
   requestTimestamp: QcTimestamp;
   requestAction?: QcRequestAction;
   [s : string] : any;
 };
 
 export type ResourceModelQueryActionOptions = {
-  query?: any;
+  queryId?: QueryId;
+  queryPart?: any;
   headers?: { [s : string] : string };
   transferables?: QcTransferables;
 };
@@ -26,12 +29,13 @@ export type CrudSubType = 'start' | 'respond' | 'respondError' | 'cancel';
 // =================
 
 export interface QcBasicAction extends QcAction {
+  queryId?: QueryId;
   modelName: string;
   crudType: CrudType;
   crudSubType: CrudSubType;
   // actionTypes,
 
-  options: any;
+  options?: any;
   [s : string] : any;
 }
 
@@ -46,6 +50,7 @@ export interface QcRequestAction extends QcBasicAction {
 export type QcRequestConfigNormal = {
   method : string;
   url : string;
+  overwriteQueryId?: QueryId;
   rawConfigs?: any;
   overwriteConfigs?: any;
   headers?: { [s : string] : string };
@@ -56,6 +61,7 @@ export type QcRequestConfigNormal = {
 export type QcRequestConfigFromCache = {
   fromCache : boolean;
   responseFromCache : any;
+  overwriteQueryId?: QueryId;
 };
 
 export type QcRequestConfig = QcRequestConfigNormal

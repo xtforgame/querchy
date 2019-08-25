@@ -25,9 +25,11 @@ export type QcActionCreatorWithProps = QcActionCreator & {
   actionType: string;
 };
 
+export type QueryId = string | void;
+
 export interface ResourceMetadata {
   lastRequest?: {
-    queryId?: string;
+    queryId?: QueryId;
     requestTimestamp: QcTimestamp;
 
     lastResponse?: any

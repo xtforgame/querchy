@@ -2,6 +2,7 @@ import {
   ResourceMetadata,
   ResourceMerger,
   QcBasicAction,
+  ResourceStateQueryMap,
 } from '../index';
 
 import {
@@ -32,6 +33,9 @@ export const resMerger : ResourceMerger<QcBasicAction> = (
       responseTimestamp: action.responseTimestamp,
     },
   };
+  if (action.queryId) {
+    metadata.lastRequest!.queryId = action.queryId;
+  }
   if (action.response) {
     metadata.lastRequest!.lastResponse = action.response;
   }
@@ -68,17 +72,31 @@ export const resMergerForColl : ResourceMerger<QcBasicAction> = (
     && action.response.data.args.id
   ) || '1';
 
-  const { queryMap } = state;
+  const { queryMap, resourceMap } = state;
 
   const metadata : ResourceMetadata = {
     lastRequest: {
-      ...(queryMap[resourceId] && queryMap[resourceId].lastRequest),
+      ...(resourceMap[resourceId] && resourceMap[resourceId].metadata.lastRequest),
       requestTimestamp: action.requestTimestamp,
       responseTimestamp: action.responseTimestamp,
     },
   };
+  if (action.queryId) {
+    metadata.lastRequest!.queryId = action.queryId;
+  }
+  let extraQueryMap : ResourceStateQueryMap = {};
+  if (metadata.lastRequest!.queryId) {
+    extraQueryMap[metadata.lastRequest!.queryId] = {
+      metadata,
+      value: action.response.data,
+    };
+  }
   const result = {
     ...state,
+    queryMap: {
+      ...queryMap,
+      ...extraQueryMap,
+    },
     resourceMap: {
       ...state.resourceMap,
       '1': {

@@ -85,10 +85,11 @@ export class MyStore implements MyQcStore001 {
     this.state = this.rootReducer(this.getState(), action);
     this.epicMiddlewareCb(() => {})(action);
     if (action.response) {
-      console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
+      console.log('action.queryId', action.queryId);
+      // console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
     }
 
-    // const xxxx = this.cacher.selectorSet.httpBinRes.resourceMapSelector(this.state);
+    // const xxxx = this.cacher.selectorSet.httpBinRes2.queryMapSelector(this.state);
     // console.log('xxxx :', xxxx);
 
     this.cb(action);
@@ -133,34 +134,34 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
   const { httpBinRes, httpBinRes2, extra } = querchy.actionCreatorSets;
   store.dispatch(httpBinRes.create(
     {},
-    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+    { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
   store.dispatch(httpBinRes.read(
     1,
-    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+    { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
   store.dispatch(httpBinRes.update(
     1,
     {},
-    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+    { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
   store.dispatch(httpBinRes2.getCollection(
-    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+    { queryPart: { id: 1 }, headers: { Ppp: 'xxx' }, queryId: 'getCollection' },
   ));
   store.dispatch(httpBinRes.delete(
     1,
-    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+    { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
 
   store.dispatch(extra.extraQuery1(
-    { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+    { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ));
   // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
   setTimeout(() => {
     store.dispatch(httpBinRes.read(
       1,
-      { query: { id: 1 }, headers: { Ppp: 'xxx' } },
+      { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
     ));
   }, 5000);
 
@@ -214,10 +215,20 @@ export default () => {
               && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse
             ) {
               return {
+                overwriteQueryId: action.queryId || modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.queryId,
                 fromCache: true,
                 responseFromCache: modelRootState
                   .httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse,
               };
+            }
+
+            let overwriteQueryId : any = action.queryId;
+            if (!overwriteQueryId) {
+              if (action.resourceId) {
+                overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+              } else {
+                overwriteQueryId = action.crudType;
+              }
             }
 
             // console.log('action', action);
@@ -225,10 +236,11 @@ export default () => {
               return null;
             }
             return ({
+              overwriteQueryId,
               method: crudToRestMap[action.crudType],
               url: models[action.modelName].buildUrl!(action),
               headers: action.options.headers,
-              query: action.options.query,
+              query: action.options.queryPart,
               body: action.data,
             });
           },
@@ -236,15 +248,23 @@ export default () => {
         customPath: {
           queryRunner: 'customRunner',
           buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
-            // console.log('action', action);
             if (!action.modelName) {
               return null;
             }
+            let overwriteQueryId : any = action.queryId;
+            if (!overwriteQueryId) {
+              if (action.resourceId) {
+                overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+              } else {
+                overwriteQueryId = action.crudType;
+              }
+            }
             return ({
+              overwriteQueryId,
               method: crudToRestMap[action.crudType],
               url: `https://httpbin.org/${crudToRestMap[action.crudType]}`,
               headers: action.options.headers,
-              query: action.options.query,
+              query: action.options.queryPart,
               body: action.data,
             });
           },
@@ -252,11 +272,20 @@ export default () => {
         forExtra: {
           queryRunner: 'customRunner',
           buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
+            let overwriteQueryId : any = action.queryId;
+            if (!overwriteQueryId) {
+              if (action.resourceId) {
+                overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+              } else {
+                overwriteQueryId = action.crudType;
+              }
+            }
             return ({
+              overwriteQueryId,
               method: 'get',
               url: 'https://httpbin.org/get',
               headers: action.options.headers,
-              query: action.options.query,
+              query: action.options.queryPart,
               body: action.data,
             });
           },

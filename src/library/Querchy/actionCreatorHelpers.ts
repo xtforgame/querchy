@@ -2,6 +2,7 @@ import {
   ModelActionCreator,
   ResourceModelActions,
 } from '../common/interfaces';
+import { toUnderscore } from '../common/common-functions';
 
 import {
   CrudType,
@@ -95,17 +96,20 @@ export const wrapQueryActionCreator = <
   actionInfo.querySubActionTypes = {
     start: actionType,
     respond: `${actionType}_RESPOND`,
-    respondError: `${actionType}_ERROR`,
+    respondError: `${actionType}_RESPOND_ERROR`,
     cancel: `${actionType}_CANCEL`,
   };
+
+  const querySubActionTypes = actionInfo.querySubActionTypes;
 
   const startFunc : QueryActionCreatorWithProps<
     Function, Function
   > = Object.assign(
     (...args : any[]) => {
       const requestTimestamp = new Date().getTime();
+      const result = start(...args);
       const requestAction = {
-        ...start(...args),
+        ...result,
         type: actionType,
         actionCreator: startFunc,
         modelName,
@@ -114,90 +118,79 @@ export const wrapQueryActionCreator = <
         crudSubType: 'start',
         requestTimestamp,
         transferables: {},
+        options: result.options,
       };
       requestAction.transferables = {
+        ...result.transferables,
         requestTimestamp,
         requestAction,
       };
+      const queryId = result.options && result.options.queryId;
+      if (queryId) {
+        requestAction.queryId = queryId;
+        requestAction.transferables.queryId = queryId;
+      }
       return requestAction;
     },
     QueryActionCreatorProps,
     { actionType },
   );
 
+  const getQueryBuiltinProps = (crudSubType : string, options?) : any => {
+    let transferables : any = options && options.transferables || {};
+    transferables = {
+      ...transferables.requestAction
+        && transferables.requestAction.transferables,
+      ...transferables,
+    };
+    if (options.queryId) {
+      transferables.queryId = options.queryId;
+    }
+    const result : any = {
+      type: querySubActionTypes[crudSubType],
+      actionCreator: QueryActionCreatorProps.creatorRefs[crudSubType],
+      modelName,
+      actionTypes,
+      crudType,
+      crudSubType: <CrudSubType>crudSubType,
+      requestTimestamp: transferables.requestTimestamp,
+      transferables,
+      options,
+    };
+    if (transferables.queryId) {
+      result.queryId = transferables.queryId;
+    }
+    return result;
+  };
+
   QueryActionCreatorProps.creatorRefs.start = startFunc;
   QueryActionCreatorProps.creatorRefs.respond = Object.assign(
     (response, responseType, options?) => ({
-      type: `${actionType}_RESPOND`,
-      actionCreator: QueryActionCreatorProps.creatorRefs.respond,
       response,
       responseType,
-      modelName,
-      actionTypes,
-      crudType,
-      crudSubType: <CrudSubType>'respond',
       responseTimestamp: new Date().getTime(),
-      requestTimestamp: options
-        && options.transferables
-        && options.transferables.requestTimestamp,
-      transferables: {
-        ...options
-          && options.transferables
-          && options.transferables.requestAction.transferables,
-        ...options && options.transferables,
-      },
-      options,
+      ...getQueryBuiltinProps('respond', options),
     }),
     QueryActionCreatorProps,
-    { actionType: `${actionType}_RESPOND` },
+    { actionType: querySubActionTypes.respond },
   );
   QueryActionCreatorProps.creatorRefs.respondError = Object.assign(
     (error, options?) => ({
-      type: `${actionType}_ERROR`,
-      actionCreator: QueryActionCreatorProps.creatorRefs.respondError,
       error,
-      modelName,
-      actionTypes,
-      crudType,
-      crudSubType: <CrudSubType>'respondError',
       errorTimestamp: new Date().getTime(),
-      requestTimestamp: options
-        && options.transferables
-        && options.transferables.requestTimestamp,
-      transferables: {
-        ...options
-          && options.transferables
-          && options.transferables.requestAction.transferables,
-        ...options && options.transferables,
-      },
-      options,
+      ...getQueryBuiltinProps('respondError', options),
     }),
     QueryActionCreatorProps,
-    { actionType: `${actionType}_ERROR` },
+    { actionType: querySubActionTypes.respondError },
   );
   QueryActionCreatorProps.creatorRefs.cancel = Object.assign(
     (reason, options?) => ({
-      type: `${actionType}_CANCEL`,
-      actionCreator: QueryActionCreatorProps.creatorRefs.cancel,
       reason,
-      modelName,
-      actionTypes,
-      crudType,
-      crudSubType: <CrudSubType>'cancel',
       cancelTimestamp: new Date().getTime(),
-      requestTimestamp: options
-        && options.transferables
-        && options.transferables.requestTimestamp,
-      transferables: {
-        ...options
-          && options.transferables
-          && options.transferables.requestAction.transferables,
-        ...options && options.transferables,
-      },
-      options,
+      ...getQueryBuiltinProps('cancel', options),
     }),
     QueryActionCreatorProps,
-    { actionType: `${actionType}_CANCEL` },
+    { actionType: querySubActionTypes.cancel },
   );
   return startFunc;
 };
