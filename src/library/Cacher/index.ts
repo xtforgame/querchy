@@ -1,4 +1,4 @@
-import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
+import { Epic, createEpicMiddleware, combineEpics, State } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap, filter } from 'rxjs/operators';
 import { createSelector } from 'reselect';
@@ -60,6 +60,8 @@ export type CacherTypeGroup<
   >,
 
   ExtraDependenciesType,
+
+  StateType extends State,
 > = QuerchyTypeGroup<
   CommonConfigType,
   ModelMapType,
@@ -68,6 +70,7 @@ export type CacherTypeGroup<
   QuerchyDefinitionType,
   ExtraDependenciesType
 > & {
+  StateType: StateType;
   QuerchyType: Querchy<
     CommonConfigType,
     ModelMapType,
@@ -83,11 +86,13 @@ export type CacherTypeGroup<
   >;
 
   SelectorCreatorSetsType: SelectorCreatorSets<
+    StateType,
     CommonConfigType,
     ModelMapType
   >;
 
   SelectorSetsType: SelectorSets<
+    StateType,
     CommonConfigType,
     ModelMapType
   >;
@@ -116,6 +121,8 @@ export type CacherConstructor<
 
   ExtraDependenciesType = any,
 
+  StateType extends State = QcState,
+
   // =============
 
   CacherTypeGroupType extends CacherTypeGroup<
@@ -124,14 +131,16 @@ export type CacherConstructor<
     QueryBuilderMapType,
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
-    ExtraDependenciesType
+    ExtraDependenciesType,
+    StateType
   > = CacherTypeGroup<
     CommonConfigType,
     ModelMapType,
     QueryBuilderMapType,
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
-    ExtraDependenciesType
+    ExtraDependenciesType,
+    StateType
   >
 > = (
   querchy : CacherTypeGroupType['QuerchyType'],
@@ -155,6 +164,8 @@ export default class Cacher<
 
   ExtraDependenciesType = any,
 
+  StateType extends State = QcState,
+
   // =============
 
   CacherTypeGroupType extends CacherTypeGroup<
@@ -163,14 +174,16 @@ export default class Cacher<
     QueryBuilderMapType,
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
-    ExtraDependenciesType
+    ExtraDependenciesType,
+    StateType
   > = CacherTypeGroup<
     CommonConfigType,
     ModelMapType,
     QueryBuilderMapType,
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
-    ExtraDependenciesType
+    ExtraDependenciesType,
+    StateType
   >
 > {
   querchy : CacherTypeGroupType['QuerchyType'];
@@ -237,13 +250,13 @@ export default class Cacher<
 
   createSelectorAndSectorCreatorForResource(key) {
     (<any>this.selectorCreatorSet)[key] = {};
-    this.selectorCreatorSet[key].resourceMapSelectorCreator = () => createSelector<
+    this.selectorCreatorSet[key].selectResourceMap = () => createSelector<
       any, ModelRootState<ModelMapType>, ResourceStateResourceMap
     >(
       this.querchy.querchyDefinition.baseSelector,
       s => (s[key] && s[key].resourceMap) || {},
     );
-    this.selectorCreatorSet[key].queryMapSelectorCreator = () => createSelector<
+    this.selectorCreatorSet[key].selectQueryMap = () => createSelector<
       any, ModelRootState<ModelMapType>, ResourceStateQueryMap
     >(
       this.querchy.querchyDefinition.baseSelector,
@@ -251,8 +264,8 @@ export default class Cacher<
     );
 
     (<any>this.selectorSet)[key] = {};
-    this.selectorSet[key].resourceMapSelector = this.selectorCreatorSet[key].resourceMapSelectorCreator();
-    this.selectorSet[key].queryMapSelector = this.selectorCreatorSet[key].queryMapSelectorCreator();
+    this.selectorSet[key].selectResourceMap = this.selectorCreatorSet[key].selectResourceMap();
+    this.selectorSet[key].selectQueryMap = this.selectorCreatorSet[key].selectQueryMap();
   }
 
   init() {

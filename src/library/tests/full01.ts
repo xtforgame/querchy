@@ -89,7 +89,7 @@ export class MyStore implements MyQcStore001 {
       // console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
     }
 
-    // const xxxx = this.cacher.selectorSet.httpBinRes2.queryMapSelector(this.state);
+    // const xxxx = this.cacher.selectorSet.httpBinRes2.selectQueryMap(this.state);
     // console.log('xxxx :', xxxx);
 
     this.cb(action);

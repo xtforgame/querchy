@@ -1,3 +1,4 @@
+import { Epic, createEpicMiddleware, combineEpics, State } from 'pure-epic';
 import {
   SliceReducer,
   ResourceStateResourceMap,
@@ -30,34 +31,36 @@ export type ReducerSets<
 
 export type SliceSelectorCreator = any;
 
-export type SelectorCreatorSet = {
-  queryMapSelectorCreator: () => (state : any) => ResourceStateQueryMap;
-  resourceMapSelectorCreator: () => (state : any) => ResourceStateResourceMap;
-};
+export type SelectorCreatorSet<StateType extends State, T> = {
+  selectQueryMap: () => (state : StateType) => ResourceStateQueryMap;
+  selectResourceMap: () => (state : StateType) => ResourceStateResourceMap;
+} & T;
 
 export type SelectorCreatorSets<
+  StateType extends State,
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<CommonConfigType>
+  T extends ModelMap<CommonConfigType>,
 > = {
-  [P in keyof T] : SelectorCreatorSet;
+  [P in keyof T] : SelectorCreatorSet<StateType, {}>;
 } & {
-  [s : string] : SelectorCreatorSet;
+  [s : string] : SelectorCreatorSet<StateType, {}>;
 };
 
 // ======================================
 
 export type SliceSelector = any;
 
-export type SelectorSet = {
-  queryMapSelector: (state : any) => ResourceStateQueryMap;
-  resourceMapSelector: (state : any) => ResourceStateResourceMap;
-};
+export type SelectorSet<StateType extends State, T> = {
+  selectQueryMap: (state : StateType) => ResourceStateQueryMap;
+  selectResourceMap: (state : StateType) => ResourceStateResourceMap;
+} & T;
 
 export type SelectorSets<
+  StateType extends State,
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<CommonConfigType>
+  T extends ModelMap<CommonConfigType>,
 > = {
-  [P in keyof T] : SelectorSet;
+  [P in keyof T] : SelectorSet<StateType, {}>;
 } & {
-  [s : string] : SelectorSet;
+  [s : string] : SelectorSet<StateType, {}>;
 };

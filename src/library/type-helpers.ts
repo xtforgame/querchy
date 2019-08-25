@@ -63,10 +63,9 @@ export type FullTypeGroup<
   QueryBuilderMapType,
   ExtraActionCreatorsType,
   QuerchyDefinitionType,
-  ExtraDependenciesType
-> & {
-  StateType: StateType;
-};
+  ExtraDependenciesType,
+  StateType
+>;
 
 export type MakeResourceModelType<
   CommonConfigType extends CommonConfig,
@@ -259,14 +258,18 @@ export class TypeHelperClass<
       this['Types']['QueryBuilderMapType'],
       this['Types']['ExtraActionCreatorsType'],
       this['Types']['QuerchyDefinitionType'],
-      this['Types']['ExtraDependenciesType']
+      this['Types']['ExtraDependenciesType'],
+
+      this['Types']['StateType']
     >, CacherConstructor<
       this['Types']['CommonConfigType'],
       this['Types']['ModelMapType'],
       this['Types']['QueryBuilderMapType'],
       this['Types']['ExtraActionCreatorsType'],
       this['Types']['QuerchyDefinitionType'],
-      this['Types']['ExtraDependenciesType']
+      this['Types']['ExtraDependenciesType'],
+
+      this['Types']['StateType']
     >>
   ) => {
     return Cacher;
