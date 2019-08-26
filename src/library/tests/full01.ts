@@ -8,15 +8,15 @@ import {
 import combineReducers from '../redux/combineReducers';
 
 import {
-  MyQuerchy001,
-  MyAxiosRunner001,
-  MyCacher001,
-} from './types001';
+  QuerchyX1,
+  AxiosRunnerX1,
+  CacherX1,
+} from './typesX1';
 
 import {
-  MyQcStore001,
+  MyQcStoreX1,
   Types,
-} from './typesDef001';
+} from './typesDefX1';
 
 import {
   getBasicQueryInfos,
@@ -32,10 +32,10 @@ export const crudToRestMap = {
   getCollection: 'get',
 };
 
-export const createEpicMiddleware001 = (...args : any[]) => createEpicMiddleware<
+export const createEpicMiddlewareX1 = (...args : any[]) => createEpicMiddleware<
   QcAction,
   Types['StateType'],
-  MyQcStore001,
+  MyQcStoreX1,
   any
 >(...args);
 
@@ -43,16 +43,16 @@ export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 
 const rootSliceKey = 'cache';
 
-export class MyStore implements MyQcStore001 {
+export class MyStore implements MyQcStoreX1 {
   state: Types['StateType'];
-  cacher: MyCacher001;
+  cacher: CacherX1;
   epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
   epicMiddlewareCb: EpicMiddlewareCb;
   cb: (action : QcAction) => any;
   rootReducer: (state: Types['StateType'], action : QcAction) => any;
 
   constructor(
-    cacher : MyCacher001,
+    cacher : CacherX1,
     epicMiddleware: (store: MyStore) => EpicMiddlewareCb,
     cb: (action : QcAction) => any,
   ) {
@@ -85,7 +85,7 @@ export class MyStore implements MyQcStore001 {
     this.state = this.rootReducer(this.getState(), action);
     this.epicMiddlewareCb(() => {})(action);
     if (action.response) {
-      console.log('action.queryId', action.queryId);
+      console.log('action.queryId :', action.queryId);
       // console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
     }
 
@@ -98,13 +98,13 @@ export class MyStore implements MyQcStore001 {
   getState = () => this.state;
 }
 
-const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function) => {
+const testRun = (querchy : QuerchyX1, cacher : CacherX1, resolve: Function) => {
   const querchyRootEpic = querchy.getRootEpic();
   const cacherRootEpic = cacher.getRootEpic();
 
   const rootEpic = combineEpics(querchyRootEpic, cacherRootEpic);
 
-  const epicMiddleware = createEpicMiddleware001();
+  const epicMiddleware = createEpicMiddlewareX1();
   const cb = (action : QcAction) => {
     const actionCreator : AnyQueryActionCreatorWithProps = action.actionCreator;
     if (actionCreator) {
@@ -175,11 +175,11 @@ const testRun = (querchy : MyQuerchy001, cacher : MyCacher001, resolve: Function
 
 export default () => {
   return new Promise((resolve) => {
-    const querchy = new MyQuerchy001({
+    const querchy = new QuerchyX1({
       commonConfig: {
-        defaultQueryRunner: new MyAxiosRunner001(),
+        defaultQueryRunner: new AxiosRunnerX1(),
         queryRunners: {
-          customRunner: new MyAxiosRunner001(),
+          customRunner: new AxiosRunnerX1(),
         },
         actionTypePrefix: 'QC_ACTS/',
       },
@@ -320,7 +320,13 @@ export default () => {
         },
       },
     });
-    const cacher = new MyCacher001(querchy);
+    const cacher = new CacherX1(querchy, {
+      httpBinRes: {
+        sss: {
+          creatorCreator: (baseSelector) => () => () => '',
+        },
+      },
+    });
     testRun(querchy, cacher, resolve);
   });
 };

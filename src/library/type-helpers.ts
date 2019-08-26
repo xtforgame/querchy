@@ -27,6 +27,7 @@ import {
   QueryBuilderMap,
   ExtraActionCreators,
   QuerchyDefinition,
+  ExtraSelectorInfosMapForModelMap,
 } from './core/interfaces';
 
 import {
@@ -57,6 +58,12 @@ export type FullTypeGroup<
   ExtraDependenciesType = any,
 
   StateType extends State = QcState,
+
+  ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
+    CommonConfigType, ModelMapType
+  > = ExtraSelectorInfosMapForModelMap<
+    CommonConfigType, ModelMapType
+  >
 > = CacherTypeGroup<
   CommonConfigType,
   ModelMapType,
@@ -64,7 +71,9 @@ export type FullTypeGroup<
   ExtraActionCreatorsType,
   QuerchyDefinitionType,
   ExtraDependenciesType,
-  StateType
+  StateType,
+
+  ExtraSelectorInfosForModelType
 >;
 
 export type MakeResourceModelType<
@@ -159,6 +168,12 @@ export type MakeFullTypeGroup<
   ExtraDependenciesType = any,
 
   StateType extends State = QcState,
+
+  ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
+    CommonConfigType, ModelMapType
+  > = ExtraSelectorInfosMapForModelMap<
+    CommonConfigType, ModelMapType
+  >
 > = FullTypeGroup<
   CommonConfigType,
   ModelMapType,
@@ -177,7 +192,9 @@ export type MakeFullTypeGroup<
     ExtraActionInfosType
   >,
   ExtraDependenciesType,
-  StateType
+  StateType,
+
+  ExtraSelectorInfosForModelType
 >;
 
 export class TypeHelperClass<
@@ -196,6 +213,10 @@ export class TypeHelperClass<
   ExtraDependenciesType,
 
   StateType extends State,
+
+  ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
+    CommonConfigType, ModelMapType
+  >
 > {
   Types!: MakeFullTypeGroup<
     CommonConfigType,
@@ -204,7 +225,9 @@ export class TypeHelperClass<
     ExtraQueryInfosType,
     ExtraActionInfosType,
     ExtraDependenciesType,
-    StateType
+    StateType,
+
+    ExtraSelectorInfosForModelType
   >;
 
   GetAxiosRunnerClass = () : (
@@ -260,7 +283,9 @@ export class TypeHelperClass<
       this['Types']['QuerchyDefinitionType'],
       this['Types']['ExtraDependenciesType'],
 
-      this['Types']['StateType']
+      this['Types']['StateType'],
+
+      this['Types']['ExtraSelectorInfosForModelType']
     >, CacherConstructor<
       this['Types']['CommonConfigType'],
       this['Types']['ModelMapType'],
@@ -269,7 +294,9 @@ export class TypeHelperClass<
       this['Types']['QuerchyDefinitionType'],
       this['Types']['ExtraDependenciesType'],
 
-      this['Types']['StateType']
+      this['Types']['StateType'],
+
+      this['Types']['ExtraSelectorInfosForModelType']
     >>
   ) => {
     return Cacher;

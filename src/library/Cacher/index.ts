@@ -31,6 +31,12 @@ import {
   QuerchyDefinition,
 
   QcResponseAction,
+
+  ExtraSelectorInfosMapForModelMap,
+  ExtraModelSelectorCreators,
+  ExtraModelSelectors,
+  SelectorCreatorCreatorForModelMap,
+  ExtraSelectorInfosForModelMap,
 } from '../core/interfaces';
 
 import combineReducers from '../redux/combineReducers';
@@ -62,6 +68,11 @@ export type CacherTypeGroup<
   ExtraDependenciesType,
 
   StateType extends State,
+
+  ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
+    CommonConfigType,
+    ModelMapType
+  >,
 > = QuerchyTypeGroup<
   CommonConfigType,
   ModelMapType,
@@ -71,6 +82,15 @@ export type CacherTypeGroup<
   ExtraDependenciesType
 > & {
   StateType: StateType;
+  SelectorCreatorCreatorForModelMapType: SelectorCreatorCreatorForModelMap<
+    CommonConfigType,
+    ModelMapType
+  >;
+  ExtraSelectorInfosForModelMapType: ExtraSelectorInfosForModelMap<
+    CommonConfigType,
+    ModelMapType
+  >,
+  ExtraSelectorInfosForModelType: ExtraSelectorInfosForModelType;
   QuerchyType: Querchy<
     CommonConfigType,
     ModelMapType,
@@ -88,13 +108,23 @@ export type CacherTypeGroup<
   SelectorCreatorSetsType: SelectorCreatorSets<
     StateType,
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    ExtraModelSelectorCreators<
+      CommonConfigType,
+      ModelMapType,
+      ExtraSelectorInfosForModelType
+    >
   >;
 
   SelectorSetsType: SelectorSets<
     StateType,
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    ExtraModelSelectors<
+      CommonConfigType,
+      ModelMapType,
+      ExtraSelectorInfosForModelType
+    >
   >;
 
   GlobalMerger: GlobalMerger<
@@ -123,6 +153,14 @@ export type CacherConstructor<
 
   StateType extends State = QcState,
 
+  ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
+    CommonConfigType,
+    ModelMapType
+  > = ExtraSelectorInfosMapForModelMap<
+    CommonConfigType,
+    ModelMapType
+  >,
+
   // =============
 
   CacherTypeGroupType extends CacherTypeGroup<
@@ -132,7 +170,8 @@ export type CacherConstructor<
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependenciesType,
-    StateType
+    StateType,
+    ExtraSelectorInfosForModelType
   > = CacherTypeGroup<
     CommonConfigType,
     ModelMapType,
@@ -140,10 +179,12 @@ export type CacherConstructor<
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependenciesType,
-    StateType
+    StateType,
+    ExtraSelectorInfosForModelType
   >
 > = (
   querchy : CacherTypeGroupType['QuerchyType'],
+  extraSelectorInfosForModel: CacherTypeGroupType['ExtraSelectorInfosForModelType'],
 ) => any;
 
 export default class Cacher<
@@ -166,6 +207,14 @@ export default class Cacher<
 
   StateType extends State = QcState,
 
+  ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
+    CommonConfigType,
+    ModelMapType
+  > = ExtraSelectorInfosMapForModelMap<
+    CommonConfigType,
+    ModelMapType
+  >,
+
   // =============
 
   CacherTypeGroupType extends CacherTypeGroup<
@@ -175,7 +224,8 @@ export default class Cacher<
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependenciesType,
-    StateType
+    StateType,
+    ExtraSelectorInfosForModelType
   > = CacherTypeGroup<
     CommonConfigType,
     ModelMapType,
@@ -183,10 +233,13 @@ export default class Cacher<
     ExtraActionCreatorsType,
     QuerchyDefinitionType,
     ExtraDependenciesType,
-    StateType
+    StateType,
+    ExtraSelectorInfosForModelType
   >
 > {
   querchy : CacherTypeGroupType['QuerchyType'];
+
+  extraSelectorInfosForModel : CacherTypeGroupType['ExtraSelectorInfosForModelType'];
 
   reducerSet : CacherTypeGroupType['ReducerSetsType'];
 
@@ -204,8 +257,10 @@ export default class Cacher<
 
   constructor(
     querchy : CacherTypeGroupType['QuerchyType'],
+    extraSelectorInfosForModel: CacherTypeGroupType['ExtraSelectorInfosForModelType'],
   ) {
     this.querchy = querchy;
+    this.extraSelectorInfosForModel = extraSelectorInfosForModel;
     // console.log('querchy :', querchy.querchyDefinition);
     this.reducerSet = <any>{};
     this.selectorCreatorSet = <any>{};
@@ -248,7 +303,10 @@ export default class Cacher<
     };
   }
 
-  createSelectorAndSectorCreatorForResource(key) {
+  createSelectorAndSectorCreatorForResource(
+    key : string,
+    extraSelectorInfosForModelMap: CacherTypeGroupType['ExtraSelectorInfosForModelMapType'],
+  ) {
     (<any>this.selectorCreatorSet)[key] = {};
     this.selectorCreatorSet[key].selectResourceMap = () => createSelector<
       any, ModelRootState<ModelMapType>, ResourceStateResourceMap
@@ -262,10 +320,17 @@ export default class Cacher<
       this.querchy.querchyDefinition.baseSelector,
       s => (s[key] && s[key].queryMap) || {},
     );
+    Object.keys(extraSelectorInfosForModelMap)
+    .forEach((selectorName) => {
+      (<any>this.selectorCreatorSet[key])[selectorName] = extraSelectorInfosForModelMap[selectorName]
+      .creatorCreator(this.querchy.querchyDefinition.baseSelector);
+    });
 
     (<any>this.selectorSet)[key] = {};
-    this.selectorSet[key].selectResourceMap = this.selectorCreatorSet[key].selectResourceMap();
-    this.selectorSet[key].selectQueryMap = this.selectorCreatorSet[key].selectQueryMap();
+    Object.keys(this.selectorCreatorSet[key])
+    .forEach((selectorName) => {
+      (<any>this.selectorSet[key])[selectorName] = this.selectorCreatorSet[key][selectorName]();
+    });
   }
 
   init() {
@@ -303,7 +368,8 @@ export default class Cacher<
       ) => {
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
-      this.createSelectorAndSectorCreatorForResource(key);
+      const extraSelectorInfoForModel : any = this.extraSelectorInfosForModel[key] || {};
+      this.createSelectorAndSectorCreatorForResource(key, extraSelectorInfoForModel);
     });
 
     {
@@ -331,7 +397,8 @@ export default class Cacher<
       ) => {
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
-      this.createSelectorAndSectorCreatorForResource('extra');
+      const extraSelectorInfoForModel : any = this.extraSelectorInfosForModel.extra || {};
+      this.createSelectorAndSectorCreatorForResource('extra', extraSelectorInfoForModel);
     }
     this.allResourceReducers.extra = (
       state = {

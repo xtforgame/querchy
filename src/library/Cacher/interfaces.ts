@@ -3,6 +3,7 @@ import {
   SliceReducer,
   ResourceStateResourceMap,
   ResourceStateQueryMap,
+  BaseSelector,
 } from '../common/interfaces';
 
 import {
@@ -29,6 +30,24 @@ export type ReducerSets<
 
 // ======================================
 
+export type SelectorInfo<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>,
+> = {
+  creatorCreator: (baseSelector : BaseSelector<ModelMapType>) => Function,
+};
+
+export type SelectorInfos<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>,
+> = {
+  selectorInfos: {
+    [s : string]: SelectorInfo<CommonConfigType, ModelMapType>;
+  };
+};
+
+// ======================================
+
 export type SliceSelectorCreator = any;
 
 export type SelectorCreatorSet<StateType extends State, T> = {
@@ -39,10 +58,11 @@ export type SelectorCreatorSet<StateType extends State, T> = {
 export type SelectorCreatorSets<
   StateType extends State,
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  ExtraSelectorCreators
 > = {
-  [P in keyof T] : SelectorCreatorSet<StateType, {}>;
-} & {
+  [P in keyof ModelMapType] : SelectorCreatorSet<StateType, {}>;
+} & ExtraSelectorCreators & {
   [s : string] : SelectorCreatorSet<StateType, {}>;
 };
 
@@ -58,9 +78,10 @@ export type SelectorSet<StateType extends State, T> = {
 export type SelectorSets<
   StateType extends State,
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  ExtraSelectorCreators
 > = {
-  [P in keyof T] : SelectorSet<StateType, {}>;
-} & {
+  [P in keyof ModelMapType] : SelectorSet<StateType, {}>;
+} & ExtraSelectorCreators & {
   [s : string] : SelectorSet<StateType, {}>;
 };
