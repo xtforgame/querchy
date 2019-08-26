@@ -34,6 +34,8 @@ import {
   createExtraActionCreators,
 } from './actionCreatorHelpers';
 
+import toBuildRequestConfigFunction from './toBuildRequestConfigFunction';
+
 export type QuerchyTypeGroup<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<
@@ -194,6 +196,18 @@ export default class Querchy<
     commonConfig.queryRunners = commonConfig.queryRunners || {};
 
     // normalize queryBuilders
+    Object.keys(queryBuilders)
+    .forEach((key) => {
+      const queryBuilder = queryBuilders[key];
+      if (queryBuilder) {
+        queryBuilder.buildRequestConfig = toBuildRequestConfigFunction<
+          CommonConfigType,
+          ModelMapType
+        >(
+          queryBuilder.buildRequestConfig,
+        );
+      }
+    });
     Object.keys(queryBuilders)
     .forEach((key) => {
       const queryBuilder = queryBuilders[key];

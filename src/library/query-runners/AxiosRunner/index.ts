@@ -24,6 +24,7 @@ import {
   ExtraActionCreators,
   QcRequestConfigNormal,
   QcRequestConfigFromCache,
+  BuildRequestConfigFunction,
 } from '../../core/interfaces';
 
 import {
@@ -37,25 +38,25 @@ import {
 import AxiosObservable, { AxiosObservableOptions } from './AxiosObservable';
 
 export type AxiosRunnerConstructor<
-CommonConfigType extends CommonConfig = CommonConfig,
-ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
-QueryBuilderMapType extends QueryBuilderMap<
-  CommonConfigType, ModelMapType
-> = QueryBuilderMap<CommonConfigType, ModelMapType>,
-ExtraActionCreatorsType extends ExtraActionCreators<
-  CommonConfigType, ModelMapType, QueryBuilderMapType
-> = ExtraActionCreators<
-  CommonConfigType, ModelMapType, QueryBuilderMapType
->,
-QuerchyDefinitionType extends QuerchyDefinition<
-  CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
-> = QuerchyDefinition<
-  CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
->,
+  CommonConfigType extends CommonConfig = CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>,
+  QueryBuilderMapType extends QueryBuilderMap<
+    CommonConfigType, ModelMapType
+  > = QueryBuilderMap<CommonConfigType, ModelMapType>,
+  ExtraActionCreatorsType extends ExtraActionCreators<
+    CommonConfigType, ModelMapType, QueryBuilderMapType
+  > = ExtraActionCreators<
+    CommonConfigType, ModelMapType, QueryBuilderMapType
+  >,
+  QuerchyDefinitionType extends QuerchyDefinition<
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
+  > = QuerchyDefinition<
+    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType
+  >,
 
-ExtraDependencies = any,
+  ExtraDependencies = any,
 
-StateType extends State = QcState,
+  StateType extends State = QcState,
 > = (a?: AxiosStatic) => any;
 
 export default class AxiosRunner<
@@ -146,7 +147,11 @@ export default class AxiosRunner<
 
     let requestConfig : QcRequestConfig;
     try {
-      requestConfig = queryBuilder.buildRequestConfig(action, {
+      requestConfig = (<BuildRequestConfigFunction<
+        CommonConfigType,
+        ModelMapType
+      >>queryBuilder.buildRequestConfig)({
+        action,
         runnerType: this.type,
         commonConfig,
         models,

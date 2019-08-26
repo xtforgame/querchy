@@ -168,12 +168,15 @@ const testRun = (querchy : QuerchyX1, cacher : CacherX1, resolve: Function) => {
   ));
   // epicMiddlewareCb(() => {})({ type: 'CANCEL' });
 
-  setTimeout(() => {
-    store.dispatch(httpBinRes.read(
-      1,
-      { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
-    ));
-  }, 5000);
+  setTimeout(
+    () => {
+      store.dispatch(httpBinRes.read(
+        1,
+        { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
+      ));
+    },
+    5000,
+  );
 
   // const readAction = querchy.actionCreatorSets.httpBinRes.read('ss');
   // console.log('readAction :', readAction);
@@ -222,7 +225,7 @@ export default () => {
             ...updateCacheT1.getActionInfos(),
             ...collectionT1.getActionInfos(),
             updateCache2: {
-              actionCreator: (cacheChange) => ({ cacheChange }),
+              actionCreator: cacheChange => ({ cacheChange }),
               resourceMerger: s => s,
             },
           },
@@ -230,87 +233,94 @@ export default () => {
       },
       queryBuilders: {
         defaultBuilder: {
-          buildRequestConfig: (action, { runnerType, commonConfig, models, modelRootState }) => {
-            if (
-              modelRootState.httpBinRes.resourceMap['1']
-              && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest
-              && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse
-            ) {
-              return {
-                overwriteQueryId: action.queryId || modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.queryId,
-                fromCache: true,
-                responseFromCache: modelRootState
-                  .httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse,
-              };
-            }
-
-            let overwriteQueryId : any = action.queryId;
-            if (!overwriteQueryId) {
-              if (action.resourceId) {
-                overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
-              } else {
-                overwriteQueryId = action.crudType;
+          buildRequestConfig: [
+            ({ action, runnerType, commonConfig, models, modelRootState }, next) => {
+              if (
+                modelRootState.httpBinRes.resourceMap['1']
+                && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest
+                && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse
+              ) {
+                return next({
+                  overwriteQueryId: action.queryId
+                    || modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.queryId,
+                  fromCache: true,
+                  responseFromCache: modelRootState
+                    .httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse,
+                });
               }
-            }
 
-            // console.log('action', action);
-            if (!action.modelName) {
-              return null;
-            }
-            return ({
-              overwriteQueryId,
-              method: crudToRestMap[action.crudType],
-              url: models[action.modelName].buildUrl!(action),
-              headers: action.options.headers,
-              query: action.options.queryPart,
-              body: action.data,
-            });
-          },
+              let overwriteQueryId : any = action.queryId;
+              if (!overwriteQueryId) {
+                if (action.resourceId) {
+                  overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+                } else {
+                  overwriteQueryId = action.crudType;
+                }
+              }
+
+              // console.log('action', action);
+              if (!action.modelName) {
+                return next(null);
+              }
+              return next({
+                overwriteQueryId,
+                method: crudToRestMap[action.crudType],
+                url: models[action.modelName].buildUrl!(action),
+                headers: action.options.headers,
+                query: action.options.queryPart,
+                body: action.data,
+              });
+            },
+          ],
         },
         customPath: {
           queryRunner: 'customRunner',
-          buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
-            if (!action.modelName) {
-              return null;
-            }
-            let overwriteQueryId : any = action.queryId;
-            if (!overwriteQueryId) {
-              if (action.resourceId) {
-                overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
-              } else {
-                overwriteQueryId = action.crudType;
+          buildRequestConfig: [
+            ({ action, runnerType, commonConfig, models }, next) => {
+              if (!action.modelName) {
+                return next(null);
               }
-            }
-            return ({
-              overwriteQueryId,
-              method: crudToRestMap[action.crudType],
-              url: `https://httpbin.org/${crudToRestMap[action.crudType]}`,
-              headers: action.options.headers,
-              query: action.options.queryPart,
-              body: action.data,
-            });
-          },
+              let overwriteQueryId : any = action.queryId;
+              if (!overwriteQueryId) {
+                if (action.resourceId) {
+                  overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+                } else {
+                  overwriteQueryId = action.crudType;
+                }
+              }
+              return next({
+                overwriteQueryId,
+                method: crudToRestMap[action.crudType],
+                url: `https://httpbin.org/${crudToRestMap[action.crudType]}`,
+                headers: action.options.headers,
+                query: action.options.queryPart,
+                body: action.data,
+              });
+            },
+          ],
         },
         forExtra: {
           queryRunner: 'customRunner',
-          buildRequestConfig: (action, { runnerType, commonConfig, models }) => {
-            let overwriteQueryId : any = action.queryId;
-            if (!overwriteQueryId) {
-              if (action.resourceId) {
-                overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
-              } else {
-                overwriteQueryId = action.crudType;
+          buildRequestConfig: [
+            ({ action, runnerType, commonConfig, models }, next) => {
+              let overwriteQueryId : any = action.queryId;
+              if (!overwriteQueryId) {
+                if (action.resourceId) {
+                  overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+                } else {
+                  overwriteQueryId = action.crudType;
+                }
               }
-            }
-            return ({
-              overwriteQueryId,
-              method: 'get',
-              url: 'https://httpbin.org/get',
-              headers: action.options.headers,
-              query: action.options.queryPart,
-              body: action.data,
-            });
-          },
+              return next({
+                overwriteQueryId,
+                method: 'get',
+                url: 'https://httpbin.org/get',
+                headers: action.options.headers,
+                query: action.options.queryPart,
+                body: action.data,
+              });
+            },
+          ],
         },
       },
       extraActionCreators: {

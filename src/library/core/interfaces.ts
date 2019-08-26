@@ -109,23 +109,50 @@ export type ModelMap<
   [s : string] : ResourceModel<CommonConfigType>;
 };
 
-export type BuildRequestConfigOption<
+export type BuildRequestConfigContext<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>
 > = {
+  action: QcBasicAction,
   runnerType : RunnerType,
   commonConfig : CommonConfigType,
   models: ModelMapType,
   modelRootState : ModelRootState<ModelMapType>;
 };
 
-export type BuildRequestConfig<
+export type BuildRequestConfigFunction<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>
 > = (
-  action: QcBasicAction,
-  options: BuildRequestConfigOption<CommonConfigType, ModelMapType>,
+  context: BuildRequestConfigContext<CommonConfigType, ModelMapType>,
 ) => QcRequestConfig;
+
+export type BuildRequestConfigContextForMiddleware<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = BuildRequestConfigContext<CommonConfigType, ModelMapType>
+  & {
+    requestConfig: QcRequestConfig | undefined,
+  };
+
+export type BuildRequestConfigMiddleware<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = (
+  context: BuildRequestConfigContextForMiddleware<CommonConfigType, ModelMapType>,
+  next: (requestConfig?: QcRequestConfig) => QcRequestConfig,
+) => QcRequestConfig;
+
+export type BuildRequestConfig<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = BuildRequestConfigFunction<
+  CommonConfigType,
+  ModelMapType
+> | BuildRequestConfigMiddleware<
+  CommonConfigType,
+  ModelMapType
+>[];
 
 export type QueryBuilderDefinition<
   CommonConfigType extends CommonConfig,
