@@ -2,6 +2,9 @@ import {
   ResourceModelQueryActionOptions,
   ActionInfo,
   QueryInfo,
+  CommonConfig,
+  ModelMap,
+  BuildRequestConfigMiddleware,
 } from '../../core/interfaces';
 
 export type RawActionCreatorUpdateCacheT1 = (
@@ -38,4 +41,11 @@ export default class UpdateCacheT1 {
       actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
     },
   })
+
+  getBuildRequestConfigMiddleware = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>
+  >() : BuildRequestConfigMiddleware<CommonConfigType, ModelMapType> => {
+    return (_, next) => next();
+  }
 }

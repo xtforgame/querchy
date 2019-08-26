@@ -72,6 +72,7 @@ export type ExtraActionInfo<
 > = ExtraActionInfoBase<QcRootState, RawActionCreator>;
 
 export type CommonConfig = {
+  defaultBuildUrl: (modelBaseUrl : string, action: QcBasicAction) => string;
   defaultQueryRunner: SimpleQueryRunner;
   queryRunners?: { [s : string] : SimpleQueryRunner };
   actionTypePrefix?: string;
@@ -97,7 +98,7 @@ export type ResourceModel<
   actionInfos: {
     [s : string]: ActionInfo<Function>;
   };
-  buildUrl?: (action: QcBasicAction) => string;
+  buildUrl?: (modelBaseUrl : string, action: QcBasicAction) => string;
   queryBuilderName?: string;
   actionTypes?: { [s : string]: string; };
   actions?: { [s: string]: StartQueryActionCreatorWithProps<{}>; };

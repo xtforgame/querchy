@@ -9,10 +9,13 @@ import {
   ResourceModelQueryActionOptions,
   // ActionInfo,
   QueryInfo,
+  CommonConfig,
+  ModelMap,
+  BuildRequestConfigMiddleware,
 } from '../../core/interfaces';
 
 export const crudToRestMap = {
-  getCollection: 'getCollection',
+  getCollection: 'get',
 };
 
 export type RawActionCreatorGetCollectionT1 = (
@@ -123,4 +126,34 @@ export default class CollectionT1 {
 
   getActionInfos : () => ActionInfosT1 = () => ({
   })
+
+  getBuildRequestConfigMiddleware = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>
+  >() : BuildRequestConfigMiddleware<CommonConfigType, ModelMapType> => {
+    return ({ action, runnerType, commonConfig, models, modelRootState }, next) => {
+      let overwriteQueryId : any = action.queryId;
+      if (!overwriteQueryId) {
+        if (action.resourceId) {
+          overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+        } else {
+          overwriteQueryId = action.crudType;
+        }
+      }
+
+      // console.log('action', action);
+      if (!action.modelName || !crudToRestMap[action.crudType]) {
+        return next();
+      }
+      console.log('models[action.modelName].url :', models[action.modelName].url);
+      return {
+        overwriteQueryId,
+        method: crudToRestMap[action.crudType],
+        url: models[action.modelName].url,
+        headers: action.options.headers,
+        query: action.options.queryPart,
+        body: action.data,
+      };
+    };
+  }
 }

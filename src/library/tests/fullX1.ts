@@ -190,6 +190,16 @@ export default () => {
   return new Promise((resolve) => {
     const querchy = new QuerchyX1({
       commonConfig: {
+        // defaultBuildUrl: (modelBaseUrl, action) => {
+        //   if (action.crudType === 'create') {
+        //     return modelBaseUrl;
+        //   }
+        //   return `${modelBaseUrl}/${action.id}`;
+        // },
+        defaultBuildUrl: (
+          modelBaseUrl,
+          action,
+        ) => `${modelBaseUrl}/${crudToRestMap[action.crudType]}`,
         defaultQueryRunner: new AxiosRunnerX1(),
         queryRunners: {
           customRunner: new AxiosRunnerX1(),
@@ -202,7 +212,7 @@ export default () => {
       models: {
         httpBinRes: {
           url: 'https://httpbin.org',
-          buildUrl: action => `https://httpbin.org/${crudToRestMap[action.crudType]}`,
+          buildUrl: (modelBaseUrl, action) => `${modelBaseUrl}/${crudToRestMap[action.crudType]}`,
           queryInfos: {
             ...crudT1.getQueryInfos(),
             ...updateCacheT1.getQueryInfos(),
@@ -213,7 +223,7 @@ export default () => {
           },
         },
         httpBinRes2: {
-          url: 'https://httpbin.org/post',
+          url: 'https://httpbin.org/get',
           queryBuilderName: 'customPath',
           queryInfos: {
             ...crudT1.getQueryInfos(),
@@ -240,63 +250,26 @@ export default () => {
                 && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest
                 && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse
               ) {
-                return next({
+                return {
                   overwriteQueryId: action.queryId
                     || modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.queryId,
                   fromCache: true,
                   responseFromCache: modelRootState
                     .httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse,
-                });
+                };
               }
-
-              let overwriteQueryId : any = action.queryId;
-              if (!overwriteQueryId) {
-                if (action.resourceId) {
-                  overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
-                } else {
-                  overwriteQueryId = action.crudType;
-                }
-              }
-
-              // console.log('action', action);
-              if (!action.modelName) {
-                return next(null);
-              }
-              return next({
-                overwriteQueryId,
-                method: crudToRestMap[action.crudType],
-                url: models[action.modelName].buildUrl!(action),
-                headers: action.options.headers,
-                query: action.options.queryPart,
-                body: action.data,
-              });
+              return next();
             },
+            crudT1.getBuildRequestConfigMiddleware(),
+            updateCacheT1.getBuildRequestConfigMiddleware(),
           ],
         },
         customPath: {
           queryRunner: 'customRunner',
           buildRequestConfig: [
-            ({ action, runnerType, commonConfig, models }, next) => {
-              if (!action.modelName) {
-                return next(null);
-              }
-              let overwriteQueryId : any = action.queryId;
-              if (!overwriteQueryId) {
-                if (action.resourceId) {
-                  overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
-                } else {
-                  overwriteQueryId = action.crudType;
-                }
-              }
-              return next({
-                overwriteQueryId,
-                method: crudToRestMap[action.crudType],
-                url: `https://httpbin.org/${crudToRestMap[action.crudType]}`,
-                headers: action.options.headers,
-                query: action.options.queryPart,
-                body: action.data,
-              });
-            },
+            crudT1.getBuildRequestConfigMiddleware(),
+            updateCacheT1.getBuildRequestConfigMiddleware(),
+            collectionT1.getBuildRequestConfigMiddleware(),
           ],
         },
         forExtra: {
@@ -311,14 +284,14 @@ export default () => {
                   overwriteQueryId = action.crudType;
                 }
               }
-              return next({
+              return {
                 overwriteQueryId,
                 method: 'get',
                 url: 'https://httpbin.org/get',
                 headers: action.options.headers,
                 query: action.options.queryPart,
                 body: action.data,
-              });
+              };
             },
           ],
         },

@@ -28,18 +28,24 @@ const reduceMiddlewares = <
     if (index >= buildRequestConfigMiddlewares.length) {
       return (
         requestConfigArg?: QcRequestConfig,
-      ) => requestConfigArg === undefined
-        ? (requestConfigFinal || null) : requestConfigArg;
+      ) => {
+        if (requestConfigArg !== undefined) {
+          requestConfigFinal = requestConfigArg;
+        }
+        return requestConfigFinal || null;
+      };
     }
     return (
       requestConfigArg?: QcRequestConfig,
-    ) => requestConfigFinal = buildRequestConfigMiddlewares[index](
-      {
-        ...context,
-        requestConfig: requestConfigArg === undefined ? requestConfigFinal : requestConfigArg,
-      },
-      makeNextFunction(context, index + 1),
-    );
+    ) => {
+      if (requestConfigArg !== undefined) {
+        requestConfigFinal = requestConfigArg;
+      }
+      return buildRequestConfigMiddlewares[index](
+        { ...context, requestConfig: requestConfigFinal },
+        makeNextFunction(context, index + 1),
+      );
+    };
   };
   return (
     context : BuildRequestConfigContext<CommonConfigType, ModelMapType>,

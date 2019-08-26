@@ -8,6 +8,9 @@ import {
   ResourceModelQueryActionOptions,
   // ActionInfo,
   QueryInfo,
+  CommonConfig,
+  ModelMap,
+  BuildRequestConfigMiddleware,
 } from '../../core/interfaces';
 
 export const crudToRestMap = {
@@ -72,6 +75,14 @@ export type Types = {
 };
 
 export type GetResourceId = (state: ResourceState, action: QcBasicAction) => string | void;
+
+export type GetBuildRequestConfigMiddleware<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>
+> = () => BuildRequestConfigMiddleware<
+  CommonConfigType ,
+  ModelMapType
+>;
 
 export default class CrudT1 {
   static crudToRestMap(crudName) {
@@ -163,4 +174,33 @@ export default class CrudT1 {
 
   getActionInfos : () => ActionInfosT1 = () => ({
   })
+
+  getBuildRequestConfigMiddleware = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>
+  >() : BuildRequestConfigMiddleware<CommonConfigType, ModelMapType> => {
+    return ({ action, runnerType, commonConfig, models, modelRootState }, next) => {
+      let overwriteQueryId : any = action.queryId;
+      if (!overwriteQueryId) {
+        if (action.resourceId) {
+          overwriteQueryId = `${action.crudType}?resourceId=${action.resourceId}`;
+        } else {
+          overwriteQueryId = action.crudType;
+        }
+      }
+
+      // console.log('action', action);
+      if (!action.modelName || !crudToRestMap[action.crudType]) {
+        return next();
+      }
+      return {
+        overwriteQueryId,
+        method: crudToRestMap[action.crudType],
+        url: models[action.modelName].buildUrl!(models[action.modelName].url, action),
+        headers: action.options.headers,
+        query: action.options.queryPart,
+        body: action.data,
+      };
+    };
+  }
 }

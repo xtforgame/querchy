@@ -244,14 +244,8 @@ export default class Querchy<
       models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key]);
       models[key].actions = createModelActionCreators(commonConfig, key, models[key]);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
-      models[key].buildUrl = models[key].buildUrl || (
-        (action) => {
-          if (action.crudType === 'create') {
-            return models[key].url;
-          }
-          return `${models[key].url}/${action.id}`;
-        }
-      );
+      models[key].buildUrl = models[key].buildUrl
+        || commonConfig.defaultBuildUrl.bind(commonConfig);
 
       const model = models[key];
       if (model.queryBuilderName) {
