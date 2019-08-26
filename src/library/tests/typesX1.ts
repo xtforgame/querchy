@@ -1,8 +1,4 @@
 import {
-  QcAction,
-} from '../index';
-
-import {
   typeHelperClassX1,
 } from './typesDefX1';
 

@@ -14,15 +14,17 @@ import {
 } from './typesX1';
 
 import {
-  QcStoreX1,
+  StoreX1,
   Types,
 } from './typesDefX1';
 
-import {
-  getBasicQueryInfos,
-  getBasicActionInfos,
-  resMergerForColl,
-} from './helpers';
+import CrudT1 from '../features/CrudT1';
+import UpdateCacheT1 from '../features/UpdateCacheT1';
+import CollectionT1 from '../features/CollectionT1';
+
+export const crudT1 = new CrudT1();
+export const updateCacheT1 = new UpdateCacheT1();
+export const collectionT1 = new CollectionT1();
 
 export const crudToRestMap = {
   create: 'post',
@@ -35,7 +37,7 @@ export const crudToRestMap = {
 export const createEpicMiddlewareX1 = (...args : any[]) => createEpicMiddleware<
   QcAction,
   Types['StateType'],
-  QcStoreX1,
+  StoreX1,
   any
 >(...args);
 
@@ -43,7 +45,7 @@ export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 
 const rootSliceKey = 'cache';
 
-export class MyStore implements QcStoreX1 {
+export class MyStore implements StoreX1 {
   state: Types['StateType'];
   cacher: CacherX1;
   epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
@@ -92,9 +94,12 @@ export class MyStore implements QcStoreX1 {
     // const xxxx = this.cacher.selectorSet.httpBinRes2.selectQueryMap(this.state);
     // console.log('xxxx :', xxxx);
 
-    const selectedForHttpBinResExtra = this.cacher.selectorSet.httpBinRes.extraSelectorX1(this.state);
+    const selectedForHttpBinResExtra = this.cacher.selectorSet
+      .httpBinRes.extraSelectorX1(this.state);
     console.log('selectedForHttpBinResExtra :', selectedForHttpBinResExtra);
-    const selectedForHttpBinResExtra2 = this.cacher.selectorCreatorSet.httpBinRes.extraSelectorX1()(this.state);
+
+    const selectedForHttpBinResExtra2 = this.cacher.selectorCreatorSet
+      .httpBinRes.extraSelectorX1()(this.state);
     console.log('selectedForHttpBinResExtra2 :', selectedForHttpBinResExtra2);
 
     this.cb(action);
@@ -195,21 +200,27 @@ export default () => {
         httpBinRes: {
           url: 'https://httpbin.org',
           buildUrl: action => `https://httpbin.org/${crudToRestMap[action.crudType]}`,
-          queryInfos: getBasicQueryInfos(),
-          actionInfos: getBasicActionInfos(),
+          queryInfos: {
+            ...crudT1.getQueryInfos(),
+            ...updateCacheT1.getQueryInfos(),
+          },
+          actionInfos: {
+            ...crudT1.getActionInfos(),
+            ...updateCacheT1.getActionInfos(),
+          },
         },
         httpBinRes2: {
           url: 'https://httpbin.org/post',
           queryBuilderName: 'customPath',
           queryInfos: {
-            ...getBasicQueryInfos(),
-            getCollection: {
-              actionCreator: (options?) => ({ options }),
-              resourceMerger: resMergerForColl,
-            },
+            ...crudT1.getQueryInfos(),
+            ...updateCacheT1.getQueryInfos(),
+            ...collectionT1.getQueryInfos(),
           },
           actionInfos: {
-            ...getBasicActionInfos(),
+            ...crudT1.getActionInfos(),
+            ...updateCacheT1.getActionInfos(),
+            ...collectionT1.getActionInfos(),
             updateCache2: {
               actionCreator: (cacheChange) => ({ cacheChange }),
               resourceMerger: s => s,

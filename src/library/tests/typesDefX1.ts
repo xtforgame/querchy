@@ -14,10 +14,9 @@ import {
   BaseSelector,
 } from '../index';
 
-import {
-  ActionInfosT1,
-  QueryInfosT1,
-} from '../templates/builtin-t1';
+import { Types as CrudT1Types } from '../features/CrudT1';
+import { Types as UpdateCacheT1Types } from '../features/UpdateCacheT1';
+import { Types as CollectionT1Types } from '../features/CollectionT1';
 
 import {
   MakeResourceModelType,
@@ -38,23 +37,25 @@ export type RawActionCreatorUpdateCacheX1 = (
   [s : string] : any;
 };
 
-export type RawActionCreatorGetCollection = (
-  options?: ResourceModelQueryActionOptions,
-) => {
-  options?: ResourceModelQueryActionOptions;
-  [s : string] : any;
-};
-
 export type ModelMapX1 = {
-  httpBinRes: MakeResourceModelType<CommonConfigX1, QueryInfosT1, ActionInfosT1>;
+  httpBinRes: MakeResourceModelType<
+    CommonConfigX1,
+    CrudT1Types['QueryInfos']
+      & UpdateCacheT1Types['QueryInfos'],
+    CrudT1Types['ActionInfos']
+      & UpdateCacheT1Types['ActionInfos']
+  >;
   httpBinRes2: MakeResourceModelType<
     CommonConfigX1,
-    QueryInfosT1 & {
-      getCollection: QueryInfo<RawActionCreatorGetCollection>;
-    },
-    ActionInfosT1 & {
-      updateCache2: ActionInfo<RawActionCreatorUpdateCacheX1>;
-    }
+    CrudT1Types['QueryInfos']
+      & UpdateCacheT1Types['QueryInfos']
+      & CollectionT1Types['QueryInfos'],
+    CrudT1Types['ActionInfos']
+      & UpdateCacheT1Types['ActionInfos']
+      & CollectionT1Types['ActionInfos']
+      & {
+        updateCache2: ActionInfo<RawActionCreatorUpdateCacheX1>;
+      }
   >;
 };
 
@@ -115,4 +116,4 @@ export const typeHelperClassX1 = new TypeHelperClass<
 
 export type Types = (typeof typeHelperClassX1)['Types'];
 
-export type QcStoreX1 = QcStore<Types['StateType']>;
+export type StoreX1 = QcStore<Types['StateType']>;
