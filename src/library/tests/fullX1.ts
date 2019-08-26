@@ -14,7 +14,7 @@ import {
 } from './typesX1';
 
 import {
-  MyQcStoreX1,
+  QcStoreX1,
   Types,
 } from './typesDefX1';
 
@@ -35,7 +35,7 @@ export const crudToRestMap = {
 export const createEpicMiddlewareX1 = (...args : any[]) => createEpicMiddleware<
   QcAction,
   Types['StateType'],
-  MyQcStoreX1,
+  QcStoreX1,
   any
 >(...args);
 
@@ -43,7 +43,7 @@ export type EpicMiddlewareCb = (next: Function) => (action: QcAction) => any;
 
 const rootSliceKey = 'cache';
 
-export class MyStore implements MyQcStoreX1 {
+export class MyStore implements QcStoreX1 {
   state: Types['StateType'];
   cacher: CacherX1;
   epicMiddleware: (store: MyStore) => EpicMiddlewareCb;
@@ -91,6 +91,11 @@ export class MyStore implements MyQcStoreX1 {
 
     // const xxxx = this.cacher.selectorSet.httpBinRes2.selectQueryMap(this.state);
     // console.log('xxxx :', xxxx);
+
+    const selectedForHttpBinResExtra = this.cacher.selectorSet.httpBinRes.extraSelectorX1(this.state);
+    console.log('selectedForHttpBinResExtra :', selectedForHttpBinResExtra);
+    const selectedForHttpBinResExtra2 = this.cacher.selectorCreatorSet.httpBinRes.extraSelectorX1()(this.state);
+    console.log('selectedForHttpBinResExtra2 :', selectedForHttpBinResExtra2);
 
     this.cb(action);
   }
@@ -203,7 +208,13 @@ export default () => {
               resourceMerger: resMergerForColl,
             },
           },
-          actionInfos: getBasicActionInfos(),
+          actionInfos: {
+            ...getBasicActionInfos(),
+            updateCache2: {
+              actionCreator: (cacheChange) => ({ cacheChange }),
+              resourceMerger: s => s,
+            },
+          },
         },
       },
       queryBuilders: {
@@ -310,7 +321,7 @@ export default () => {
           },
         },
         actionInfos: {
-          updateCacheExtra: {
+          extraAction1: {
             actionCreator: (options) => {
               return {
                 cacheChange: null,
@@ -322,8 +333,14 @@ export default () => {
     });
     const cacher = new CacherX1(querchy, {
       httpBinRes: {
-        sss: {
-          creatorCreator: (baseSelector) => () => () => '',
+        extraSelectorX1: {
+          creatorCreator: (baseSelector) => {
+            return () => (state) => {
+              return Object.keys(
+                baseSelector(state).httpBinRes.resourceMap,
+              )[0] || 'XX';
+            };
+          },
         },
       },
     });

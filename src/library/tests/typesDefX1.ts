@@ -7,6 +7,7 @@ import {
 
   ResourceModelQueryActionOptions,
   QueryInfo,
+  ActionInfo,
   ExtraQueryInfo,
   ExtraActionInfo,
 
@@ -29,20 +30,7 @@ export interface CommonConfigX1 extends CommonConfig {
   };
 }
 
-export type RawActionCreatorGetCollection = (
-  options?: ResourceModelQueryActionOptions,
-) => {
-  options?: ResourceModelQueryActionOptions;
-  [s : string] : any;
-};
-
-export type ActionInfosX1 = ActionInfosT1;
-
-export type QueryInfosX1 = QueryInfosT1 & {
-  getCollection: QueryInfo<RawActionCreatorGetCollection>;
-};
-
-export type RawActionCreatorUpdateCacheExtra = (
+export type RawActionCreatorUpdateCacheX1 = (
   cacheChange: any, options?: ResourceModelQueryActionOptions,
 ) => {
   cacheChange: any;
@@ -50,9 +38,24 @@ export type RawActionCreatorUpdateCacheExtra = (
   [s : string] : any;
 };
 
+export type RawActionCreatorGetCollection = (
+  options?: ResourceModelQueryActionOptions,
+) => {
+  options?: ResourceModelQueryActionOptions;
+  [s : string] : any;
+};
+
 export type ModelMapX1 = {
   httpBinRes: MakeResourceModelType<CommonConfigX1, QueryInfosT1, ActionInfosT1>;
-  httpBinRes2: MakeResourceModelType<CommonConfigX1, QueryInfosX1, ActionInfosX1>;
+  httpBinRes2: MakeResourceModelType<
+    CommonConfigX1,
+    QueryInfosT1 & {
+      getCollection: QueryInfo<RawActionCreatorGetCollection>;
+    },
+    ActionInfosT1 & {
+      updateCache2: ActionInfo<RawActionCreatorUpdateCacheX1>;
+    }
+  >;
 };
 
 export type QueryBuilderMapX1 = {
@@ -63,27 +66,35 @@ export type QueryBuilderMapX1 = {
   [s : string] : QueryBuilderDefinition<CommonConfigX1, ModelMapX1>;
 };
 
-export type RawActionCreatorExtraActionX1 = (
+export type RawActionCreatorExtraQueryX1 = (
   options?: ResourceModelQueryActionOptions,
 ) => {
   options?: ResourceModelQueryActionOptions;
   [s : string] : any;
 };
 
+export type RawActionCreatorExtraActionX1 = (
+  cacheChange: any, options?: ResourceModelQueryActionOptions,
+) => {
+  cacheChange: any;
+  options?: ResourceModelQueryActionOptions;
+  [s : string] : any;
+};
+
 export type ExtraQueryInfosT1 = {
-  extraQuery1: ExtraQueryInfo<ModelMapX1, RawActionCreatorExtraActionX1>;
+  extraQuery1: ExtraQueryInfo<ModelMapX1, RawActionCreatorExtraQueryX1>;
 };
 
 export type ExtraActionInfosT1 = {
-  updateCacheExtra: ExtraActionInfo<ModelMapX1, RawActionCreatorUpdateCacheExtra>;
+  extraAction1: ExtraActionInfo<ModelMapX1, RawActionCreatorExtraActionX1>;
 };
 
 // ===========================================
 
-export type ExtraSelectorInfosForModelT1 = {
+export type ExtraSelectorInfosForModelX1 = {
   httpBinRes: {
-    sss: {
-      creatorCreator: (baseSelector : BaseSelector<ModelMapX1>) => () => () => string,
+    extraSelectorX1: {
+      creatorCreator: (baseSelector : BaseSelector<ModelMapX1>) => () => (state : any) => string,
     },
   },
 };
@@ -99,9 +110,9 @@ export const typeHelperClassX1 = new TypeHelperClass<
 
   any, // ExtraDependenciesX1,
   any, // MyStateX1
-  ExtraSelectorInfosForModelT1
+  ExtraSelectorInfosForModelX1
 >();
 
 export type Types = (typeof typeHelperClassX1)['Types'];
 
-export type MyQcStoreX1 = QcStore<Types['StateType']>;
+export type QcStoreX1 = QcStore<Types['StateType']>;
