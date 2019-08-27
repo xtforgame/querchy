@@ -1,12 +1,14 @@
 import { ArgumentTypes, ReturnType } from '../utils/helper-functions';
-import { QcTimestamp, QcAction } from '../common/interfaces';
+import { QcTimestamp, QcAction, QueryId } from '../common/interfaces';
 export declare type QcTransferables = {
+    queryId?: QueryId;
     requestTimestamp: QcTimestamp;
     requestAction?: QcRequestAction;
     [s: string]: any;
 };
 export declare type ResourceModelQueryActionOptions = {
-    query?: any;
+    queryId?: QueryId;
+    queryPart?: any;
     headers?: {
         [s: string]: string;
     };
@@ -15,10 +17,11 @@ export declare type ResourceModelQueryActionOptions = {
 export declare type CrudType = string;
 export declare type CrudSubType = 'start' | 'respond' | 'respondError' | 'cancel';
 export interface QcBasicAction extends QcAction {
+    queryId?: QueryId;
     modelName: string;
     crudType: CrudType;
     crudSubType: CrudSubType;
-    options: any;
+    options?: any;
     [s: string]: any;
 }
 export interface QcRequestAction extends QcBasicAction {
@@ -26,11 +29,12 @@ export interface QcRequestAction extends QcBasicAction {
     transferables: QcTransferables;
     [s: string]: any;
 }
-export declare type QcRequestConfig = {
-    rawConfigs?: any;
-    overwriteConfigs?: any;
+export declare type QcRequestConfigNormal = {
     method: string;
     url: string;
+    overwriteQueryId?: QueryId;
+    rawConfigs?: any;
+    overwriteConfigs?: any;
     headers?: {
         [s: string]: string;
     };
@@ -38,7 +42,13 @@ export declare type QcRequestConfig = {
         [s: string]: any;
     };
     body?: any;
-} | null;
+};
+export declare type QcRequestConfigFromCache = {
+    fromCache: boolean;
+    responseFromCache: any;
+    overwriteQueryId?: QueryId;
+};
+export declare type QcRequestConfig = QcRequestConfigNormal | QcRequestConfigFromCache | null;
 export interface QcResponse {
     rawResponse: any;
     data: any;

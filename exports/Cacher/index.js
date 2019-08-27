@@ -9,7 +9,11 @@ var _pureEpic = require("pure-epic");
 
 var _operators = require("rxjs/operators");
 
+var _reselect = require("reselect");
+
 var _combineReducers = _interopRequireDefault(require("../redux/combineReducers"));
+
+var _utils = require("../utils");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -29,13 +33,19 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var Updater = function () {
-  function Updater(querchy) {
-    _classCallCheck(this, Updater);
+var Cacher = function () {
+  function Cacher(querchy, extraSelectorInfosForModel) {
+    _classCallCheck(this, Cacher);
 
     _defineProperty(this, "querchy", void 0);
 
+    _defineProperty(this, "extraSelectorInfosForModel", void 0);
+
     _defineProperty(this, "reducerSet", void 0);
+
+    _defineProperty(this, "selectorCreatorSet", void 0);
+
+    _defineProperty(this, "selectorSet", void 0);
 
     _defineProperty(this, "allResourceReducers", void 0);
 
@@ -45,10 +55,7 @@ var Updater = function () {
 
     _defineProperty(this, "createResourceMergerForResponse", function (actionType, merger) {
       return function () {
-        var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-          queryMap: {},
-          resourceMap: {}
-        };
+        var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _utils.createEmptyResourceState)();
         var action = arguments.length > 1 ? arguments[1] : undefined;
 
         if (action.type === actionType) {
@@ -73,18 +80,79 @@ var Updater = function () {
     });
 
     this.querchy = querchy;
+    this.extraSelectorInfosForModel = extraSelectorInfosForModel;
     this.reducerSet = {};
+    this.selectorCreatorSet = {};
+    this.selectorSet = {};
     this.allResourceReducers = {};
 
-    this.rootReducer = function () {};
+    this.rootReducer = function (s) {
+      return s;
+    };
 
     this.init();
   }
 
-  _createClass(Updater, [{
+  _createClass(Cacher, [{
+    key: "createSelectorAndSectorCreatorForResource",
+    value: function createSelectorAndSectorCreatorForResource(key, extraSelectorInfosForModelMap) {
+      var _this = this;
+
+      this.selectorCreatorSet[key] = {};
+
+      this.selectorCreatorSet[key].selectResourceMap = function () {
+        return (0, _reselect.createSelector)(_this.querchy.querchyDefinition.baseSelector, function (s) {
+          return s[key] && s[key].resourceMap || {};
+        });
+      };
+
+      this.selectorCreatorSet[key].selectResourceMapMetadata = function () {
+        return (0, _reselect.createSelector)(_this.selectorCreatorSet[key].selectResourceMap(), function (s) {
+          return s.metadata;
+        });
+      };
+
+      this.selectorCreatorSet[key].selectResourceMapValues = function () {
+        return (0, _reselect.createSelector)(_this.selectorCreatorSet[key].selectResourceMap(), function (s) {
+          return s.values;
+        });
+      };
+
+      this.selectorCreatorSet[key].selectQueryMap = function () {
+        return (0, _reselect.createSelector)(_this.querchy.querchyDefinition.baseSelector, function (s) {
+          return s[key] && s[key].queryMap || {};
+        });
+      };
+
+      this.selectorCreatorSet[key].selectQueryMapMetadata = function () {
+        return (0, _reselect.createSelector)(_this.selectorCreatorSet[key].selectQueryMap(), function (s) {
+          return s.metadata;
+        });
+      };
+
+      this.selectorCreatorSet[key].selectQueryMapValues = function () {
+        return (0, _reselect.createSelector)(_this.selectorCreatorSet[key].selectQueryMap(), function (s) {
+          return s.values;
+        });
+      };
+
+      this.selectorSet[key] = {};
+      Object.keys(this.selectorCreatorSet[key]).forEach(function (selectorName) {
+        _this.selectorSet[key][selectorName] = _this.selectorCreatorSet[key][selectorName]();
+      });
+      Object.keys(extraSelectorInfosForModelMap).forEach(function (selectorName) {
+        _this.selectorCreatorSet[key][selectorName] = extraSelectorInfosForModelMap[selectorName].creatorCreator(_this.querchy.querchyDefinition.baseSelector, _this.selectorCreatorSet[key], _this.selectorSet[key]);
+      });
+      Object.keys(this.selectorCreatorSet[key]).filter(function (selectorName) {
+        return !_this.selectorSet[key][selectorName];
+      }).forEach(function (selectorName) {
+        _this.selectorSet[key][selectorName] = _this.selectorCreatorSet[key][selectorName]();
+      });
+    }
+  }, {
     key: "init",
     value: function init() {
-      var _this = this;
+      var _this2 = this;
 
       var models = this.querchy.querchyDefinition.models;
       var extraActionCreators = this.querchy.querchyDefinition.extraActionCreators;
@@ -98,24 +166,25 @@ var Updater = function () {
           if (queryInfos[actionKey] && queryInfos[actionKey].resourceMerger) {
             var actionType = actions[actionKey].creatorRefs.respond.actionType;
 
-            var reducer = _this.createResourceMergerForResponse(actionType, queryInfos[actionKey].resourceMerger);
+            var reducer = _this2.createResourceMergerForResponse(actionType, queryInfos[actionKey].resourceMerger);
 
             reducers[actionKey] = reducer;
             reducerArray.push(reducer);
           }
         });
-        _this.reducerSet[key] = reducers;
+        _this2.reducerSet[key] = reducers;
 
-        _this.allResourceReducers[key] = function () {
-          var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-            queryMap: {},
-            resourceMap: {}
-          };
+        _this2.allResourceReducers[key] = function () {
+          var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _utils.createEmptyResourceState)();
           var action = arguments.length > 1 ? arguments[1] : undefined;
           return reducerArray.reduce(function (s, r) {
             return r(s, action);
           }, state);
         };
+
+        var extraSelectorInfoForModel = _this2.extraSelectorInfosForModel[key] || {};
+
+        _this2.createSelectorAndSectorCreatorForResource(key, extraSelectorInfoForModel);
       });
       {
         var reducers = {};
@@ -126,7 +195,7 @@ var Updater = function () {
           if (queryInfos[actionKey] && queryInfos[actionKey].globalMerger) {
             var actionType = actions[actionKey].creatorRefs.respond.actionType;
 
-            var reducer = _this.createGlobalMergerForResponse(actionType, queryInfos[actionKey].globalMerger);
+            var reducer = _this2.createGlobalMergerForResponse(actionType, queryInfos[actionKey].globalMerger);
 
             reducers[actionKey] = reducer;
             reducerArray.push(reducer);
@@ -141,16 +210,22 @@ var Updater = function () {
             return r(s, action);
           }, state);
         };
+
+        var extraSelectorInfoForModel = this.extraSelectorInfosForModel.extra || {};
+        this.createSelectorAndSectorCreatorForResource('extra', extraSelectorInfoForModel);
       }
+
+      this.allResourceReducers.extra = function () {
+        var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _utils.createEmptyResourceState)();
+        var action = arguments.length > 1 ? arguments[1] : undefined;
+        return state;
+      };
+
       var resourceReducerRoot = (0, _combineReducers["default"])(this.allResourceReducers);
 
-      this.rootReducer = function (state) {
-        for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-          args[_key - 1] = arguments[_key];
-        }
-
-        var newState = resourceReducerRoot.apply(void 0, [state].concat(args));
-        return _this.extraGlobalReducer.apply(void 0, [newState].concat(args));
+      this.rootReducer = function (state, action) {
+        var newState = resourceReducerRoot(state, action);
+        return _this2.extraGlobalReducer(newState, action);
       };
     }
   }, {
@@ -173,24 +248,19 @@ var Updater = function () {
   }, {
     key: "getRootEpic",
     value: function getRootEpic() {
-      var _this2 = this;
+      var _this3 = this;
 
       var models = this.querchy.querchyDefinition.models;
       var extraActionCreators = this.querchy.querchyDefinition.extraActionCreators;
       return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.keys(models).filter(function (modelName) {
         return models[modelName].actionTypes['updateCache'];
       }).map(function (modelName) {
-        return _this2.getEpicByActionType(models[modelName].actionTypes['updateCache']);
+        return _this3.getEpicByActionType(models[modelName].actionTypes['updateCache']);
       })));
-    }
-  }, {
-    key: "reduce",
-    value: function reduce(state, action) {
-      return this.rootReducer(state, action);
     }
   }]);
 
-  return Updater;
+  return Cacher;
 }();
 
-exports["default"] = Updater;
+exports["default"] = Cacher;

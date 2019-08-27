@@ -62,13 +62,15 @@ var wrapQueryActionCreator = function wrapQueryActionCreator(modelName, actionTy
   actionInfo.querySubActionTypes = {
     start: actionType,
     respond: "".concat(actionType, "_RESPOND"),
-    respondError: "".concat(actionType, "_ERROR"),
+    respondError: "".concat(actionType, "_RESPOND_ERROR"),
     cancel: "".concat(actionType, "_CANCEL")
   };
+  var querySubActionTypes = actionInfo.querySubActionTypes;
   var startFunc = Object.assign(function () {
     var requestTimestamp = new Date().getTime();
+    var result = start.apply(void 0, arguments);
 
-    var requestAction = _objectSpread({}, start.apply(void 0, arguments), {
+    var requestAction = _objectSpread({}, result, {
       type: actionType,
       actionCreator: startFunc,
       modelName: modelName,
@@ -76,69 +78,78 @@ var wrapQueryActionCreator = function wrapQueryActionCreator(modelName, actionTy
       crudType: crudType,
       crudSubType: 'start',
       requestTimestamp: requestTimestamp,
-      transferables: {}
+      transferables: {},
+      options: result.options
     });
 
-    requestAction.transferables = {
+    requestAction.transferables = _objectSpread({}, result.transferables, {
       requestTimestamp: requestTimestamp,
       requestAction: requestAction
-    };
+    });
+    var queryId = result.options && result.options.queryId;
+
+    if (queryId) {
+      requestAction.queryId = queryId;
+      requestAction.transferables.queryId = queryId;
+    }
+
     return requestAction;
   }, QueryActionCreatorProps, {
     actionType: actionType
   });
+
+  var getQueryBuiltinProps = function getQueryBuiltinProps(crudSubType, options) {
+    var transferables = options && options.transferables || {};
+    transferables = _objectSpread({}, transferables.requestAction && transferables.requestAction.transferables, {}, transferables);
+
+    if (options.queryId) {
+      transferables.queryId = options.queryId;
+    }
+
+    var result = {
+      type: querySubActionTypes[crudSubType],
+      actionCreator: QueryActionCreatorProps.creatorRefs[crudSubType],
+      modelName: modelName,
+      actionTypes: actionTypes,
+      crudType: crudType,
+      crudSubType: crudSubType,
+      requestTimestamp: transferables.requestTimestamp,
+      transferables: transferables,
+      options: options
+    };
+
+    if (transferables.queryId) {
+      result.queryId = transferables.queryId;
+    }
+
+    return result;
+  };
+
   QueryActionCreatorProps.creatorRefs.start = startFunc;
   QueryActionCreatorProps.creatorRefs.respond = Object.assign(function (response, responseType, options) {
-    return {
-      type: "".concat(actionType, "_RESPOND"),
-      actionCreator: QueryActionCreatorProps.creatorRefs.respond,
+    return _objectSpread({
       response: response,
       responseType: responseType,
-      modelName: modelName,
-      actionTypes: actionTypes,
-      crudType: crudType,
-      crudSubType: 'respond',
-      responseTimestamp: new Date().getTime(),
-      requestTimestamp: options && options.transferables && options.transferables.requestTimestamp,
-      transferables: _objectSpread({}, options && options.transferables && options.transferables.requestAction.transferables, {}, options && options.transferables),
-      options: options
-    };
+      responseTimestamp: new Date().getTime()
+    }, getQueryBuiltinProps('respond', options));
   }, QueryActionCreatorProps, {
-    actionType: "".concat(actionType, "_RESPOND")
+    actionType: querySubActionTypes.respond
   });
   QueryActionCreatorProps.creatorRefs.respondError = Object.assign(function (error, options) {
-    return {
-      type: "".concat(actionType, "_ERROR"),
-      actionCreator: QueryActionCreatorProps.creatorRefs.respondError,
+    return _objectSpread({
       error: error,
-      modelName: modelName,
-      actionTypes: actionTypes,
-      crudType: crudType,
-      crudSubType: 'respondError',
-      errorTimestamp: new Date().getTime(),
-      requestTimestamp: options && options.transferables && options.transferables.requestTimestamp,
-      transferables: _objectSpread({}, options && options.transferables && options.transferables.requestAction.transferables, {}, options && options.transferables),
-      options: options
-    };
+      errorTimestamp: new Date().getTime()
+    }, getQueryBuiltinProps('respondError', options));
   }, QueryActionCreatorProps, {
-    actionType: "".concat(actionType, "_ERROR")
+    actionType: querySubActionTypes.respondError
   });
   QueryActionCreatorProps.creatorRefs.cancel = Object.assign(function (reason, options) {
-    return {
-      type: "".concat(actionType, "_CANCEL"),
-      actionCreator: QueryActionCreatorProps.creatorRefs.cancel,
+    return _objectSpread({
       reason: reason,
-      modelName: modelName,
-      actionTypes: actionTypes,
-      crudType: crudType,
-      crudSubType: 'cancel',
-      cancelTimestamp: new Date().getTime(),
-      requestTimestamp: options && options.transferables && options.transferables.requestTimestamp,
-      transferables: _objectSpread({}, options && options.transferables && options.transferables.requestAction.transferables, {}, options && options.transferables),
-      options: options
-    };
+      cancelTimestamp: new Date().getTime()
+    }, getQueryBuiltinProps('cancel', options));
   }, QueryActionCreatorProps, {
-    actionType: "".concat(actionType, "_CANCEL")
+    actionType: querySubActionTypes.cancel
   });
   return startFunc;
 };

@@ -1,4 +1,4 @@
-import { RunnerType, QcActionCreator, ResourceMerger, GlobalMerger } from '../common/interfaces';
+import { RunnerType, QcActionCreator, ResourceMerger, GlobalMerger, BaseSelector, ModelRootState } from '../common/interfaces';
 import { QcBasicAction, QcRequestConfig, StartQueryActionCreatorWithProps } from './crud-sub-action-interfaces';
 export * from './crud-sub-action-interfaces';
 export declare type SimpleQueryRunner = {
@@ -26,6 +26,7 @@ export declare type ExtraQueryInfo<QcRootState, RawActionCreator extends Functio
 };
 export declare type ExtraActionInfo<QcRootState, RawActionCreator extends Function> = ExtraActionInfoBase<QcRootState, RawActionCreator>;
 export declare type CommonConfig = {
+    defaultBuildUrl: (modelBaseUrl: string, action: QcBasicAction) => string;
     defaultQueryRunner: SimpleQueryRunner;
     queryRunners?: {
         [s: string]: SimpleQueryRunner;
@@ -47,7 +48,7 @@ export declare type ResourceModel<CommonConfigType extends CommonConfig> = {
     actionInfos: {
         [s: string]: ActionInfo<Function>;
     };
-    buildUrl?: (action: QcBasicAction) => string;
+    buildUrl?: (modelBaseUrl: string, action: QcBasicAction) => string;
     queryBuilderName?: string;
     actionTypes?: {
         [s: string]: string;
@@ -59,12 +60,19 @@ export declare type ResourceModel<CommonConfigType extends CommonConfig> = {
 export declare type ModelMap<CommonConfigType extends CommonConfig> = {
     [s: string]: ResourceModel<CommonConfigType>;
 };
-export declare type BuildRequestConfigOption<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = {
+export declare type BuildRequestConfigContext<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = {
+    action: QcBasicAction;
     runnerType: RunnerType;
     commonConfig: CommonConfigType;
     models: ModelMapType;
+    modelRootState: ModelRootState<ModelMapType>;
 };
-export declare type BuildRequestConfig<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = (action: QcBasicAction, options: BuildRequestConfigOption<CommonConfigType, ModelMapType>) => QcRequestConfig;
+export declare type BuildRequestConfigFunction<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = (context: BuildRequestConfigContext<CommonConfigType, ModelMapType>) => QcRequestConfig;
+export declare type BuildRequestConfigContextForMiddleware<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = BuildRequestConfigContext<CommonConfigType, ModelMapType> & {
+    requestConfig: QcRequestConfig | undefined;
+};
+export declare type BuildRequestConfigMiddleware<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = (context: BuildRequestConfigContextForMiddleware<CommonConfigType, ModelMapType>, next: (requestConfig?: QcRequestConfig) => QcRequestConfig) => QcRequestConfig;
+export declare type BuildRequestConfig<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = BuildRequestConfigFunction<CommonConfigType, ModelMapType> | BuildRequestConfigMiddleware<CommonConfigType, ModelMapType>[];
 export declare type QueryBuilderDefinition<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = {
     queryRunner?: string | SimpleQueryRunner;
     buildRequestConfig: BuildRequestConfig<CommonConfigType, ModelMapType>;
@@ -76,6 +84,7 @@ export declare type QueryBuilderMap<CommonConfigType extends CommonConfig, Model
 export interface QuerchyDefinition<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>> {
     commonConfig: CommonConfigType;
     models: ModelMapType;
+    baseSelector: BaseSelector<ModelMapType>;
     queryBuilders: QueryBuilderMapType;
     extraActionCreators?: ExtraActionCreatorsType;
 }

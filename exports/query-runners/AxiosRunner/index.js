@@ -34,7 +34,8 @@ var AxiosRunner = function AxiosRunner(a) {
 
   _defineProperty(this, "handleQuery", function (action, queryBuilder, dependencies, _ref) {
     var state$ = _ref.state$,
-        action$ = _ref.action$;
+        action$ = _ref.action$,
+        modelRootState = _ref.modelRootState;
     var _ref2 = dependencies,
         _ref2$querchyDef = _ref2.querchyDef,
         commonConfig = _ref2$querchyDef.commonConfig,
@@ -44,16 +45,42 @@ var AxiosRunner = function AxiosRunner(a) {
       throw new Error("QueryBuilder not found: ".concat(action.type));
     }
 
-    var createSuccessAction = action.actionCreator.creatorRefs.respond;
-    var createErrorAction = action.actionCreator.creatorRefs.respondError;
-    var createCancelAction = action.actionCreator.creatorRefs.cancel;
+    var _action$actionCreator = action.actionCreator.creatorRefs,
+        respond = _action$actionCreator.respond,
+        respondError = _action$actionCreator.respondError,
+        cancel = _action$actionCreator.cancel;
+    var overwriteOptions = {};
+
+    var getOptions = function getOptions() {
+      return _objectSpread({}, overwriteOptions, {
+        transferables: _objectSpread({
+          requestTimestamp: action.transferables && action.transferables.requestTimestamp,
+          requestAction: action
+        }, overwriteOptions.transferables)
+      });
+    };
+
+    var createSuccessAction = function createSuccessAction(response, responseType) {
+      return respond(response, responseType, getOptions());
+    };
+
+    var createErrorAction = function createErrorAction(error) {
+      return respondError(error, getOptions());
+    };
+
+    var createCancelAction = function createCancelAction(reason) {
+      return cancel(reason, getOptions());
+    };
+
     var requestConfig;
 
     try {
-      requestConfig = queryBuilder.buildRequestConfig(action, {
+      requestConfig = queryBuilder.buildRequestConfig({
+        action: action,
         runnerType: _this.type,
         commonConfig: commonConfig,
-        models: models
+        models: models,
+        modelRootState: modelRootState
       });
     } catch (error) {
       return [createErrorAction(error)];
@@ -63,14 +90,29 @@ var AxiosRunner = function AxiosRunner(a) {
       return [(0, _helperFunctions.toNull)()];
     }
 
-    var _requestConfig = requestConfig,
-        overwriteConfigs = _requestConfig.overwriteConfigs,
-        method = _requestConfig.method,
-        url = _requestConfig.url,
-        headers = _requestConfig.headers,
-        query = _requestConfig.query,
-        body = _requestConfig.body;
-    requestConfig.rawConfigs = _objectSpread({
+    var fromCacheRequestConfig = requestConfig;
+
+    if (fromCacheRequestConfig.fromCache) {
+      if ('overwriteQueryId' in fromCacheRequestConfig) {
+        overwriteOptions.queryId = fromCacheRequestConfig.overwriteQueryId;
+      }
+
+      return [createSuccessAction(fromCacheRequestConfig.responseFromCache, 'from-cache')];
+    }
+
+    var normalRequestConfig = requestConfig;
+    var overwriteConfigs = normalRequestConfig.overwriteConfigs,
+        method = normalRequestConfig.method,
+        url = normalRequestConfig.url,
+        headers = normalRequestConfig.headers,
+        query = normalRequestConfig.query,
+        body = normalRequestConfig.body;
+
+    if ('overwriteQueryId' in normalRequestConfig) {
+      overwriteOptions.queryId = normalRequestConfig.overwriteQueryId;
+    }
+
+    normalRequestConfig.rawConfigs = _objectSpread({
       method: method,
       url: url,
       headers: _objectSpread({}, headers),
@@ -81,7 +123,7 @@ var AxiosRunner = function AxiosRunner(a) {
     var source = _axios["default"].CancelToken.source();
 
     var cancelActionType = action.actionCreator.creatorRefs.cancel.actionType;
-    return _this.axiosObservable(requestConfig.rawConfigs, {
+    return _this.axiosObservable(normalRequestConfig.rawConfigs, {
       success: createSuccessAction,
       error: createErrorAction,
       cancel: createCancelAction

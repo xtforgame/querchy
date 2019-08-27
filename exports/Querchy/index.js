@@ -15,6 +15,10 @@ var _interfaces = require("../core/interfaces");
 
 var _actionCreatorHelpers = require("./actionCreatorHelpers");
 
+var _toBuildRequestConfigFunction = _interopRequireDefault(require("./toBuildRequestConfigFunction"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
@@ -72,6 +76,13 @@ var Querchy = function () {
       commonConfig.queryRunners = commonConfig.queryRunners || {};
       Object.keys(queryBuilders).forEach(function (key) {
         var queryBuilder = queryBuilders[key];
+
+        if (queryBuilder) {
+          queryBuilder.buildRequestConfig = (0, _toBuildRequestConfigFunction["default"])(queryBuilder.buildRequestConfig);
+        }
+      });
+      Object.keys(queryBuilders).forEach(function (key) {
+        var queryBuilder = queryBuilders[key];
         var _ref = queryBuilder,
             queryRunner = _ref.queryRunner;
         var runner = queryRunner;
@@ -108,15 +119,7 @@ var Querchy = function () {
         models[key].actionTypes = (0, _actionCreatorHelpers.createModelActionTypes)(key, commonConfig, models[key]);
         models[key].actions = (0, _actionCreatorHelpers.createModelActionCreators)(commonConfig, key, models[key]);
         _this.actionCreatorSets[key] = models[key].actions;
-
-        models[key].buildUrl = models[key].buildUrl || function (action) {
-          if (action.crudType === 'create') {
-            return models[key].url;
-          }
-
-          return "".concat(models[key].url, "/").concat(action.id);
-        };
-
+        models[key].buildUrl = models[key].buildUrl || commonConfig.defaultBuildUrl.bind(commonConfig);
         var model = models[key];
 
         if (model.queryBuilderName) {
@@ -166,10 +169,13 @@ var Querchy = function () {
         }
 
         return action$.ofType(actionType).pipe((0, _operators.mergeMap)(function (action) {
+          var modelRootState = _this2.deps.querchyDef.baseSelector(state$.value);
+
           return runner.handleQuery(action, queryBuilder, _this2.deps, {
             action$: action$,
             state$: state$,
-            args: args
+            args: args,
+            modelRootState: modelRootState
           });
         }));
       };

@@ -34,7 +34,7 @@ var _default = function _default(axios) {
     var observable = (0, _rxjs.from)(axios.request(_objectSpread({}, axiosRequestConfig, {
       cancelToken: axiosCancelTokenSource.token
     }))).pipe((0, _operators.map)(function (response) {
-      return successAction(response, 'from-request');
+      return successAction(response, 'normal');
     }), (0, _operators.catchError)(function (error) {
       return (0, _rxjs.of)(errorAction(error));
     }));
