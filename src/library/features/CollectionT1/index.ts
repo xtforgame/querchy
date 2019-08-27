@@ -14,6 +14,10 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
 } from '../../core/interfaces';
+import {
+  createEmptyResourceState,
+  mergeResourceState,
+} from '../../utils';
 
 export const crudToRestMap = {
   getCollection: 'get',
@@ -79,10 +83,7 @@ export default class CollectionT1 {
   Types!: Types;
 
   resourceMerger : ResourceMerger<QcBasicAction> = (
-    state = {
-      queryMap: {},
-      resourceMap: {},
-    },
+    state = createEmptyResourceState(),
     action,
   ) => {
     const resourceChange = this.parseResource(state, action);
@@ -93,49 +94,47 @@ export default class CollectionT1 {
 
     const { queryMap, resourceMap } = state;
 
-    const extraQueryMap : ResourceStateQueryMap = {};
+    const extraQueryMap : ResourceStateQueryMap = {
+      metadata: {},
+      values: {},
+    };
     const queryId = action.queryId;
     if (queryId) {
-      extraQueryMap[queryId] = {
-        metadata: {
-          ...(queryMap[queryId] && queryMap[queryId].metadata.lastRequest),
-          queryId,
-          requestTimestamp: action.requestTimestamp,
-          responseTimestamp: action.responseTimestamp,
-        },
-        value: action.response.data,
+      extraQueryMap.metadata[queryId] = {
+        ...(queryMap[queryId] && queryMap[queryId].metadata.lastRequest),
+        queryId,
+        requestTimestamp: action.requestTimestamp,
+        responseTimestamp: action.responseTimestamp,
       };
+      extraQueryMap.values[queryId] = action.response.data;
     }
 
-    const extraResourceMap : ResourceStateResourceMap = {};
+    const extraResourceMap : ResourceStateResourceMap = {
+      metadata: {},
+      values: {},
+    };
     if (queryId) {
       const update = resourceChange.update || {};
       Object.keys(update)
       .forEach((key) => {
-        extraResourceMap[key] = {
-          metadata: {
-            ...(resourceMap[queryId] && resourceMap[queryId].metadata.lastRequest),
-            lastUpdate: {
-              updateType: 'get-collection',
-              updateData: update[key],
-              updateTimestamp: action.responseTimestamp,
-            },
+        extraResourceMap.metadata[key] = {
+          ...(resourceMap[queryId] && resourceMap[queryId].metadata.lastRequest),
+          lastUpdate: {
+            updateType: 'get-collection',
+            updateData: update[key],
+            updateTimestamp: action.responseTimestamp,
           },
-          value: update[key],
         };
+        extraResourceMap.values[key] = update[key];
       });
     }
-    const result = {
-      ...state,
-      queryMap: {
-        ...queryMap,
-        ...extraQueryMap,
+    const result = mergeResourceState(
+      state,
+      {
+        queryMap: extraQueryMap,
+        resourceMap: extraResourceMap,
       },
-      resourceMap: {
-        ...state.resourceMap,
-        ...extraResourceMap,
-      },
-    };
+    );
     return result;
   }
 

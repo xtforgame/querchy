@@ -1,3 +1,5 @@
+import { ResourceState } from '../common/interfaces';
+
 export const toNull = (...args) : any => ({ type: 'TO_NULL' });
 
 // https://stackoverflow.com/questions/50011616/typescript-change-function-type-so-that-it-returns-new-value
@@ -64,3 +66,50 @@ export interface ConstructorWithFunction<T, ConstructorFunction> {
 //   });
 //   x.a('s');
 // };
+
+export const createEmptyResourceState = () : ResourceState => ({
+  queryMap: {
+    metadata: {},
+    values: {},
+  },
+  resourceMap: {
+    metadata: {},
+    values: {},
+  },
+});
+
+export const mergeResourceState = (
+  a : ResourceState,
+  ...rest : Partial<ResourceState>[]
+) : ResourceState => {
+  if (rest.length === 0) {
+    return a;
+  }
+  const [b, ...rest2] = rest;
+  const result : ResourceState =  {
+    resourceMap: {
+      metadata: {
+        ...a.resourceMap.metadata,
+        ...b.resourceMap && b.resourceMap.metadata,
+      },
+      values: {
+        ...a.resourceMap.values,
+        ...b.resourceMap && b.resourceMap.values,
+      },
+    },
+    queryMap: {
+      metadata: {
+        ...a.queryMap.metadata,
+        ...b.queryMap && b.queryMap.metadata,
+      },
+      values: {
+        ...a.queryMap.values,
+        ...b.queryMap && b.queryMap.values,
+      },
+    },
+  };
+  if (rest2.length === 0) {
+    return result;
+  }
+  return mergeResourceState(result, ...rest2);
+};

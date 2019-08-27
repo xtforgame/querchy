@@ -58,30 +58,24 @@ export interface ResourceMetadata {
   [s : string] : any;
 }
 
-export interface CacheValueState {
-  metadata: ResourceMetadata;
-  value: any;
-}
-
-// change
-
-export type CacheStateChange = {
-  update?: { [s : string] : CacheValueState },
-  delete?: string[],
-};
-
-export type FullChange = [CacheStateChange, CacheStateChange];
-
-export type CacheChange = CacheStateChange | FullChange;
-
 // ==================
 
+export interface ResourceStateMetadataMap {
+  [s : string] : ResourceMetadata;
+}
+
+export interface ResourceStateValueMap {
+  [s : string] : any;
+}
+
 export interface ResourceStateResourceMap {
-  [s : string] : CacheValueState;
+  metadata: ResourceStateMetadataMap;
+  values: ResourceStateValueMap;
 }
 
 export interface ResourceStateQueryMap {
-  [s : string] : CacheValueState;
+  metadata: { [s : string] : ResourceMetadata; };
+  values: { [s : string] : any; };
 }
 
 export interface ResourceState {

@@ -12,6 +12,10 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
 } from '../../core/interfaces';
+import {
+  createEmptyResourceState,
+  mergeResourceState,
+} from '../../utils';
 
 export const crudToRestMap = {
   create: 'post',
@@ -102,10 +106,7 @@ export default class CrudT1 {
   Types!: Types;
 
   resourceMerger : ResourceMerger<QcBasicAction> = (
-    state = {
-      queryMap: {},
-      resourceMap: {},
-    },
+    state = createEmptyResourceState(),
     action,
   ) => {
     const resourceId = this.getResourceId(state, action);
@@ -118,7 +119,7 @@ export default class CrudT1 {
 
     const metadata : ResourceMetadata = {
       lastRequest: {
-        ...(queryMap[resourceId] && queryMap[resourceId].lastRequest),
+        ...(queryMap[resourceId] && queryMap[resourceId].metadata.lastRequest),
         requestTimestamp: action.requestTimestamp,
         responseTimestamp: action.responseTimestamp,
       },
@@ -134,21 +135,19 @@ export default class CrudT1 {
     if (action.response) {
       metadata.lastRequest!.lastResponse = action.response;
     }
-    const result = {
-      ...state,
+    const result = mergeResourceState(state, {
       resourceMap: {
-        ...state.resourceMap,
-        [resourceId]: {
-          metadata,
-          value: action.response.data,
+        metadata: {
+          [resourceId]: metadata,
+        },
+        values: {
+          [resourceId]: action.response.data,
         },
       },
-    };
+    });
     if (action.crudType === 'delete') {
-      if (result.resourceMap[resourceId]) {
-        delete result.resourceMap[resourceId].value;
-      }
-      // delete result.resourceMap[resourceId];
+      delete result.resourceMap.values[resourceId].value;
+      // delete result.resourceMap.metadata[resourceId];
     }
     return result;
   }

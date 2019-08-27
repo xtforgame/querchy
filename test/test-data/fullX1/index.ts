@@ -261,15 +261,15 @@ export default () => {
               const modelName = action.modelName;
               if (
                 resourceId && modelName
-                && modelRootState[modelName].resourceMap[resourceId]
-                && modelRootState[modelName].resourceMap[resourceId].metadata.lastUpdate
-                && modelRootState[modelName].resourceMap[resourceId].metadata.lastUpdate!.updateData
+                && modelRootState[modelName].resourceMap.metadata[resourceId]
+                && modelRootState[modelName].resourceMap.metadata[resourceId].lastUpdate
+                && modelRootState[modelName].resourceMap.metadata[resourceId].lastUpdate!.updateData
               ) {
                 return {
                   overwriteQueryId: resourceId,
                   fromCache: true,
                   responseFromCache: modelRootState
-                    [modelName].resourceMap[resourceId].metadata.lastUpdate!.updateData,
+                    [modelName].resourceMap.metadata[resourceId].lastUpdate!.updateData,
                 };
               }
               return next();
@@ -345,7 +345,7 @@ export default () => {
           creatorCreator: (baseSelector) => {
             return () => (state) => {
               return Object.keys(
-                baseSelector(state).httpBinRes.resourceMap,
+                baseSelector(state).httpBinRes.resourceMap.values,
               )[0] || 'XX';
             };
           },

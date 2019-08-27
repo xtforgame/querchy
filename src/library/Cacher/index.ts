@@ -17,6 +17,8 @@ import {
   GlobalMerger,
   BasicGlobalMerger,
   ModelRootState,
+  ResourceStateMetadataMap,
+  ResourceStateValueMap,
   ResourceStateResourceMap,
   ResourceStateQueryMap,
 } from '../common/interfaces';
@@ -46,6 +48,11 @@ import {
   SelectorCreatorSets,
   SelectorSets,
 } from './interfaces';
+
+import {
+  createEmptyResourceState,
+  mergeResourceState,
+} from '../utils';
 
 import Querchy, { QuerchyTypeGroup } from '../Querchy';
 
@@ -275,10 +282,7 @@ export default class Cacher<
     merger : ResourceMerger<QcBasicAction>,
   ) : ResourceMerger<QcResponseAction> => {
     return (
-      state = {
-        queryMap: {},
-        resourceMap: {},
-      },
+      state = createEmptyResourceState(),
       action,
     ) => {
       if (action.type === actionType) { /* action.crudSubType === 'respond' */
@@ -314,12 +318,38 @@ export default class Cacher<
       this.querchy.querchyDefinition.baseSelector,
       s => (s[key] && s[key].resourceMap) || {},
     );
+    this.selectorCreatorSet[key].selectResourceMapMetadata = () => createSelector<
+      any, ResourceStateResourceMap, ResourceStateMetadataMap
+    >(
+      this.selectorCreatorSet[key].selectResourceMap(),
+      s => s.metadata
+    );
+    this.selectorCreatorSet[key].selectResourceMapValues = () => createSelector<
+      any, ResourceStateResourceMap, ResourceStateValueMap
+    >(
+      this.selectorCreatorSet[key].selectResourceMap(),
+      s => s.values,
+    );
+
     this.selectorCreatorSet[key].selectQueryMap = () => createSelector<
       any, ModelRootState<ModelMapType>, ResourceStateQueryMap
     >(
       this.querchy.querchyDefinition.baseSelector,
       s => (s[key] && s[key].queryMap) || {},
     );
+    this.selectorCreatorSet[key].selectQueryMapMetadata = () => createSelector<
+      any, ResourceStateResourceMap, ResourceStateMetadataMap
+    >(
+      this.selectorCreatorSet[key].selectQueryMap(),
+      s => s.metadata
+    );
+    this.selectorCreatorSet[key].selectQueryMapValues = () => createSelector<
+      any, ResourceStateResourceMap, ResourceStateValueMap
+    >(
+      this.selectorCreatorSet[key].selectQueryMap(),
+      s => s.values,
+    );
+
     Object.keys(extraSelectorInfosForModelMap)
     .forEach((selectorName) => {
       (<any>this.selectorCreatorSet[key])[selectorName] = extraSelectorInfosForModelMap[selectorName]
@@ -360,10 +390,7 @@ export default class Cacher<
 
       (<any>this.reducerSet[key]) = reducers;
       this.allResourceReducers[key] = (
-        state = {
-          queryMap: {},
-          resourceMap: {},
-        },
+        state = createEmptyResourceState(),
         action,
       ) => {
         return reducerArray.reduce((s, r) => r(s, action), state);
@@ -401,10 +428,7 @@ export default class Cacher<
       this.createSelectorAndSectorCreatorForResource('extra', extraSelectorInfoForModel);
     }
     this.allResourceReducers.extra = (
-      state = {
-        queryMap: {},
-        resourceMap: {},
-      },
+      state = createEmptyResourceState(),
       action,
     ) => {
       return state;

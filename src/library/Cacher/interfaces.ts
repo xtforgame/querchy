@@ -4,12 +4,18 @@ import {
   ResourceStateResourceMap,
   ResourceStateQueryMap,
   BaseSelector,
+  ResourceStateMetadataMap,
+  ResourceStateValueMap,
 } from '../common/interfaces';
 
 import {
   CommonConfig,
   ModelMap,
 } from '../core/interfaces';
+
+import {
+  ReturnType,
+} from '../utils/helper-functions';
 
 export * from './update-cache-action-interfaces';
 
@@ -50,10 +56,16 @@ export type SelectorInfos<
 
 export type SliceSelectorCreator = any;
 
-export type SelectorCreatorSet<StateType extends State, T> = {
-  selectQueryMap: () => (state : StateType) => ResourceStateQueryMap;
+export type BuiltinSelectorCreators<StateType extends State> = {
   selectResourceMap: () => (state : StateType) => ResourceStateResourceMap;
-} & T;
+  selectResourceMapMetadata: () => (state : StateType) => ResourceStateMetadataMap;
+  selectResourceMapValues: () => (state : StateType) => ResourceStateValueMap;
+  selectQueryMap: () => (state : StateType) => ResourceStateQueryMap;
+  selectQueryMapMetadata: () => (state : StateType) => ResourceStateMetadataMap;
+  selectQueryMapValues: () => (state : StateType) => ResourceStateValueMap;
+};
+
+export type SelectorCreatorSet<StateType extends State, T> = BuiltinSelectorCreators<StateType> & T;
 
 export type SelectorCreatorSets<
   StateType extends State,
@@ -70,10 +82,11 @@ export type SelectorCreatorSets<
 
 export type SliceSelector = any;
 
-export type SelectorSet<StateType extends State, T> = {
-  selectQueryMap: (state : StateType) => ResourceStateQueryMap;
-  selectResourceMap: (state : StateType) => ResourceStateResourceMap;
-} & T;
+export type BuiltinSelectors<StateType extends State> = {
+  [P in keyof BuiltinSelectorCreators<StateType>] : ReturnType<BuiltinSelectorCreators<StateType>[P]>
+};
+
+export type SelectorSet<StateType extends State, T> = BuiltinSelectors<StateType> & T;
 
 export type SelectorSets<
   StateType extends State,
