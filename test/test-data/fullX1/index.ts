@@ -3,9 +3,9 @@ import {
   QcAction,
   AnyQueryActionCreatorWithProps,
   INIT_FUNC,
-} from '../index';
+} from 'library/index';
 
-import combineReducers from '../redux/combineReducers';
+import combineReducers from 'library/redux/combineReducers';
 
 import {
   QuerchyX1,
@@ -18,9 +18,9 @@ import {
   Types,
 } from './typesDefX1';
 
-import CrudT1 from '../features/CrudT1';
-import UpdateCacheT1 from '../features/UpdateCacheT1';
-import CollectionT1 from '../features/CollectionT1';
+import CrudT1 from 'library/features/CrudT1';
+import UpdateCacheT1 from 'library/features/UpdateCacheT1';
+import CollectionT1 from 'library/features/CollectionT1';
 
 export const crudT1 = new CrudT1(
   (s, action) => (

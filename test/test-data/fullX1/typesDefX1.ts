@@ -12,16 +12,16 @@ import {
   ExtraActionInfo,
 
   BaseSelector,
-} from '../index';
+} from 'library/index';
 
-import { Types as CrudT1Types } from '../features/CrudT1';
-import { Types as UpdateCacheT1Types } from '../features/UpdateCacheT1';
-import { Types as CollectionT1Types } from '../features/CollectionT1';
+import { Types as CrudT1Types } from 'library/features/CrudT1';
+import { Types as UpdateCacheT1Types } from 'library/features/UpdateCacheT1';
+import { Types as CollectionT1Types } from 'library/features/CollectionT1';
 
 import {
   MakeResourceModelType,
   TypeHelperClass,
-} from '../type-helpers';
+} from 'library/type-helpers';
 
 export interface CommonConfigX1 extends CommonConfig {
   queryRunners: {

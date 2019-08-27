@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars, no-undef */
 
 import chai from 'chai';
-import fullX1 from 'library/tests/fullX1';
+import fullX1 from 'test-data/fullX1';
 
 const { expect } = chai;
 
