@@ -104,21 +104,23 @@ export type SelectorSets<
 export type SelectorCreatorCreatorForModelMap<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
-//  StateType extends State,
+  StateType extends State,
 > = (
   baseSelector : BaseSelector<ModelMapType>,
-//  builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
-
+  builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
+  builtinSelectors: BuiltinSelectors<StateType>,
 ) => (...args : any) => Function;
 
 export type ExtraSelectorInfosForModelMap<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
+  StateType extends State,
 > = {
   [s : string] : {
     creatorCreator: SelectorCreatorCreatorForModelMap<
       CommonConfigType,
-      ModelMapType
+      ModelMapType,
+      StateType
     >;
   };
 };
@@ -126,10 +128,12 @@ export type ExtraSelectorInfosForModelMap<
 export type ExtraSelectorInfosMapForModelMap<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
+  StateType extends State,
 > = {
   [P in keyof Partial<ModelMapType>] : ExtraSelectorInfosForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >;
 };
 
@@ -138,9 +142,11 @@ export type BuiltinModelSelectors = { [s : string] : Function };
 export type MergedSelectorCreatorsForModel<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
+  StateType extends State,
   ExtraSelectorInfosForModelMapType extends ExtraSelectorInfosForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >
 > = {
   [P in keyof ExtraSelectorInfosForModelMapType] : ReturnType<ExtraSelectorInfosForModelMapType[P]['creatorCreator']>;
@@ -149,14 +155,17 @@ export type MergedSelectorCreatorsForModel<
 export type ExtraModelSelectorCreators<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
+  StateType extends State,
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >
 > = {
   [P in keyof ModelMapType] : MergedSelectorCreatorsForModel<
     CommonConfigType,
     ModelMapType,
+    StateType,
     ExtraSelectorInfosForModelType[P]
   >;
 };
@@ -164,9 +173,11 @@ export type ExtraModelSelectorCreators<
 export type MergedSelectorsForModel<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
+  StateType extends State,
   ExtraSelectorInfosForModelMapType extends ExtraSelectorInfosForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >
 > = {
   [P in keyof ExtraSelectorInfosForModelMapType] : ReturnType<ReturnType<ExtraSelectorInfosForModelMapType[P]['creatorCreator']>>;
@@ -175,14 +186,17 @@ export type MergedSelectorsForModel<
 export type ExtraModelSelectors<
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
+  StateType extends State,
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >
 > = {
   [P in keyof ModelMapType] : MergedSelectorsForModel<
     CommonConfigType,
     ModelMapType,
+    StateType,
     ExtraSelectorInfosForModelType[P]
   >;
 };

@@ -63,9 +63,9 @@ export type FullTypeGroup<
   StateType extends State = QcState,
 
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
-    CommonConfigType, ModelMapType
+    CommonConfigType, ModelMapType, StateType
   > = ExtraSelectorInfosMapForModelMap<
-    CommonConfigType, ModelMapType
+    CommonConfigType, ModelMapType, StateType
   >
 > = CacherTypeGroup<
   CommonConfigType,
@@ -173,9 +173,9 @@ export type MakeFullTypeGroup<
   StateType extends State = QcState,
 
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
-    CommonConfigType, ModelMapType
+    CommonConfigType, ModelMapType, StateType
   > = ExtraSelectorInfosMapForModelMap<
-    CommonConfigType, ModelMapType
+    CommonConfigType, ModelMapType, StateType
   >
 > = FullTypeGroup<
   CommonConfigType,
@@ -218,7 +218,7 @@ export class TypeHelperClass<
   StateType extends State,
 
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
-    CommonConfigType, ModelMapType
+    CommonConfigType, ModelMapType, StateType
   >
 > {
   Types!: MakeFullTypeGroup<

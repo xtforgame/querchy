@@ -78,7 +78,8 @@ export type CacherTypeGroup<
 
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >,
 > = QuerchyTypeGroup<
   CommonConfigType,
@@ -91,11 +92,13 @@ export type CacherTypeGroup<
   StateType: StateType;
   SelectorCreatorCreatorForModelMapType: SelectorCreatorCreatorForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >;
   ExtraSelectorInfosForModelMapType: ExtraSelectorInfosForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >,
   ExtraSelectorInfosForModelType: ExtraSelectorInfosForModelType;
   QuerchyType: Querchy<
@@ -119,6 +122,7 @@ export type CacherTypeGroup<
     ExtraModelSelectorCreators<
       CommonConfigType,
       ModelMapType,
+      StateType,
       ExtraSelectorInfosForModelType
     >
   >;
@@ -130,6 +134,7 @@ export type CacherTypeGroup<
     ExtraModelSelectors<
       CommonConfigType,
       ModelMapType,
+      StateType,
       ExtraSelectorInfosForModelType
     >
   >;
@@ -162,10 +167,12 @@ export type CacherConstructor<
 
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   > = ExtraSelectorInfosMapForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >,
 
   // =============
@@ -216,10 +223,12 @@ export default class Cacher<
 
   ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   > = ExtraSelectorInfosMapForModelMap<
     CommonConfigType,
-    ModelMapType
+    ModelMapType,
+    StateType
   >,
 
   // =============
@@ -350,14 +359,24 @@ export default class Cacher<
       s => s.values,
     );
 
+    (<any>this.selectorSet)[key] = {};
+    Object.keys(this.selectorCreatorSet[key])
+    .forEach((selectorName) => {
+      (<any>this.selectorSet[key])[selectorName] = this.selectorCreatorSet[key][selectorName]();
+    });
+
     Object.keys(extraSelectorInfosForModelMap)
     .forEach((selectorName) => {
       (<any>this.selectorCreatorSet[key])[selectorName] = extraSelectorInfosForModelMap[selectorName]
-      .creatorCreator(this.querchy.querchyDefinition.baseSelector);
+      .creatorCreator(
+        this.querchy.querchyDefinition.baseSelector,
+        this.selectorCreatorSet[key],
+        this.selectorSet[key],
+      );
     });
 
-    (<any>this.selectorSet)[key] = {};
     Object.keys(this.selectorCreatorSet[key])
+    .filter(selectorName => !this.selectorSet[key][selectorName])
     .forEach((selectorName) => {
       (<any>this.selectorSet[key])[selectorName] = this.selectorCreatorSet[key][selectorName]();
     });
