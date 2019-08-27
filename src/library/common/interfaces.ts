@@ -1,3 +1,4 @@
+import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
 import {
   ArgumentTypes,
   ReturnType,
@@ -13,6 +14,13 @@ export type QcAction = {
 export type QcState = {
   [s : string] : any;
 };
+
+export type QcEpic = Epic<
+  QcAction,
+  QcAction,
+  QcState,
+  any
+>;
 
 export interface QcStore<StateType> {
   dispatch(action : QcAction) : any;
@@ -32,29 +40,47 @@ export interface ResourceMetadata {
     queryId?: QueryId;
     requestTimestamp: QcTimestamp;
 
-    lastResponse?: any
+    lastResponse?: any;
     responseTimestamp?: QcTimestamp;
 
-    lastError?: any
+    lastError?: any;
     errorTimestamp?: QcTimestamp;
 
-    lastCancelReason?: any
+    lastCancelReason?: any;
     cancelTimestamp?: QcTimestamp;
+  };
+  lastUpdate?: {
+    updateData : any;
+    updateType : string;
+    updateTimestamp : QcTimestamp;
   };
   [s : string] : any;
 }
 
+export interface CacheValueState {
+  metadata: ResourceMetadata;
+  value: any;
+}
+
+// change
+
+export type CacheStateChange = {
+  update?: { [s : string] : CacheValueState },
+  delete?: string[],
+};
+
+export type FullChange = [CacheStateChange, CacheStateChange];
+
+export type CacheChange = CacheStateChange | FullChange;
+
+// ==================
+
 export interface ResourceStateResourceMap {
-  [s : string] : {
-    metadata: ResourceMetadata;
-    value: any;
-  };
+  [s : string] : CacheValueState;
 }
 
 export interface ResourceStateQueryMap {
-  [s : string] : {
-    [s : string] : any;
-  };
+  [s : string] : CacheValueState;
 }
 
 export interface ResourceState {

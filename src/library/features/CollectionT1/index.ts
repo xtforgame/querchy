@@ -1,6 +1,7 @@
 import {
   ResourceMetadata,
   ResourceStateQueryMap,
+  ResourceStateResourceMap,
   ResourceMerger,
   ResourceState,
 } from '../../common/interfaces';
@@ -40,26 +41,30 @@ export type Types = {
   QueryInfos: QueryInfosT1;
 };
 
-export type GetResourceId = (state: ResourceState, action: QcBasicAction) => string | void;
+export type ResourceChange = {
+  update?: { [s : string] : any },
+  delete?: string[],
+};
+
+export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
 export default class CollectionT1 {
   static crudToRestMap(crudName) {
     return crudToRestMap[crudName];
   }
 
-  getResourceId : GetResourceId;
+  parseResource : ParseResponse;
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
-  constructor(getResourceId?: GetResourceId) {
-    this.getResourceId = getResourceId || (
-      (s, action) => (
-        action.response
-        && action.response.data
-        && action.response.data.args
-        && action.response.data.args.id
-      ) || '1'
+  constructor(parseResource?: ParseResponse) {
+    this.parseResource = parseResource || (
+      (s, action) => ({
+        update: {
+          '': action.response.data,
+        },
+      })
     );
-    this.onError = (error) => {}
+    this.onError = (error) => {};
   }
 
   Types!: Types;
@@ -71,30 +76,45 @@ export default class CollectionT1 {
     },
     action,
   ) => {
-    const resourceId = this.getResourceId(state, action);
-    if (!resourceId) {
-      this.onError(new Error('failt to parse resource id'), state, action);
+    const resourceChange = this.parseResource(state, action);
+    if (resourceChange.update && resourceChange.update['']) {
+      this.onError(new Error('failt to parse response'), state, action);
       return state;
     }
 
     const { queryMap, resourceMap } = state;
 
-    const metadata : ResourceMetadata = {
-      lastRequest: {
-        ...(resourceMap[resourceId] && resourceMap[resourceId].metadata.lastRequest),
-        requestTimestamp: action.requestTimestamp,
-        responseTimestamp: action.responseTimestamp,
-      },
-    };
-    if (action.queryId) {
-      metadata.lastRequest!.queryId = action.queryId;
-    }
-    let extraQueryMap : ResourceStateQueryMap = {};
-    if (metadata.lastRequest!.queryId) {
-      extraQueryMap[metadata.lastRequest!.queryId] = {
-        metadata,
+    const extraQueryMap : ResourceStateQueryMap = {};
+    const queryId = action.queryId;
+    if (queryId) {
+      extraQueryMap[queryId] = {
+        metadata: {
+          ...(queryMap[queryId] && queryMap[queryId].metadata.lastRequest),
+          queryId,
+          requestTimestamp: action.requestTimestamp,
+          responseTimestamp: action.responseTimestamp,
+        },
         value: action.response.data,
       };
+    }
+
+    const extraResourceMap : ResourceStateResourceMap = {};
+    if (queryId) {
+      const update = resourceChange.update || {};
+      Object.keys(update)
+      .forEach((key) => {
+        extraResourceMap[key] = {
+          metadata: {
+            ...(resourceMap[queryId] && resourceMap[queryId].metadata.lastRequest),
+            lastUpdate: {
+              updateType: 'get-collection',
+              updateData: update[key],
+              updateTimestamp: action.responseTimestamp,
+            },
+          },
+          value: update[key],
+        };
+      });
     }
     const result = {
       ...state,
@@ -104,14 +124,7 @@ export default class CollectionT1 {
       },
       resourceMap: {
         ...state.resourceMap,
-        '1': {
-          metadata,
-          value: action.response.data,
-        },
-        '2': {
-          metadata,
-          value: action.response.data,
-        },
+        ...extraResourceMap,
       },
     };
     return result;
@@ -145,7 +158,6 @@ export default class CollectionT1 {
       if (!action.modelName || !crudToRestMap[action.crudType]) {
         return next();
       }
-      console.log('models[action.modelName].url :', models[action.modelName].url);
       return {
         overwriteQueryId,
         method: crudToRestMap[action.crudType],

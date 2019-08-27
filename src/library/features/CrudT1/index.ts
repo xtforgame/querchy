@@ -94,14 +94,9 @@ export default class CrudT1 {
 
   constructor(getResourceId?: GetResourceId) {
     this.getResourceId = getResourceId || (
-      (s, action) => (
-        action.response
-        && action.response.data
-        && action.response.data.args
-        && action.response.data.args.id
-      ) || '1'
+      (s, action) => ''
     );
-    this.onError = (error) => {}
+    this.onError = (error) => {};
   }
 
   Types!: Types;
@@ -126,6 +121,11 @@ export default class CrudT1 {
         ...(queryMap[resourceId] && queryMap[resourceId].lastRequest),
         requestTimestamp: action.requestTimestamp,
         responseTimestamp: action.responseTimestamp,
+      },
+      lastUpdate: {
+        updateType: 'crud',
+        updateData: action.response.data,
+        updateTimestamp: action.responseTimestamp,
       },
     };
     if (action.queryId) {

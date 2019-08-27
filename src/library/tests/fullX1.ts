@@ -22,9 +22,23 @@ import CrudT1 from '../features/CrudT1';
 import UpdateCacheT1 from '../features/UpdateCacheT1';
 import CollectionT1 from '../features/CollectionT1';
 
-export const crudT1 = new CrudT1();
+export const crudT1 = new CrudT1(
+  (s, action) => (
+    action.response
+    && action.response.data
+    && action.response.data.args
+    && action.response.data.args.id
+  ) || '1',
+);
 export const updateCacheT1 = new UpdateCacheT1();
-export const collectionT1 = new CollectionT1();
+export const collectionT1 = new CollectionT1(
+  (s, action) => ({
+    update: {
+      '1': action.response.data,
+      '2': action.response.data,
+    },
+  }),
+);
 
 export const crudToRestMap = {
   create: 'post',
@@ -88,7 +102,7 @@ export class MyStore implements StoreX1 {
     this.epicMiddlewareCb(() => {})(action);
     if (action.response) {
       console.log('action.queryId :', action.queryId);
-      // console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
+      console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
     }
 
     // const xxxx = this.cacher.selectorSet.httpBinRes2.selectQueryMap(this.state);

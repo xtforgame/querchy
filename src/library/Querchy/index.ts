@@ -6,6 +6,7 @@ import { toUnderscore } from '../common/common-functions';
 import {
   QcAction,
   QcState,
+  QcEpic,
   QcActionCreatorWithProps,
 } from '../common/interfaces';
 
@@ -64,7 +65,12 @@ export type QuerchyTypeGroup<
   // ========================
 
   QcDependenciesType: QcDependencies<
-    CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType
+    CommonConfigType,
+    ModelMapType,
+    QueryBuilderMapType,
+    ExtraActionCreatorsType,
+    QuerchyDefinitionType,
+    ExtraDependenciesType
   >;
 
   ActionCreatorSetsType: ActionCreatorSets<
@@ -78,12 +84,7 @@ export type QuerchyTypeGroup<
     ModelMapType
   >;
 
-  EpicType: Epic<
-    QcAction,
-    QcAction,
-    QcState,
-    any
-  >
+  EpicType: QcEpic;
 };
 
 export type QuerchyConstructor<
@@ -125,7 +126,7 @@ export type QuerchyConstructor<
   >
 > = (
   querchyDefinition : QuerchyDefinitionType,
-  deps?: ExtraDependencies
+  deps?: ExtraDependencies,
 ) => any;
 
 export default class Querchy<
@@ -173,7 +174,7 @@ export default class Querchy<
 
   constructor(
     querchyDefinition : QuerchyDefinitionType,
-    deps?: ExtraDependencies
+    deps?: ExtraDependencies,
   ) {
     this.actionCreatorSets = <any>{};
     this.querchyDefinition = querchyDefinition;
@@ -200,12 +201,10 @@ export default class Querchy<
     .forEach((key) => {
       const queryBuilder = queryBuilders[key];
       if (queryBuilder) {
-        queryBuilder.buildRequestConfig = toBuildRequestConfigFunction<
-          CommonConfigType,
-          ModelMapType
-        >(
-          queryBuilder.buildRequestConfig,
-        );
+        queryBuilder
+          .buildRequestConfig = toBuildRequestConfigFunction<CommonConfigType, ModelMapType>(
+            queryBuilder.buildRequestConfig,
+          );
       }
     });
     Object.keys(queryBuilders)
@@ -258,12 +257,16 @@ export default class Querchy<
     });
 
     // normalize extraActionCreators
-    this.querchyDefinition.extraActionCreators = this.querchyDefinition.extraActionCreators || <any>{ [INIT_FUNC] : () => {} };
+    this.querchyDefinition.extraActionCreators = this.querchyDefinition.extraActionCreators
+      || <any>{ [INIT_FUNC] : () => {} };
     const extraActionCreators = this.querchyDefinition.extraActionCreators!;
     extraActionCreators[INIT_FUNC](models, this);
     const { actionTypePrefix = '' } = commonConfig;
     extraActionCreators.actionTypes = createExtraActionTypes(commonConfig, extraActionCreators);
-    extraActionCreators.actions = createExtraActionCreators<CommonConfigType, ExtraActionCreatorsType>(commonConfig, extraActionCreators);
+    extraActionCreators
+      .actions = createExtraActionCreators<CommonConfigType, ExtraActionCreatorsType>(
+        commonConfig, extraActionCreators,
+      );
     this.actionCreatorSets.extra = Object.keys(extraActionCreators.actions!)
     .reduce(
       (extra, key) => {
@@ -331,7 +334,9 @@ export default class Querchy<
       .map<QuerchyTypeGroupType['EpicType']>((actionInfo) => {
         const queryBuilder = queryBuilders[actionInfo.queryBuilderName!];
         // console.log('actionInfo.queryBuilder :', actionInfo.queryBuilder);
-        return <QuerchyTypeGroupType['EpicType']>this.getHandleQueryEpicFromQueryBuilderByActionType(
+        return <QuerchyTypeGroupType[
+          'EpicType'
+        ]>this.getHandleQueryEpicFromQueryBuilderByActionType(
           actionInfo.actionType!, queryBuilder!,
         );
       }),
