@@ -50,6 +50,7 @@ export interface ResourceMetadata {
     cancelTimestamp?: QcTimestamp;
   };
   lastUpdate?: {
+    queryId?: QueryId;
     updateData : any;
     updateType : string;
     updateTimestamp : QcTimestamp;

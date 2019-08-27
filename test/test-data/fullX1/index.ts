@@ -11,12 +11,10 @@ import {
   QuerchyX1,
   AxiosRunnerX1,
   CacherX1,
-} from './typesX1';
 
-import {
   StoreX1,
   Types,
-} from './typesDefX1';
+} from './typesX1';
 
 import CrudT1 from 'library/features/CrudT1';
 import UpdateCacheT1 from 'library/features/UpdateCacheT1';
@@ -259,17 +257,19 @@ export default () => {
         defaultBuilder: {
           buildRequestConfig: [
             ({ action, runnerType, commonConfig, models, modelRootState }, next) => {
+              const resourceId : string = action.resourceId;
+              const modelName = action.modelName;
               if (
-                modelRootState.httpBinRes.resourceMap['1']
-                && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest
-                && modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse
+                resourceId && modelName
+                && modelRootState[modelName].resourceMap[resourceId]
+                && modelRootState[modelName].resourceMap[resourceId].metadata.lastUpdate
+                && modelRootState[modelName].resourceMap[resourceId].metadata.lastUpdate!.updateData
               ) {
                 return {
-                  overwriteQueryId: action.queryId
-                    || modelRootState.httpBinRes.resourceMap['1'].metadata.lastRequest.queryId,
+                  overwriteQueryId: resourceId,
                   fromCache: true,
                   responseFromCache: modelRootState
-                    .httpBinRes.resourceMap['1'].metadata.lastRequest.lastResponse,
+                    [modelName].resourceMap[resourceId].metadata.lastUpdate!.updateData,
                 };
               }
               return next();

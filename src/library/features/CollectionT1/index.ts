@@ -26,10 +26,19 @@ export type RawActionCreatorGetCollectionT1 = (
   [s : string] : any;
 };
 
+export type RawActionCreatorGetByIdsT1 = (
+  ids: string[],
+  options?: ResourceModelQueryActionOptions,
+) => {
+  options?: ResourceModelQueryActionOptions;
+  [s : string] : any;
+};
+
 // ===============================================================
 
 export type QueryInfosT1 = {
   getCollection: QueryInfo<RawActionCreatorGetCollectionT1>;
+  getByIds: QueryInfo<RawActionCreatorGetByIdsT1>;
 };
 
 export type ActionInfosT1 = {};
@@ -135,6 +144,10 @@ export default class CollectionT1 {
       actionCreator: (options?) => ({ options }),
       resourceMerger: this.resourceMerger,
     },
+    getByIds: {
+      actionCreator: (ids, options?) => ({ ids, options }),
+      resourceMerger: this.resourceMerger,
+    },
   })
 
   getActionInfos : () => ActionInfosT1 = () => ({
@@ -154,7 +167,6 @@ export default class CollectionT1 {
         }
       }
 
-      // console.log('action', action);
       if (!action.modelName || !crudToRestMap[action.crudType]) {
         return next();
       }
