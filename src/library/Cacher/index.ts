@@ -33,12 +33,6 @@ import {
   QuerchyDefinition,
 
   QcResponseAction,
-
-  ExtraSelectorInfosMapForModelMap,
-  ExtraModelSelectorCreators,
-  ExtraModelSelectors,
-  SelectorCreatorCreatorForModelMap,
-  ExtraSelectorInfosForModelMap,
 } from '../core/interfaces';
 
 import combineReducers from '../redux/combineReducers';
@@ -47,6 +41,12 @@ import {
   ReducerSets,
   SelectorCreatorSets,
   SelectorSets,
+
+  ExtraSelectorInfosMapForModelMap,
+  ExtraModelSelectorCreators,
+  ExtraModelSelectors,
+  SelectorCreatorCreatorForModelMap,
+  ExtraSelectorInfosForModelMap,
 } from './interfaces';
 
 import {

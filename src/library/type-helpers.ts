@@ -27,8 +27,11 @@ import {
   QueryBuilderMap,
   ExtraActionCreators,
   QuerchyDefinition,
-  ExtraSelectorInfosMapForModelMap,
 } from './core/interfaces';
+
+import {
+  ExtraSelectorInfosMapForModelMap,
+} from './Cacher/interfaces';
 
 import {
   Constructor,
