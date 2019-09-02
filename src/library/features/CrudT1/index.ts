@@ -146,7 +146,7 @@ export default class CrudT1 {
       },
     });
     if (action.crudType === 'delete') {
-      delete result.resourceMap.values[resourceId].value;
+      delete result.resourceMap.values[resourceId];
       // delete result.resourceMap.metadata[resourceId];
     }
     return result;

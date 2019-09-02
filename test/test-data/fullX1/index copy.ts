@@ -98,7 +98,7 @@ export class MyStore implements StoreX1 {
   }
 
   dispatch = (action : QcAction) => {
-    // console.log('action.type :', action.type);
+    console.log('action.type :', action.type);
     if (action.crudSubType === 'respond') {
       // console.log('action.response.data :', action.response.data);
     } else if (action.crudSubType === 'respondError') {
@@ -125,11 +125,11 @@ export class MyStore implements StoreX1 {
 
     const selectedForHttpBinResExtra = this.cacher.selectorSet
       .httpBinRes.extraSelectorX1(this.state);
-    // console.log('selectedForHttpBinResExtra :', selectedForHttpBinResExtra);
+    console.log('selectedForHttpBinResExtra :', selectedForHttpBinResExtra);
 
     const selectedForHttpBinResExtra2 = this.cacher.selectorCreatorSet
       .httpBinRes.extraSelectorX1()(this.state);
-    // console.log('selectedForHttpBinResExtra2 :', selectedForHttpBinResExtra2);
+    console.log('selectedForHttpBinResExtra2 :', selectedForHttpBinResExtra2);
 
     this.cb(action);
   }
@@ -208,10 +208,10 @@ const testRun = (querchy : QuerchyX1, cacher : CacherX1, resolve: Function) => {
       headers: { Ppp: 'xxx' },
     },
   ).then((a) => {
-    // console.log('a :', a);
+    console.log('a :', a);
   })
   .catch((e) => {
-    // console.log('e :', e);
+    console.log('e :', e);
   });
 
   setTimeout(

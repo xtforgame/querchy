@@ -1,8 +1,9 @@
+import { Action } from 'pure-epic';
 import {
   ModelActionCreator,
   ResourceModelActions,
 } from '../common/interfaces';
-import { toUnderscore } from '../common/common-functions';
+import { toUnderscore, PreservePromise } from '../common/common-functions';
 
 import {
   CrudType,
@@ -19,6 +20,16 @@ import {
   ActionInfoBase,
   ExtraActionCreatorsLike,
 } from '../core/interfaces';
+
+import {
+  symbolList,
+  SUCCESS_ACTION,
+  SUCCESS_CALLBACK,
+  ERROR_ACTION,
+  ERROR_CALLBACK,
+  PASS_ANYWAY,
+  PASS_NEVER,
+} from '../utils/createWatcherMiddleware';
 
 export const createActionTypes = <
   CommonConfigType extends CommonConfig
@@ -37,6 +48,61 @@ export const createActionTypes = <
   );
 };
 
+const createBasicAction = (
+  type : string,
+  actionCreator : Function,
+  result: any,
+  props: any = {},
+  transferables: any = {},
+) => {
+  const requestAction = {
+    ...result,
+    type,
+    actionCreator,
+    ...props,
+    transferables: {
+      ...(result.options && result.options.transferables),
+    },
+    ...(result.options && result.options.actionProps),
+  };
+  if (requestAction.options) {
+    symbolList.forEach((s) => {
+      if (!requestAction[s] && requestAction.options[s]) {
+        requestAction[s] = requestAction.options[s];
+      }
+    });
+  }
+  requestAction.transferables = {
+    ...result.transferables,
+    requestAction,
+    ...transferables,
+  };
+  return requestAction;
+};
+
+const createQueryAction = (
+  type : string,
+  actionCreator : Function,
+  result: any,
+  extraProps: any = {},
+  extraTransferables: any = {},
+) => {
+  const requestTimestamp = new Date().getTime();
+  const basicResult = createBasicAction(
+    type,
+    actionCreator,
+    result,
+    { requestTimestamp, ...extraProps },
+    { requestTimestamp, ...extraTransferables },
+  );
+  const queryId = basicResult.options && basicResult.options.queryId;
+  if (queryId) {
+    basicResult.queryId = queryId;
+    basicResult.transferables.queryId = queryId;
+  }
+  return basicResult;
+};
+
 export const wrapActionCreator = <
   CommonConfigType extends CommonConfig,
 >(
@@ -44,31 +110,27 @@ export const wrapActionCreator = <
   actionTypes: { [s : string]: string; },
   actionName: string,
   actionInfo : ActionInfoBase<Function>,
+  rawFuncWrapper : (f : Function) => Function = (f => f),
+  finalFuncWrapper : (f : Function) => Function = (f => f),
 ) : ModelActionCreator<Function> => {
-  const start = actionInfo.actionCreator;
+  const start = rawFuncWrapper(actionInfo.actionCreator);
   const actionType = actionTypes[actionName]!;
   actionInfo.name = actionName;
   actionInfo.actionType = actionType;
 
   const startFunc : ModelActionCreator<Function> = <any>Object.assign(
-    (...args : any[]) => {
-      const requestTimestamp = new Date().getTime();
-      const requestAction = {
-        ...start(...args),
-        type: actionType,
-        actionCreator: startFunc,
+    finalFuncWrapper((...args : any[]) => createBasicAction(
+      actionType,
+      startFunc,
+      start(...args),
+      {
         modelName,
         actionTypes,
         actionName,
-        transferables: {},
-      };
-      requestAction.transferables = {
-        requestTimestamp,
-        requestAction,
-      };
-      return requestAction;
-    },
-    { actionType: actionType },
+      },
+      { requestTimestamp: new Date().getTime() },
+    )),
+    { actionType },
   );
   return startFunc;
 };
@@ -80,16 +142,18 @@ export const wrapQueryActionCreator = <
   actionTypes : { [s : string]: string },
   crudType: CrudType,
   actionInfo : ActionInfoBase<Function>,
+  rawFuncWrapper : (f : Function) => Function = (f => f),
+  finalFuncWrapper : (f : Function) => Function = (f => f),
 ) : QueryActionCreatorWithProps<
   Function, Function
 > => {
-  const QueryActionCreatorProps : QueryActionCreatorProps<
+  const queryActionCreatorProps : QueryActionCreatorProps<
     Function
   > = <any>{
     creatorRefs: {},
   };
 
-  const start = actionInfo.actionCreator;
+  const start = rawFuncWrapper(actionInfo.actionCreator);
   const actionType = actionTypes[crudType]!;
   actionInfo.name = crudType;
   actionInfo.actionType = actionType;
@@ -105,91 +169,68 @@ export const wrapQueryActionCreator = <
   const startFunc : QueryActionCreatorWithProps<
     Function, Function
   > = Object.assign(
-    (...args : any[]) => {
-      const requestTimestamp = new Date().getTime();
-      const result = start(...args);
-      const requestAction = {
-        ...result,
-        type: actionType,
-        actionCreator: startFunc,
+    finalFuncWrapper((...args : any[]) => createQueryAction(
+      actionType,
+      startFunc,
+      start(...args),
+      {
         modelName,
         actionTypes,
         crudType,
         crudSubType: 'start',
-        requestTimestamp,
-        transferables: {},
-        options: result.options,
-      };
-      requestAction.transferables = {
-        ...result.transferables,
-        requestTimestamp,
-        requestAction,
-      };
-      const queryId = result.options && result.options.queryId;
-      if (queryId) {
-        requestAction.queryId = queryId;
-        requestAction.transferables.queryId = queryId;
-      }
-      return requestAction;
-    },
-    QueryActionCreatorProps,
+      },
+    )),
+    queryActionCreatorProps,
     { actionType },
   );
 
   const getQueryBuiltinProps = (crudSubType : string, options?) : any => {
-    let transferables : any = options && options.transferables || {};
-    transferables = {
-      ...transferables.requestAction
-        && transferables.requestAction.transferables,
-      ...transferables,
-    };
-    if (options.queryId) {
-      transferables.queryId = options.queryId;
-    }
-    const result : any = {
-      type: querySubActionTypes[crudSubType],
-      actionCreator: QueryActionCreatorProps.creatorRefs[crudSubType],
-      modelName,
-      actionTypes,
-      crudType,
-      crudSubType: <CrudSubType>crudSubType,
-      requestTimestamp: transferables.requestTimestamp,
-      transferables,
-      options,
-    };
-    if (transferables.queryId) {
-      result.queryId = transferables.queryId;
-    }
-    return result;
+    const transferables : any = (options && options.transferables) || {};
+    return createQueryAction(
+      querySubActionTypes[crudSubType],
+      queryActionCreatorProps.creatorRefs[crudSubType],
+      { options },
+      {
+        modelName,
+        actionTypes,
+        crudType,
+        crudSubType,
+      },
+      {
+        ...transferables.requestAction
+          && transferables.requestAction.transferables,
+        ...transferables,
+      },
+    );
   };
 
-  QueryActionCreatorProps.creatorRefs.start = startFunc;
-  QueryActionCreatorProps.creatorRefs.respond = Object.assign(
+  queryActionCreatorProps.creatorRefs.start = startFunc;
+  queryActionCreatorProps.creatorRefs.respond = Object.assign(
     (response, responseType, options?) => ({
       response,
       responseType,
       responseTimestamp: new Date().getTime(),
       ...getQueryBuiltinProps('respond', options),
     }),
-    QueryActionCreatorProps,
+    queryActionCreatorProps,
     { actionType: querySubActionTypes.respond },
   );
-  QueryActionCreatorProps.creatorRefs.respondError = Object.assign(
+  queryActionCreatorProps.creatorRefs.respondError = Object.assign(
     (error, options?) => ({
       error,
       errorTimestamp: new Date().getTime(),
       ...getQueryBuiltinProps('respondError', options),
     }),
-    QueryActionCreatorProps,
+    queryActionCreatorProps,
     { actionType: querySubActionTypes.respondError },
   );
-  QueryActionCreatorProps.creatorRefs.cancel = Object.assign(
+  queryActionCreatorProps.creatorRefs.cancel = Object.assign(
     (reason, options?) => ({
       reason,
       cancelTimestamp: new Date().getTime(),
       ...getQueryBuiltinProps('cancel', options),
     }),
-    QueryActionCreatorProps,
+    queryActionCreatorProps,
     { actionType: querySubActionTypes.cancel },
   );
   return startFunc;
@@ -243,6 +284,130 @@ export const createModelActionCreators = <
         ...actionCreators,
         [actionName]: wrapActionCreator<CommonConfigType>(
           modelName, <any>actionTypes, actionName, actionInfos[actionName],
+        ),
+      }),
+      <any>{},
+    ),
+  };
+};
+
+const getRawFuncWrapperForAction = () => f => (...args) => {
+  const result = f(...args);
+  const pp = new PreservePromise<Action>();
+  const symbol = Symbol('req_action');
+  result._pp = pp;
+  result.options = {
+    ...result.options,
+    actionProps: {
+      ...(result.options && result.options.actionProps),
+      _symbol: symbol,
+    },
+  };
+  const getCheckFunc = (crudSubType : CrudSubType) => (action : any) => {
+    return action.crudSubType === crudSubType
+      && action.transferables
+      && action.transferables.requestAction
+      && action.transferables.requestAction._symbol === symbol;
+  };
+  result.options.actionProps[SUCCESS_ACTION] = result.options.actionProps[SUCCESS_ACTION]
+    || getCheckFunc('respond');
+  const originSuccess = result.options.actionProps[SUCCESS_CALLBACK] || (() => {});
+  result.options.actionProps[SUCCESS_CALLBACK] = (a) => {
+    originSuccess(a);
+    pp.resolve(a);
+  };
+  result.options.actionProps[ERROR_ACTION] = result.options.actionProps[ERROR_ACTION]
+    || getCheckFunc('respondError');
+  const originError = result.options.actionProps[ERROR_CALLBACK] || (() => {});
+  result.options.actionProps[ERROR_CALLBACK] = (a) => {
+    originError(a);
+    pp.reject(a);
+  };
+  return result;
+};
+
+const getRawFuncWrapperForQueryAction = () => f => (...args) => {
+  const result = f(...args);
+  const pp = new PreservePromise<Action>();
+  const symbol = Symbol('req_action');
+  result._pp = pp;
+  result.options = {
+    ...result.options,
+    actionProps: {
+      ...(result.options && result.options.actionProps),
+      _symbol: symbol,
+    },
+  };
+  const getCheckFunc = (crudSubType : CrudSubType) => (action : any) => {
+    return action.crudSubType === crudSubType
+      && action.transferables
+      && action.transferables.requestAction
+      && action.transferables.requestAction._symbol === symbol;
+  };
+  result.options.actionProps[SUCCESS_ACTION] = result.options.actionProps[SUCCESS_ACTION]
+    || getCheckFunc('respond');
+  const originSuccess = result.options.actionProps[SUCCESS_CALLBACK] || (() => {});
+  result.options.actionProps[SUCCESS_CALLBACK] = (a) => {
+    originSuccess(a);
+    pp.resolve(a);
+  };
+  result.options.actionProps[ERROR_ACTION] = result.options.actionProps[ERROR_ACTION]
+    || getCheckFunc('respondError');
+  const originError = result.options.actionProps[ERROR_CALLBACK] || (() => {});
+  result.options.actionProps[ERROR_CALLBACK] = (a) => {
+    originError(a);
+    pp.reject(a);
+  };
+  return result;
+};
+
+const getFinalFuncWrapper = (dispatch) => f => (...args) => {
+  const result = f(...args);
+  const { _pp: pp } : { _pp: PreservePromise<Action> } = result;
+  delete result._pp;
+  dispatch(result);
+  return pp.promise;
+};
+
+export const createPromiseModelActionCreators = <
+  CommonConfigType extends CommonConfig,
+  ResourceModelType extends ResourceModel<CommonConfigType>
+>(
+  dispatch: (action: Action) => any,
+  commonConfigType: CommonConfigType,
+  modelName : string,
+  model: ResourceModelType,
+) : ResourceModelQueryActions<
+  Required<ResourceModelType['queryInfos']>
+> & ResourceModelActions<
+  Required<ResourceModelType['actionInfos']>
+> => {
+  const actionTypes : Required<ResourceModelType['actionTypes']> = <any>model.actionTypes!;
+  const queryInfos = model.queryInfos!;
+  const crudNames = model.crudNames!;
+
+  const actionInfos = model.actionInfos!;
+  const actionNames = model.actionNames!;
+
+  return {
+    ...crudNames.reduce(
+      (actionCreators, crudType) => ({
+        ...actionCreators,
+        [crudType]: wrapQueryActionCreator<CommonConfigType>(
+          modelName, <any>actionTypes, crudType, queryInfos[crudType],
+          getRawFuncWrapperForQueryAction(),
+          getFinalFuncWrapper(dispatch),
+        ),
+      }),
+      <any>{},
+    ),
+    ...actionNames.reduce(
+      (actionCreators, actionName) => ({
+        ...actionCreators,
+        [actionName]: wrapActionCreator<CommonConfigType>(
+          modelName, <any>actionTypes, actionName, actionInfos[actionName],
+          getRawFuncWrapperForAction(),
+          getFinalFuncWrapper(dispatch),
         ),
       }),
       <any>{},
@@ -305,6 +470,51 @@ export const createExtraActionCreators = <
         ...actionCreators,
         [actionName]: wrapActionCreator<CommonConfigType>(
           '', <any>actionTypes, actionName, actionInfos[actionName],
+        ),
+      }),
+      <any>{},
+    ),
+  };
+};
+
+export const createExtraPromiseModelActionCreators = <
+  CommonConfigType extends CommonConfig,
+  ExtraActionCreatorsType extends ExtraActionCreatorsLike
+>(
+  dispatch: (action: Action) => any,
+  commonConfigType: CommonConfigType,
+  extraActionCreators: ExtraActionCreatorsType,
+) : ResourceModelQueryActions<
+  Required<ExtraActionCreatorsType['queryInfos']>
+> & ResourceModelActions<
+  Required<ExtraActionCreatorsType['actionInfos']>
+> => {
+  const actionTypes : Required<ExtraActionCreatorsType['actionTypes']> = <any>extraActionCreators.actionTypes!;
+  const queryInfos = extraActionCreators.queryInfos!;
+  const crudNames = Object.keys(queryInfos);
+
+  const actionInfos = extraActionCreators.actionInfos!;
+  const actionNames = Object.keys(actionInfos);
+
+  return {
+    ...crudNames.reduce(
+      (actionCreators, crudType) => ({
+        ...actionCreators,
+        [crudType]: wrapQueryActionCreator<CommonConfigType>(
+          '', <any>actionTypes, crudType, queryInfos[crudType],
+          getRawFuncWrapperForQueryAction(),
+          getFinalFuncWrapper(dispatch),
+        ),
+      }),
+      <any>{},
+    ),
+    ...actionNames.reduce(
+      (actionCreators, actionName) => ({
+        ...actionCreators,
+        [actionName]: wrapActionCreator<CommonConfigType>(
+          '', <any>actionTypes, actionName, actionInfos[actionName],
+          getRawFuncWrapperForAction(),
+          getFinalFuncWrapper(dispatch),
         ),
       }),
       <any>{},

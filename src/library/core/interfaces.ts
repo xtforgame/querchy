@@ -182,6 +182,7 @@ export interface QuerchyDefinition<
     QueryBuilderMapType
   >,
 > {
+  namespace?: string;
   commonConfig : CommonConfigType;
   models : ModelMapType;
   baseSelector : BaseSelector<ModelMapType>;
@@ -240,10 +241,10 @@ export interface ExtraActionCreators<
 
 export type ModelQueryActionCreatorSet<
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType>,
   ExtraActionCreatorsType extends ExtraActionCreatorsLike,
 > = {
-  [P in keyof T] : Required<Required<T[P]>['actions']>;
+  [P in keyof ModelMapType] : Required<Required<ModelMapType[P]>['actions']>;
 } & {
   extra : Required<Required<ExtraActionCreatorsType>['actions']>;
 } & {
@@ -252,6 +253,26 @@ export type ModelQueryActionCreatorSet<
 
 export type ActionCreatorSets<
   CommonConfigType extends CommonConfig,
-  T extends ModelMap<CommonConfigType>,
+  ModelMapType extends ModelMap<CommonConfigType>,
   ExtraActionCreatorsType extends ExtraActionCreatorsLike,
-> = ModelQueryActionCreatorSet<CommonConfigType, T, ExtraActionCreatorsType>;
+> = ModelQueryActionCreatorSet<CommonConfigType, ModelMapType, ExtraActionCreatorsType>;
+
+// ==========
+
+export type ModelPromiseQueryActionCreatorSet<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  ExtraActionCreatorsType extends ExtraActionCreatorsLike,
+> = {
+  [P in keyof ModelMapType] : ResourceModelQueryActions<Required<ModelMapType[P]>['queryInfos']>;
+} & {
+  extra : ResourceModelQueryActions<Required<ExtraActionCreatorsType>['queryInfos']>;
+} & {
+  [s : string] : QcActionCreator;
+};
+
+export type PromiseActionCreatorSets<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  ExtraActionCreatorsType extends ExtraActionCreatorsLike,
+> = ModelQueryActionCreatorSet<CommonConfigType, ModelMapType, ExtraActionCreatorsType>; // ModelPromiseQueryActionCreatorSet<CommonConfigType, ModelMapType, ExtraActionCreatorsType>;

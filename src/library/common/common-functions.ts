@@ -17,6 +17,63 @@ export function promiseWait(waitMillisec) {
   });
 }
 
+export class PreservePromise<T> {
+  fulfilled : boolean;
+  promise : Promise<T>;
+  result? : {
+    type: 'resolve' | 'reject',
+    value: T | Error,
+  };
+  _resolve?: (value?: T | PromiseLike<T> | undefined) => void;
+  _reject?: (reason?: any) => void;
+
+  constructor() {
+    this.fulfilled = false;
+    this.promise = new Promise<T>((resolve, reject) => {
+      if (this.result) {
+        if (this.result.type === 'resolve') {
+          resolve(<T>this.result.value);
+        } else {
+          reject(this.result.value);
+        }
+      } else {
+        this._resolve = resolve;
+        this._reject = reject;
+      }
+    });
+  }
+
+  resolve(value) {
+    if (this.fulfilled) {
+      return; // TODO: handle error
+    }
+    if (this._resolve) {
+      this._resolve(value);
+    } else {
+      this.result = {
+        type: 'resolve',
+        value,
+      };
+    }
+    this.fulfilled = true;
+  }
+
+  reject(value) {
+    if (this.fulfilled) {
+      return; // TODO: handle error
+    }
+    if (this._reject) {
+      this._reject(value);
+    } else {
+      this.result = {
+        type: 'reject',
+        value,
+      };
+    }
+    this.fulfilled = true;
+  }
+}
+
 const toCamel = (str : string) : string => str.replace(/_([a-z])/g, g => g[1].toUpperCase());
 const toUnderscore = (str : string) : string => str.replace(/([A-Z])/g, g => `_${g.toLowerCase()}`);
 const capitalizeFirstLetter = (str : string) : string => (

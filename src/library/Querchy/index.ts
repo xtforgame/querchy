@@ -1,4 +1,4 @@
-import { Epic, createEpicMiddleware, combineEpics } from 'pure-epic';
+import { Epic, createEpicMiddleware, combineEpics, Action } from 'pure-epic';
 import { ObservableInput } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { toUnderscore } from '../common/common-functions';
@@ -22,6 +22,7 @@ import {
   INIT_FUNC,
   ModelQueryActionCreatorSet,
   ActionCreatorSets,
+  PromiseActionCreatorSets,
 } from '../core/interfaces';
 
 import {
@@ -31,11 +32,18 @@ import {
 import {
   createModelActionTypes,
   createModelActionCreators,
+  createPromiseModelActionCreators,
   createExtraActionTypes,
   createExtraActionCreators,
+  createExtraPromiseModelActionCreators
 } from './actionCreatorHelpers';
 
 import toBuildRequestConfigFunction from './toBuildRequestConfigFunction';
+import namespaces, { defaultNamespaceName } from './namespaces';
+
+export * from './namespaces';
+export { default as namespaces } from './namespaces';
+export { default as createQuerchyMiddleware } from './createQuerchyMiddleware';
 
 export type QuerchyTypeGroup<
   CommonConfigType extends CommonConfig,
@@ -74,6 +82,12 @@ export type QuerchyTypeGroup<
   >;
 
   ActionCreatorSetsType: ActionCreatorSets<
+    CommonConfigType,
+    ModelMapType,
+    ExtraActionCreatorsType
+  >;
+
+  PromiseActionCreatorSetsType: PromiseActionCreatorSets<
     CommonConfigType,
     ModelMapType,
     ExtraActionCreatorsType
@@ -171,12 +185,14 @@ export default class Querchy<
   deps : QuerchyTypeGroupType['QcDependenciesType'];
 
   actionCreatorSets: QuerchyTypeGroupType['ActionCreatorSetsType'];
+  promiseActionCreatorSets: QuerchyTypeGroupType['PromiseActionCreatorSetsType'];
 
   constructor(
     querchyDefinition : QuerchyDefinitionType,
     deps?: ExtraDependencies,
   ) {
     this.actionCreatorSets = <any>{};
+    this.promiseActionCreatorSets = <any>{};
     this.querchyDefinition = querchyDefinition;
     this.normalizeQuerchyDefinition();
     this.deps = {
@@ -186,6 +202,7 @@ export default class Querchy<
   }
 
   normalizeQuerchyDefinition() {
+    this.querchyDefinition.namespace = this.querchyDefinition.namespace || defaultNamespaceName;
     const { queryBuilders, commonConfig, models } = this.querchyDefinition;
 
     // normalize commonConfig
@@ -240,11 +257,13 @@ export default class Querchy<
           models[key].actionNames!.push(key2);
         }
       });
+      models[key].buildUrl = models[key].buildUrl
+        || commonConfig.defaultBuildUrl.bind(commonConfig);
       models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key]);
       models[key].actions = createModelActionCreators(commonConfig, key, models[key]);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
-      models[key].buildUrl = models[key].buildUrl
-        || commonConfig.defaultBuildUrl.bind(commonConfig);
+      const promiseActions = createPromiseModelActionCreators(this.dispatch, commonConfig, key, models[key]);
+      (<any>this.promiseActionCreatorSets)[key] = promiseActions;
 
       const model = models[key];
       if (model.queryBuilderName) {
@@ -278,6 +297,18 @@ export default class Querchy<
       },
       <any>{},
     );
+    const promiseActions = createExtraPromiseModelActionCreators(this.dispatch, commonConfig, extraActionCreators);
+    this.promiseActionCreatorSets.extra = Object.keys(promiseActions)
+    .reduce(
+      (extra, key) => {
+        if (typeof key === 'string') {
+          const type = commonConfig.getActionTypeName!(actionTypePrefix, `extra/${key}`);
+          return { ...extra, [key]: promiseActions[key] };
+        }
+        return extra;
+      },
+      <any>{},
+    );
 
     Object.values(extraActionCreators.queryInfos!)
     .forEach((actionInfo) => {
@@ -289,6 +320,20 @@ export default class Querchy<
         actionInfo.queryBuilderName = 'defaultBuilder';
       }
     });
+  }
+
+  getStore = () => {
+    return namespaces[this.querchyDefinition.namespace!].store;
+  }
+
+  dispatch = (action : Action) => {
+    const store = this.getStore();
+    if (!store) {
+      throw new Error(`store not found for namespace: ${
+        this.querchyDefinition.namespace
+      }, did you forget to attach 'createQuerchyMiddleware' to redux ?`);
+    }
+    return this.getStore().dispatch(action);
   }
 
   getHandleQueryEpicFromQueryBuilderByActionType(

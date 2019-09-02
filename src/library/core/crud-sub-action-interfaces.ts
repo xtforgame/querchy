@@ -9,6 +9,15 @@ import {
   QueryId,
 } from '../common/interfaces';
 
+import {
+  SUCCESS_ACTION,
+  ERROR_ACTION,
+  SUCCESS_CALLBACK,
+  ERROR_CALLBACK,
+  Tester,
+  CallbackFunction,
+} from '../utils/createWatcherMiddleware/index';
+
 export type QcTransferables = {
   queryId?: QueryId;
   requestTimestamp: QcTimestamp;
@@ -21,6 +30,11 @@ export type ResourceModelQueryActionOptions = {
   queryPart?: any;
   headers?: { [s : string] : string };
   transferables?: QcTransferables;
+  actionProps?: { [s : string]: any };
+  [SUCCESS_ACTION]?: Tester<QcAction>;
+  [ERROR_ACTION]?: Tester<QcAction>;
+  [SUCCESS_CALLBACK]?: CallbackFunction<QcAction>;
+  [ERROR_CALLBACK]?: CallbackFunction<QcAction>;
 };
 
 export type CrudType = string;
@@ -36,6 +50,10 @@ export interface QcBasicAction extends QcAction {
   // actionTypes,
 
   options?: any;
+  [SUCCESS_ACTION]?: Tester<QcAction>;
+  [ERROR_ACTION]?: Tester<QcAction>;
+  [SUCCESS_CALLBACK]?: CallbackFunction<QcAction>;
+  [ERROR_CALLBACK]?: CallbackFunction<QcAction>;
   [s : string] : any;
 }
 
