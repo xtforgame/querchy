@@ -26,23 +26,9 @@ import CrudT1 from 'library/features/CrudT1';
 import UpdateCacheT1 from 'library/features/UpdateCacheT1';
 import CollectionT1 from 'library/features/CollectionT1';
 
-export const crudT1 = new CrudT1(
-  (s, action) => (
-    action.response
-    && action.response.data
-    && action.response.data.args
-    && action.response.data.args.id
-  ) || '1',
-);
+export const crudT1 = new CrudT1();
 export const updateCacheT1 = new UpdateCacheT1();
-export const collectionT1 = new CollectionT1(
-  (s, action) => ({
-    update: {
-      '1': action.response.data,
-      '2': action.response.data,
-    },
-  }),
-);
+export const collectionT1 = new CollectionT1();
 
 export const crudUpdateCacheT1 = createFeatureGroup(
   crudT1,
@@ -204,7 +190,7 @@ const testRun = (querchy : QuerchyX1, cacher : CacherX1) => {
       actionProps: {
         // [SUCCESS_ACTION]: PASS_ANYWAY,
         [SUCCESS_CALLBACK]: (a) => {
-          console.log('a :', a);
+          // console.log('a :', a);
           // console.log('==============a============ :', a);
           // console.log('a :', a);
         },
@@ -260,6 +246,16 @@ export default () => {
         queryInfos: {},
         actionInfos: {},
         feature: crudUpdateCacheT1,
+        featureDeps: {
+          getId: (action) => {
+            return (
+              action.response
+              && action.response.data
+              && action.response.data.args
+              && action.response.data.args.id
+            );
+          },
+        },
       },
       httpBinRes2: {
         url: 'https://httpbin.org/get',
@@ -272,6 +268,22 @@ export default () => {
           },
         },
         feature: crudUpdateCacheCollectionT1,
+        featureDeps: {
+          getId: (action) => {
+            return (
+              action.response
+              && action.response.data
+              && action.response.data.args
+              && action.response.data.args.id
+            );
+          },
+          parseResponse: (s, action) => ({
+            update: {
+              '1': action.response.data,
+              '2': action.response.data,
+            },
+          }),
+        },
       },
     },
     queryBuilders: {

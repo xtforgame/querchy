@@ -146,6 +146,7 @@ export type MakeResourceModelType<
     Required<TypesType['ActionInfosType']>
   >;
   feature?: Feature<FeatureTypesType>;
+  featureDeps?: any;
 };
 
 export type MakeExtraActionCreatorsType<

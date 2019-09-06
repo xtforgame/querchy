@@ -6,6 +6,7 @@ import {
 import {
   QcBasicAction,
   ResourceModelQueryActionOptions,
+  ResourceModel,
   // ActionInfo,
   QueryInfo,
   CommonConfig,
@@ -91,12 +92,27 @@ export type GetBuildRequestConfigMiddleware<
 >;
 
 class CrudForModelT1 implements FeatureForModel<Types> {
+  resourceModel : ResourceModel;
   getResourceId : GetResourceId;
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
-  constructor(getResourceId?: GetResourceId) {
-    this.getResourceId = getResourceId || (
-      (s, action) => ''
+  constructor(resourceModel : ResourceModel) {
+    this.resourceModel = resourceModel;
+    this.getResourceId = (
+      (s, action) => {
+        if (
+          action.transferables
+          && action.transferables.requestAction
+          && action.transferables.requestAction.resourceId
+        ) {
+          return action.transferables.requestAction.resourceId;
+        }
+        const featureDeps = this.resourceModel.featureDeps || {};
+        if (featureDeps.getId) {
+          return featureDeps.getId(action);
+        }
+        return null;
+      }
     );
     this.onError = (error) => {};
   }
@@ -174,15 +190,9 @@ class CrudForModelT1 implements FeatureForModel<Types> {
 }
 
 export default class CrudT1 implements Feature<Types> {
-  getResourceId?: GetResourceId;
-
-  constructor(getResourceId?: GetResourceId) {
-    this.getResourceId = getResourceId;
-  }
-
   Types!: Types;
 
-  getFeatureForModel = () => new CrudForModelT1(this.getResourceId);
+  getFeatureForModel = (resourceModel : ResourceModel) => new CrudForModelT1(resourceModel);
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,

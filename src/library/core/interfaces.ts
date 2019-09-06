@@ -132,6 +132,7 @@ export type ResourceModel<
   actionTypes?: { [s : string]: string; };
   actions?: { [s: string]: StartQueryActionCreatorWithProps<{}>; };
   feature?: Feature;
+  featureDeps?: any;
 };
 
 export type ModelMap<

@@ -8,6 +8,7 @@ import {
 import {
   QcBasicAction,
   ResourceModelQueryActionOptions,
+  ResourceModel,
   // ActionInfo,
   QueryInfo,
   CommonConfig,
@@ -64,17 +65,19 @@ export type ResourceChange = {
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
 class CollectionForModelT1 implements FeatureForModel<Types> {
-  parseResource : ParseResponse;
+  resourceModel : ResourceModel;
+  parseResponse : ParseResponse;
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
-  constructor(parseResource?: ParseResponse) {
-    this.parseResource = parseResource || (
-      (s, action) => ({
-        update: {
-          '': action.response.data,
-        },
-      })
-    );
+  constructor(resourceModel : ResourceModel) {
+    this.resourceModel = resourceModel;
+    this.parseResponse = (s, action) => {
+      const featureDeps = this.resourceModel.featureDeps || {};
+      if (featureDeps.parseResponse) {
+        return featureDeps.parseResponse(s, action);
+      }
+      return {};
+    };
     this.onError = (error) => {};
   }
 
@@ -84,7 +87,7 @@ class CollectionForModelT1 implements FeatureForModel<Types> {
     state = createEmptyResourceState(),
     action,
   ) => {
-    const resourceChange = this.parseResource(state, action);
+    const resourceChange = this.parseResponse(state, action);
     if (resourceChange.update && resourceChange.update['']) {
       this.onError(new Error('failt to parse response'), state, action);
       return state;
@@ -125,6 +128,18 @@ class CollectionForModelT1 implements FeatureForModel<Types> {
         };
         extraResourceMap.values[key] = update[key];
       });
+      const deleteIds = resourceChange.delete || [];
+      deleteIds.forEach((deleteId) => {
+        extraResourceMap.metadata[deleteId] = {
+          ...(resourceMap[queryId] && resourceMap[queryId].metadata.lastRequest),
+          lastUpdate: {
+            updateType: 'get-collection',
+            updateData: update[deleteId],
+            updateTimestamp: action.responseTimestamp,
+          },
+        };
+        delete extraResourceMap.values[deleteId];
+      });
     }
     const result = mergeResourceState(
       state,
@@ -152,17 +167,9 @@ class CollectionForModelT1 implements FeatureForModel<Types> {
 }
 
 export default class CollectionT1 implements Feature<Types> {
-  parseResource?: ParseResponse;
-
-  constructor(parseResource?: ParseResponse) {
-    this.parseResource = parseResource;
-  }
-
   Types!: Types;
 
-  getFeatureForModel = () => {
-    return new CollectionForModelT1(this.parseResource);
-  }
+  getFeatureForModel = (resourceModel : ResourceModel) => new CollectionForModelT1(resourceModel);
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,
