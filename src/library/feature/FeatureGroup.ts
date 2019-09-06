@@ -13,11 +13,9 @@ import {
   CommonConfig,
   ModelMap,
   BuildRequestConfigMiddleware,
-} from '../core/interfaces';
-import {
   Feature,
   FeatureTypes,
-} from './interfaces';
+} from '../core/interfaces';
 import EmptyFeature, {
   emptyFeature,
 } from './EmptyFeature';

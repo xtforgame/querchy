@@ -11,10 +11,8 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
   QcBasicAction,
-} from '../../core/interfaces';
-import {
   Feature,
-} from '../../feature/interfaces';
+} from '../../core/interfaces';
 import {
   createEmptyResourceState,
 } from '../../utils';

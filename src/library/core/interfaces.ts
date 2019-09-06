@@ -83,6 +83,29 @@ export type CommonConfig = {
 
 // ====================
 
+// feature
+// https://stackoverflow.com/questions/54701874/variadic-generic-types-in-typescript
+export interface FeatureTypes {
+  QueryInfos: {
+    [s : string]: QueryInfo<Function>;
+  };
+  ActionInfos: {
+    [s : string]: ActionInfo<Function>;
+  };
+}
+
+export interface Feature<TypesType extends FeatureTypes = FeatureTypes> {
+  Types: TypesType;
+  getQueryInfos : () => TypesType['QueryInfos'];
+  getActionInfos : () => TypesType['ActionInfos'];
+  getBuildRequestConfigMiddleware : <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>
+  >() => BuildRequestConfigMiddleware<CommonConfigType, ModelMapType>;
+}
+
+// ====================
+
 export type ResourceModelActionTypes<ModelActions> = {
   [P in keyof ModelActions]: string;
 };
@@ -103,6 +126,7 @@ export type ResourceModel<
   queryBuilderName?: string;
   actionTypes?: { [s : string]: string; };
   actions?: { [s: string]: StartQueryActionCreatorWithProps<{}>; };
+  feature?: Feature;
 };
 
 export type ModelMap<

@@ -13,10 +13,8 @@ import {
   CommonConfig,
   ModelMap,
   BuildRequestConfigMiddleware,
-} from '../core/interfaces';
-import {
   Feature,
-} from './interfaces';
+} from '../core/interfaces';
 import {
   createEmptyResourceState,
 } from '../utils';
