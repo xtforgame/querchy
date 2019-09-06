@@ -20,6 +20,11 @@ import CrudT1 from 'library/features/CrudT1';
 import UpdateCacheT1 from 'library/features/UpdateCacheT1';
 import CollectionT1, { Types as CollectionT1Types } from 'library/features/CollectionT1';
 
+import {
+  MakeResourceModelType,
+  TypeHelperClass,
+} from 'library/type-helpers';
+
 type CrudUpdateCacheTypesT1 = FeatureGroupTypes<
   CrudT1,
   UpdateCacheT1
@@ -37,11 +42,6 @@ type CrudUpdateCacheTypesCollectionT1 = FeatureGroupTypes<
 //   UpdateCacheT1,
 //   CollectionT1
 // >;
-
-import {
-  MakeResourceModelType,
-  TypeHelperClass,
-} from 'library/type-helpers';
 
 export interface CommonConfigX1 extends CommonConfig {
   queryRunners: {

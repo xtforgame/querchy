@@ -42,6 +42,7 @@ export interface QcRequestAction extends QcBasicAction {
     [s: string]: any;
 }
 export declare type QcRequestConfigNormal = {
+    fromCache?: false;
     method: string;
     url: string;
     overwriteQueryId?: QueryId;
@@ -56,7 +57,7 @@ export declare type QcRequestConfigNormal = {
     body?: any;
 };
 export declare type QcRequestConfigFromCache = {
-    fromCache: boolean;
+    fromCache: true;
     responseFromCache: any;
     overwriteQueryId?: QueryId;
 };
