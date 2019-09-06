@@ -150,13 +150,17 @@ export default class AxiosRunner<
       requestConfig = (<BuildRequestConfigFunction<
         CommonConfigType,
         ModelMapType
-      >>queryBuilder.buildRequestConfig)({
-        action,
-        runnerType: this.type,
-        commonConfig,
-        models,
-        modelRootState,
-      });
+      >>queryBuilder.buildRequestConfig)(
+        {
+          requestConfig: undefined,
+          action,
+          runnerType: this.type,
+          commonConfig,
+          models,
+          modelRootState,
+        },
+        requestConfigArg => requestConfigArg || null,
+      );
     } catch (error) {
       return [createErrorAction(error)];
     }

@@ -23,6 +23,7 @@ const reduceMiddlewares = <
   let requestConfigFinal : QcRequestConfig | undefined;
   const makeNextFunction = (
     context : BuildRequestConfigContext<CommonConfigType, ModelMapType>,
+    next: (requestConfig?: QcRequestConfig) => QcRequestConfig,
     index : number,
   ) : ((requestConfigArg?: QcRequestConfig) => QcRequestConfig) => {
     if (index >= buildRequestConfigMiddlewares.length) {
@@ -32,7 +33,7 @@ const reduceMiddlewares = <
         if (requestConfigArg !== undefined) {
           requestConfigFinal = requestConfigArg;
         }
-        return requestConfigFinal || null;
+        return next(requestConfigFinal || null);
       };
     }
     return (
@@ -43,13 +44,14 @@ const reduceMiddlewares = <
       }
       return buildRequestConfigMiddlewares[index](
         { ...context, requestConfig: requestConfigFinal },
-        makeNextFunction(context, index + 1),
+        makeNextFunction(context, next, index + 1),
       );
     };
   };
   return (
-    context : BuildRequestConfigContext<CommonConfigType, ModelMapType>,
-  ) => makeNextFunction(context, 0)();
+    context,
+    next,
+  ) => makeNextFunction(context, next, 0)();
 };
 
 export default <

@@ -1,11 +1,23 @@
 import {
+  ResourceMetadata,
+  ResourceMerger,
+  ResourceState,
+} from '../../common/interfaces';
+import {
   ResourceModelQueryActionOptions,
   ActionInfo,
   QueryInfo,
   CommonConfig,
   ModelMap,
   BuildRequestConfigMiddleware,
+  QcBasicAction,
 } from '../../core/interfaces';
+import {
+  Feature,
+} from '../../feature/interfaces';
+import {
+  createEmptyResourceState,
+} from '../../utils';
 
 export type RawActionCreatorUpdateCacheT1 = (
   cacheChange: any, options?: ResourceModelQueryActionOptions,
@@ -30,7 +42,7 @@ export type Types = {
   QueryInfos: QueryInfosT1;
 };
 
-export default class UpdateCacheT1 {
+export default class UpdateCacheT1 implements Feature<Types> {
   Types!: Types;
 
   getQueryInfos : () => QueryInfosT1 = () => ({

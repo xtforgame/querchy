@@ -12,11 +12,32 @@ import {
   ExtraActionInfo,
 
   BaseSelector,
+  FeatureGroup,
+  FeatureGroupTypes,
 } from 'library/index';
 
-import { Types as CrudT1Types } from 'library/features/CrudT1';
-import { Types as UpdateCacheT1Types } from 'library/features/UpdateCacheT1';
-import { Types as CollectionT1Types } from 'library/features/CollectionT1';
+
+import CrudT1 from 'library/features/CrudT1';
+import UpdateCacheT1 from 'library/features/UpdateCacheT1';
+import CollectionT1, { Types as CollectionT1Types } from 'library/features/CollectionT1';
+
+type CrudUpdateCacheTypesT1 = FeatureGroupTypes<
+  CrudT1,
+  UpdateCacheT1
+>;
+
+type CrudUpdateCacheTypesCollectionT1 = FeatureGroupTypes<
+  FeatureGroup<
+    CrudUpdateCacheTypesT1
+  >,
+  CollectionT1
+>;
+// // or use this way
+// type CrudUpdateCacheTypesCollectionT1 = FeatureGroupTypes<
+//   CrudT1,
+//   UpdateCacheT1,
+//   CollectionT1
+// >;
 
 import {
   MakeResourceModelType,
@@ -40,19 +61,13 @@ export type RawActionCreatorUpdateCacheX1 = (
 export type ModelMapX1 = {
   httpBinRes: MakeResourceModelType<
     CommonConfigX1,
-    CrudT1Types['QueryInfos']
-      & UpdateCacheT1Types['QueryInfos'],
-    CrudT1Types['ActionInfos']
-      & UpdateCacheT1Types['ActionInfos']
+    CrudUpdateCacheTypesT1['QueryInfos'],
+    CrudUpdateCacheTypesT1['ActionInfos']
   >;
   httpBinRes2: MakeResourceModelType<
     CommonConfigX1,
-    CrudT1Types['QueryInfos']
-      & UpdateCacheT1Types['QueryInfos']
-      & CollectionT1Types['QueryInfos'],
-    CrudT1Types['ActionInfos']
-      & UpdateCacheT1Types['ActionInfos']
-      & CollectionT1Types['ActionInfos']
+    CrudUpdateCacheTypesCollectionT1['QueryInfos'],
+    CrudUpdateCacheTypesCollectionT1['ActionInfos']
       & {
         updateCache2: ActionInfo<RawActionCreatorUpdateCacheX1>;
       }

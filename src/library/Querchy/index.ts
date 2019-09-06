@@ -38,7 +38,7 @@ import {
   createExtraPromiseModelActionCreators
 } from './actionCreatorHelpers';
 
-import toBuildRequestConfigFunction from './toBuildRequestConfigFunction';
+import toBuildRequestConfigFunction from '../utils/toBuildRequestConfigFunction';
 import namespaces, { defaultNamespaceName } from './namespaces';
 
 export * from './namespaces';

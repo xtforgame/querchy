@@ -13,6 +13,9 @@ import {
   BuildRequestConfigMiddleware,
 } from '../../core/interfaces';
 import {
+  Feature,
+} from '../../feature/interfaces';
+import {
   createEmptyResourceState,
   mergeResourceState,
 } from '../../utils';
@@ -88,7 +91,7 @@ export type GetBuildRequestConfigMiddleware<
   ModelMapType
 >;
 
-export default class CrudT1 {
+export default class CrudT1 implements Feature<Types> {
   static crudToRestMap(crudName) {
     return crudToRestMap[crudName];
   }

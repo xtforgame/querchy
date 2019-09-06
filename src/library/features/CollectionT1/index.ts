@@ -15,6 +15,9 @@ import {
   BuildRequestConfigMiddleware,
 } from '../../core/interfaces';
 import {
+  Feature,
+} from '../../feature/interfaces';
+import {
   createEmptyResourceState,
   mergeResourceState,
 } from '../../utils';
@@ -61,7 +64,7 @@ export type ResourceChange = {
 
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
-export default class CollectionT1 {
+export default class CollectionT1 implements Feature<Types> {
   static crudToRestMap(crudName) {
     return crudToRestMap[crudName];
   }
