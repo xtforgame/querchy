@@ -14,14 +14,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var reduceMiddlewares = function reduceMiddlewares(buildRequestConfigMiddlewares) {
   var requestConfigFinal;
 
-  var makeNextFunction = function makeNextFunction(context, index) {
+  var makeNextFunction = function makeNextFunction(context, next, index) {
     if (index >= buildRequestConfigMiddlewares.length) {
       return function (requestConfigArg) {
         if (requestConfigArg !== undefined) {
           requestConfigFinal = requestConfigArg;
         }
 
-        return requestConfigFinal || null;
+        return next(requestConfigFinal || null);
       };
     }
 
@@ -32,12 +32,12 @@ var reduceMiddlewares = function reduceMiddlewares(buildRequestConfigMiddlewares
 
       return buildRequestConfigMiddlewares[index](_objectSpread({}, context, {
         requestConfig: requestConfigFinal
-      }), makeNextFunction(context, index + 1));
+      }), makeNextFunction(context, next, index + 1));
     };
   };
 
-  return function (context) {
-    return makeNextFunction(context, 0)();
+  return function (context, next) {
+    return makeNextFunction(context, next, 0)();
   };
 };
 

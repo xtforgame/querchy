@@ -3,7 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createExtraActionCreators = exports.createExtraActionTypes = exports.createModelActionCreators = exports.createModelActionTypes = exports.wrapQueryActionCreator = exports.wrapActionCreator = exports.createActionTypes = void 0;
+exports.createExtraPromiseModelActionCreators = exports.createExtraActionCreators = exports.createExtraActionTypes = exports.createPromiseModelActionCreators = exports.createModelActionCreators = exports.createModelActionTypes = exports.wrapQueryActionCreator = exports.wrapActionCreator = exports.createActionTypes = void 0;
+
+var _commonFunctions = require("../common/common-functions");
+
+var _createWatcherMiddleware = require("../utils/createWatcherMiddleware");
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { keys.push.apply(keys, Object.getOwnPropertySymbols(object)); } if (enumerableOnly) keys = keys.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); return keys; }
 
@@ -21,29 +25,70 @@ var createActionTypes = function createActionTypes(actionTypePrefix2, commonConf
 
 exports.createActionTypes = createActionTypes;
 
+var createBasicAction = function createBasicAction(type, actionCreator, result) {
+  var props = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var transferables = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+
+  var requestAction = _objectSpread({}, result, {
+    type: type,
+    actionCreator: actionCreator
+  }, props, {
+    transferables: _objectSpread({}, result.options && result.options.transferables)
+  }, result.options && result.options.actionProps);
+
+  if (requestAction.options) {
+    _createWatcherMiddleware.symbolList.forEach(function (s) {
+      if (!requestAction[s] && requestAction.options[s]) {
+        requestAction[s] = requestAction.options[s];
+      }
+    });
+  }
+
+  requestAction.transferables = _objectSpread({}, result.transferables, {
+    requestAction: requestAction
+  }, transferables);
+  return requestAction;
+};
+
+var createQueryAction = function createQueryAction(type, actionCreator, result) {
+  var extraProps = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+  var extraTransferables = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+  var requestTimestamp = new Date().getTime();
+  var basicResult = createBasicAction(type, actionCreator, result, _objectSpread({
+    requestTimestamp: requestTimestamp
+  }, extraProps), _objectSpread({
+    requestTimestamp: requestTimestamp
+  }, extraTransferables));
+  var queryId = basicResult.options && basicResult.options.queryId;
+
+  if (queryId) {
+    basicResult.queryId = queryId;
+    basicResult.transferables.queryId = queryId;
+  }
+
+  return basicResult;
+};
+
 var wrapActionCreator = function wrapActionCreator(modelName, actionTypes, actionName, actionInfo) {
-  var start = actionInfo.actionCreator;
+  var rawFuncWrapper = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : function (f) {
+    return f;
+  };
+  var finalFuncWrapper = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : function (f) {
+    return f;
+  };
+  var start = rawFuncWrapper(actionInfo.actionCreator);
   var actionType = actionTypes[actionName];
   actionInfo.name = actionName;
   actionInfo.actionType = actionType;
-  var startFunc = Object.assign(function () {
-    var requestTimestamp = new Date().getTime();
-
-    var requestAction = _objectSpread({}, start.apply(void 0, arguments), {
-      type: actionType,
-      actionCreator: startFunc,
+  var startFunc = Object.assign(finalFuncWrapper(function () {
+    return createBasicAction(actionType, startFunc, start.apply(void 0, arguments), {
       modelName: modelName,
       actionTypes: actionTypes,
-      actionName: actionName,
-      transferables: {}
+      actionName: actionName
+    }, {
+      requestTimestamp: new Date().getTime()
     });
-
-    requestAction.transferables = {
-      requestTimestamp: requestTimestamp,
-      requestAction: requestAction
-    };
-    return requestAction;
-  }, {
+  }), {
     actionType: actionType
   });
   return startFunc;
@@ -52,10 +97,16 @@ var wrapActionCreator = function wrapActionCreator(modelName, actionTypes, actio
 exports.wrapActionCreator = wrapActionCreator;
 
 var wrapQueryActionCreator = function wrapQueryActionCreator(modelName, actionTypes, crudType, actionInfo) {
-  var QueryActionCreatorProps = {
+  var rawFuncWrapper = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : function (f) {
+    return f;
+  };
+  var finalFuncWrapper = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : function (f) {
+    return f;
+  };
+  var queryActionCreatorProps = {
     creatorRefs: {}
   };
-  var start = actionInfo.actionCreator;
+  var start = rawFuncWrapper(actionInfo.actionCreator);
   var actionType = actionTypes[crudType];
   actionInfo.name = crudType;
   actionInfo.actionType = actionType;
@@ -66,89 +117,53 @@ var wrapQueryActionCreator = function wrapQueryActionCreator(modelName, actionTy
     cancel: "".concat(actionType, "_CANCEL")
   };
   var querySubActionTypes = actionInfo.querySubActionTypes;
-  var startFunc = Object.assign(function () {
-    var requestTimestamp = new Date().getTime();
-    var result = start.apply(void 0, arguments);
-
-    var requestAction = _objectSpread({}, result, {
-      type: actionType,
-      actionCreator: startFunc,
+  var startFunc = Object.assign(finalFuncWrapper(function () {
+    return createQueryAction(actionType, startFunc, start.apply(void 0, arguments), {
       modelName: modelName,
       actionTypes: actionTypes,
       crudType: crudType,
-      crudSubType: 'start',
-      requestTimestamp: requestTimestamp,
-      transferables: {},
-      options: result.options
+      crudSubType: 'start'
     });
-
-    requestAction.transferables = _objectSpread({}, result.transferables, {
-      requestTimestamp: requestTimestamp,
-      requestAction: requestAction
-    });
-    var queryId = result.options && result.options.queryId;
-
-    if (queryId) {
-      requestAction.queryId = queryId;
-      requestAction.transferables.queryId = queryId;
-    }
-
-    return requestAction;
-  }, QueryActionCreatorProps, {
+  }), queryActionCreatorProps, {
     actionType: actionType
   });
 
   var getQueryBuiltinProps = function getQueryBuiltinProps(crudSubType, options) {
     var transferables = options && options.transferables || {};
-    transferables = _objectSpread({}, transferables.requestAction && transferables.requestAction.transferables, {}, transferables);
-
-    if (options.queryId) {
-      transferables.queryId = options.queryId;
-    }
-
-    var result = {
-      type: querySubActionTypes[crudSubType],
-      actionCreator: QueryActionCreatorProps.creatorRefs[crudSubType],
+    return createQueryAction(querySubActionTypes[crudSubType], queryActionCreatorProps.creatorRefs[crudSubType], {
+      options: options
+    }, {
       modelName: modelName,
       actionTypes: actionTypes,
       crudType: crudType,
-      crudSubType: crudSubType,
-      requestTimestamp: transferables.requestTimestamp,
-      transferables: transferables,
-      options: options
-    };
-
-    if (transferables.queryId) {
-      result.queryId = transferables.queryId;
-    }
-
-    return result;
+      crudSubType: crudSubType
+    }, _objectSpread({}, transferables.requestAction && transferables.requestAction.transferables, {}, transferables));
   };
 
-  QueryActionCreatorProps.creatorRefs.start = startFunc;
-  QueryActionCreatorProps.creatorRefs.respond = Object.assign(function (response, responseType, options) {
+  queryActionCreatorProps.creatorRefs.start = startFunc;
+  queryActionCreatorProps.creatorRefs.respond = Object.assign(function (response, responseType, options) {
     return _objectSpread({
       response: response,
       responseType: responseType,
       responseTimestamp: new Date().getTime()
     }, getQueryBuiltinProps('respond', options));
-  }, QueryActionCreatorProps, {
+  }, queryActionCreatorProps, {
     actionType: querySubActionTypes.respond
   });
-  QueryActionCreatorProps.creatorRefs.respondError = Object.assign(function (error, options) {
+  queryActionCreatorProps.creatorRefs.respondError = Object.assign(function (error, options) {
     return _objectSpread({
       error: error,
       errorTimestamp: new Date().getTime()
     }, getQueryBuiltinProps('respondError', options));
-  }, QueryActionCreatorProps, {
+  }, queryActionCreatorProps, {
     actionType: querySubActionTypes.respondError
   });
-  QueryActionCreatorProps.creatorRefs.cancel = Object.assign(function (reason, options) {
+  queryActionCreatorProps.creatorRefs.cancel = Object.assign(function (reason, options) {
     return _objectSpread({
       reason: reason,
       cancelTimestamp: new Date().getTime()
     }, getQueryBuiltinProps('cancel', options));
-  }, QueryActionCreatorProps, {
+  }, queryActionCreatorProps, {
     actionType: querySubActionTypes.cancel
   });
   return startFunc;
@@ -177,6 +192,117 @@ var createModelActionCreators = function createModelActionCreators(commonConfigT
 
 exports.createModelActionCreators = createModelActionCreators;
 
+var getRawFuncWrapperForAction = function getRawFuncWrapperForAction() {
+  return function (f) {
+    return function () {
+      var result = f.apply(void 0, arguments);
+      var pp = new _commonFunctions.PreservePromise();
+      var symbol = Symbol('req_action');
+      result._pp = pp;
+      result.options = _objectSpread({}, result.options, {
+        actionProps: _objectSpread({}, result.options && result.options.actionProps, {
+          _symbol: symbol
+        })
+      });
+
+      var getCheckFunc = function getCheckFunc(crudSubType) {
+        return function (action) {
+          return action.crudSubType === crudSubType && action.transferables && action.transferables.requestAction && action.transferables.requestAction._symbol === symbol;
+        };
+      };
+
+      result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] = result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] || getCheckFunc('respond');
+
+      var originSuccess = result.options.actionProps[_createWatcherMiddleware.SUCCESS_CALLBACK] || function () {};
+
+      result.options.actionProps[_createWatcherMiddleware.SUCCESS_CALLBACK] = function (a) {
+        originSuccess(a);
+        pp.resolve(a);
+      };
+
+      result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] = result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] || getCheckFunc('respondError');
+
+      var originError = result.options.actionProps[_createWatcherMiddleware.ERROR_CALLBACK] || function () {};
+
+      result.options.actionProps[_createWatcherMiddleware.ERROR_CALLBACK] = function (a) {
+        originError(a);
+        pp.reject(a);
+      };
+
+      return result;
+    };
+  };
+};
+
+var getRawFuncWrapperForQueryAction = function getRawFuncWrapperForQueryAction() {
+  return function (f) {
+    return function () {
+      var result = f.apply(void 0, arguments);
+      var pp = new _commonFunctions.PreservePromise();
+      var symbol = Symbol('req_action');
+      result._pp = pp;
+      result.options = _objectSpread({}, result.options, {
+        actionProps: _objectSpread({}, result.options && result.options.actionProps, {
+          _symbol: symbol
+        })
+      });
+
+      var getCheckFunc = function getCheckFunc(crudSubType) {
+        return function (action) {
+          return action.crudSubType === crudSubType && action.transferables && action.transferables.requestAction && action.transferables.requestAction._symbol === symbol;
+        };
+      };
+
+      result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] = result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] || getCheckFunc('respond');
+
+      var originSuccess = result.options.actionProps[_createWatcherMiddleware.SUCCESS_CALLBACK] || function () {};
+
+      result.options.actionProps[_createWatcherMiddleware.SUCCESS_CALLBACK] = function (a) {
+        originSuccess(a);
+        pp.resolve(a);
+      };
+
+      result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] = result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] || getCheckFunc('respondError');
+
+      var originError = result.options.actionProps[_createWatcherMiddleware.ERROR_CALLBACK] || function () {};
+
+      result.options.actionProps[_createWatcherMiddleware.ERROR_CALLBACK] = function (a) {
+        originError(a);
+        pp.reject(a);
+      };
+
+      return result;
+    };
+  };
+};
+
+var getFinalFuncWrapper = function getFinalFuncWrapper(dispatch) {
+  return function (f) {
+    return function () {
+      var result = f.apply(void 0, arguments);
+      var pp = result._pp;
+      delete result._pp;
+      dispatch(result);
+      return pp.promise;
+    };
+  };
+};
+
+var createPromiseModelActionCreators = function createPromiseModelActionCreators(dispatch, commonConfigType, modelName, model) {
+  var actionTypes = model.actionTypes;
+  var queryInfos = model.queryInfos;
+  var crudNames = model.crudNames;
+  var actionInfos = model.actionInfos;
+  var actionNames = model.actionNames;
+  return _objectSpread({}, crudNames.reduce(function (actionCreators, crudType) {
+    return _objectSpread({}, actionCreators, _defineProperty({}, crudType, wrapQueryActionCreator(modelName, actionTypes, crudType, queryInfos[crudType], getRawFuncWrapperForQueryAction(), getFinalFuncWrapper(dispatch))));
+  }, {}), {}, actionNames.reduce(function (actionCreators, actionName) {
+    return _objectSpread({}, actionCreators, _defineProperty({}, actionName, wrapActionCreator(modelName, actionTypes, actionName, actionInfos[actionName], getRawFuncWrapperForAction(), getFinalFuncWrapper(dispatch))));
+  }, {}));
+};
+
+exports.createPromiseModelActionCreators = createPromiseModelActionCreators;
+
 var createExtraActionTypes = function createExtraActionTypes(commonConfig, extraActionCreators) {
   var extraSetName = 'extra/';
   return _objectSpread({}, createActionTypes(extraSetName, commonConfig, Object.keys(extraActionCreators.queryInfos)), {}, createActionTypes(extraSetName, commonConfig, Object.keys(extraActionCreators.actionInfos)));
@@ -198,3 +324,18 @@ var createExtraActionCreators = function createExtraActionCreators(commonConfigT
 };
 
 exports.createExtraActionCreators = createExtraActionCreators;
+
+var createExtraPromiseModelActionCreators = function createExtraPromiseModelActionCreators(dispatch, commonConfigType, extraActionCreators) {
+  var actionTypes = extraActionCreators.actionTypes;
+  var queryInfos = extraActionCreators.queryInfos;
+  var crudNames = Object.keys(queryInfos);
+  var actionInfos = extraActionCreators.actionInfos;
+  var actionNames = Object.keys(actionInfos);
+  return _objectSpread({}, crudNames.reduce(function (actionCreators, crudType) {
+    return _objectSpread({}, actionCreators, _defineProperty({}, crudType, wrapQueryActionCreator('', actionTypes, crudType, queryInfos[crudType], getRawFuncWrapperForQueryAction(), getFinalFuncWrapper(dispatch))));
+  }, {}), {}, actionNames.reduce(function (actionCreators, actionName) {
+    return _objectSpread({}, actionCreators, _defineProperty({}, actionName, wrapActionCreator('', actionTypes, actionName, actionInfos[actionName], getRawFuncWrapperForAction(), getFinalFuncWrapper(dispatch))));
+  }, {}));
+};
+
+exports.createExtraPromiseModelActionCreators = createExtraPromiseModelActionCreators;

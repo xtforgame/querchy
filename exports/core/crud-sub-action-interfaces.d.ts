@@ -1,5 +1,6 @@
 import { ArgumentTypes, ReturnType } from '../utils/helper-functions';
 import { QcTimestamp, QcAction, QueryId } from '../common/interfaces';
+import { SUCCESS_ACTION, ERROR_ACTION, SUCCESS_CALLBACK, ERROR_CALLBACK, Tester, CallbackFunction } from '../utils/createWatcherMiddleware/index';
 export declare type QcTransferables = {
     queryId?: QueryId;
     requestTimestamp: QcTimestamp;
@@ -13,6 +14,13 @@ export declare type ResourceModelQueryActionOptions = {
         [s: string]: string;
     };
     transferables?: QcTransferables;
+    actionProps?: {
+        [s: string]: any;
+    };
+    [SUCCESS_ACTION]?: Tester<QcAction>;
+    [ERROR_ACTION]?: Tester<QcAction>;
+    [SUCCESS_CALLBACK]?: CallbackFunction<QcAction>;
+    [ERROR_CALLBACK]?: CallbackFunction<QcAction>;
 };
 export declare type CrudType = string;
 export declare type CrudSubType = 'start' | 'respond' | 'respondError' | 'cancel';
@@ -22,6 +30,10 @@ export interface QcBasicAction extends QcAction {
     crudType: CrudType;
     crudSubType: CrudSubType;
     options?: any;
+    [SUCCESS_ACTION]?: Tester<QcAction>;
+    [ERROR_ACTION]?: Tester<QcAction>;
+    [SUCCESS_CALLBACK]?: CallbackFunction<QcAction>;
+    [ERROR_CALLBACK]?: CallbackFunction<QcAction>;
     [s: string]: any;
 }
 export interface QcRequestAction extends QcBasicAction {

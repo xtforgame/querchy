@@ -1,5 +1,5 @@
 import { ResourceMerger, ResourceState } from '../../common/interfaces';
-import { QcBasicAction, ResourceModelQueryActionOptions, QueryInfo, CommonConfig, ModelMap, BuildRequestConfigMiddleware } from '../../core/interfaces';
+import { QcBasicAction, ResourceModelQueryActionOptions, ResourceModel, QueryInfo, CommonConfig, ModelMap, BuildRequestConfigMiddleware, Feature, FeatureForModel } from '../../core/interfaces';
 export declare const crudToRestMap: {
     getCollection: string;
 };
@@ -28,14 +28,19 @@ export declare type ResourceChange = {
     delete?: string[];
 };
 export declare type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
-export default class CollectionT1 {
-    static crudToRestMap(crudName: any): any;
-    parseResource: ParseResponse;
+declare class CollectionForModelT1 implements FeatureForModel<Types> {
+    resourceModel: ResourceModel;
+    parseResponse: ParseResponse;
     onError: (error: Error, state: ResourceState, action: QcBasicAction) => any;
-    constructor(parseResource?: ParseResponse);
+    constructor(resourceModel: ResourceModel);
     Types: Types;
     resourceMerger: ResourceMerger<QcBasicAction>;
     getQueryInfos: () => QueryInfosT1;
     getActionInfos: () => ActionInfosT1;
+}
+export default class CollectionT1 implements Feature<Types> {
+    Types: Types;
+    getFeatureForModel: (resourceModel: ResourceModel<CommonConfig>) => CollectionForModelT1;
     getBuildRequestConfigMiddleware: <CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>>() => BuildRequestConfigMiddleware<CommonConfigType, ModelMapType>;
 }
+export {};

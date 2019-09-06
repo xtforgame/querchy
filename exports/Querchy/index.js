@@ -3,6 +3,22 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var _exportNames = {
+  namespaces: true,
+  createQuerchyMiddleware: true
+};
+Object.defineProperty(exports, "namespaces", {
+  enumerable: true,
+  get: function get() {
+    return _namespaces["default"];
+  }
+});
+Object.defineProperty(exports, "createQuerchyMiddleware", {
+  enumerable: true,
+  get: function get() {
+    return _createQuerchyMiddleware["default"];
+  }
+});
 exports["default"] = void 0;
 
 var _pureEpic = require("pure-epic");
@@ -15,7 +31,24 @@ var _interfaces = require("../core/interfaces");
 
 var _actionCreatorHelpers = require("./actionCreatorHelpers");
 
-var _toBuildRequestConfigFunction = _interopRequireDefault(require("./toBuildRequestConfigFunction"));
+var _toBuildRequestConfigFunction = _interopRequireDefault(require("../utils/toBuildRequestConfigFunction"));
+
+var _namespaces = _interopRequireWildcard(require("./namespaces"));
+
+Object.keys(_namespaces).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _namespaces[key];
+    }
+  });
+});
+
+var _createQuerchyMiddleware = _interopRequireDefault(require("./createQuerchyMiddleware"));
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj["default"] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -41,6 +74,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 var Querchy = function () {
   function Querchy(querchyDefinition, deps) {
+    var _this = this;
+
     _classCallCheck(this, Querchy);
 
     _defineProperty(this, "querchyDefinition", void 0);
@@ -49,7 +84,24 @@ var Querchy = function () {
 
     _defineProperty(this, "actionCreatorSets", void 0);
 
+    _defineProperty(this, "promiseActionCreatorSets", void 0);
+
+    _defineProperty(this, "getStore", function () {
+      return _namespaces["default"][_this.querchyDefinition.namespace].store;
+    });
+
+    _defineProperty(this, "dispatch", function (action) {
+      var store = _this.getStore();
+
+      if (!store) {
+        throw new Error("store not found for namespace: ".concat(_this.querchyDefinition.namespace, ", did you forget to attach 'createQuerchyMiddleware' to redux ?"));
+      }
+
+      return _this.getStore().dispatch(action);
+    });
+
     this.actionCreatorSets = {};
+    this.promiseActionCreatorSets = {};
     this.querchyDefinition = querchyDefinition;
     this.normalizeQuerchyDefinition();
     this.deps = _objectSpread({}, deps, {
@@ -60,8 +112,9 @@ var Querchy = function () {
   _createClass(Querchy, [{
     key: "normalizeQuerchyDefinition",
     value: function normalizeQuerchyDefinition() {
-      var _this = this;
+      var _this2 = this;
 
+      this.querchyDefinition.namespace = this.querchyDefinition.namespace || _namespaces.defaultNamespaceName;
       var _this$querchyDefiniti = this.querchyDefinition,
           queryBuilders = _this$querchyDefiniti.queryBuilders,
           commonConfig = _this$querchyDefiniti.commonConfig,
@@ -104,6 +157,12 @@ var Querchy = function () {
         queryBuilder.queryRunner = runner;
       });
       Object.keys(models).forEach(function (key) {
+        if (models[key].feature) {
+          var featureForModel = models[key].feature.getFeatureForModel(models[key]);
+          models[key].queryInfos = _objectSpread({}, models[key].queryInfos, {}, featureForModel.getQueryInfos());
+          models[key].actionInfos = _objectSpread({}, models[key].actionInfos, {}, featureForModel.getActionInfos());
+        }
+
         models[key].crudNames = [];
         Object.keys(models[key].queryInfos).forEach(function (key2) {
           if (!models[key].crudNames.includes(key2)) {
@@ -116,10 +175,12 @@ var Querchy = function () {
             models[key].actionNames.push(key2);
           }
         });
+        models[key].buildUrl = models[key].buildUrl || commonConfig.defaultBuildUrl.bind(commonConfig);
         models[key].actionTypes = (0, _actionCreatorHelpers.createModelActionTypes)(key, commonConfig, models[key]);
         models[key].actions = (0, _actionCreatorHelpers.createModelActionCreators)(commonConfig, key, models[key]);
-        _this.actionCreatorSets[key] = models[key].actions;
-        models[key].buildUrl = models[key].buildUrl || commonConfig.defaultBuildUrl.bind(commonConfig);
+        _this2.actionCreatorSets[key] = models[key].actions;
+        var promiseActions = (0, _actionCreatorHelpers.createPromiseModelActionCreators)(_this2.dispatch, commonConfig, key, models[key]);
+        _this2.promiseActionCreatorSets[key] = promiseActions;
         var model = models[key];
 
         if (model.queryBuilderName) {
@@ -147,6 +208,15 @@ var Querchy = function () {
 
         return extra;
       }, {});
+      var promiseActions = (0, _actionCreatorHelpers.createExtraPromiseModelActionCreators)(this.dispatch, commonConfig, extraActionCreators);
+      this.promiseActionCreatorSets.extra = Object.keys(promiseActions).reduce(function (extra, key) {
+        if (typeof key === 'string') {
+          var type = commonConfig.getActionTypeName(actionTypePrefix, "extra/".concat(key));
+          return _objectSpread({}, extra, _defineProperty({}, key, promiseActions[key]));
+        }
+
+        return extra;
+      }, {});
       Object.values(extraActionCreators.queryInfos).forEach(function (actionInfo) {
         if (actionInfo.queryBuilderName) {
           if (!queryBuilders[actionInfo.queryBuilderName]) {
@@ -160,7 +230,7 @@ var Querchy = function () {
   }, {
     key: "getHandleQueryEpicFromQueryBuilderByActionType",
     value: function getHandleQueryEpicFromQueryBuilderByActionType(actionType, queryBuilder) {
-      var _this2 = this;
+      var _this3 = this;
 
       var runner = queryBuilder.queryRunner;
       return function (action$, state$) {
@@ -169,9 +239,9 @@ var Querchy = function () {
         }
 
         return action$.ofType(actionType).pipe((0, _operators.mergeMap)(function (action) {
-          var modelRootState = _this2.deps.querchyDef.baseSelector(state$.value);
+          var modelRootState = _this3.deps.querchyDef.baseSelector(state$.value);
 
-          return runner.handleQuery(action, queryBuilder, _this2.deps, {
+          return runner.handleQuery(action, queryBuilder, _this3.deps, {
             action$: action$,
             state$: state$,
             args: args,
@@ -183,7 +253,7 @@ var Querchy = function () {
   }, {
     key: "getEpicForModels",
     value: function getEpicForModels() {
-      var _this3 = this;
+      var _this4 = this;
 
       var _this$querchyDefiniti2 = this.querchyDefinition,
           queryBuilders = _this$querchyDefiniti2.queryBuilders,
@@ -191,20 +261,20 @@ var Querchy = function () {
       return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(models).map(function (model) {
         var queryBuilder = queryBuilders[model.queryBuilderName];
         return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(model.actionTypes).map(function (actionType) {
-          return _this3.getHandleQueryEpicFromQueryBuilderByActionType(actionType, queryBuilder);
+          return _this4.getHandleQueryEpicFromQueryBuilderByActionType(actionType, queryBuilder);
         })));
       })));
     }
   }, {
     key: "getEpicForExtraActions",
     value: function getEpicForExtraActions() {
-      var _this4 = this;
+      var _this5 = this;
 
       var queryBuilders = this.querchyDefinition.queryBuilders;
       var extraActionCreators = this.querchyDefinition.extraActionCreators;
       return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(extraActionCreators.queryInfos).map(function (actionInfo) {
         var queryBuilder = queryBuilders[actionInfo.queryBuilderName];
-        return _this4.getHandleQueryEpicFromQueryBuilderByActionType(actionInfo.actionType, queryBuilder);
+        return _this5.getHandleQueryEpicFromQueryBuilderByActionType(actionInfo.actionType, queryBuilder);
       })));
     }
   }, {

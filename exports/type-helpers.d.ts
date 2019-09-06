@@ -5,20 +5,40 @@ export { default as Querchy } from './Querchy';
 export { default as Cacher } from './Cacher';
 import AxiosRunner, { AxiosRunnerConstructor } from './query-runners/AxiosRunner';
 import { ResourceModelActions, QcState } from './common/interfaces';
-import { CommonConfig, ResourceModel, ModelMap, INIT_FUNC, ActionCreatorsInitFunction, ResourceModelActionTypes, ResourceModelQueryActions, QueryInfo, ActionInfo, ExtraQueryInfo, ExtraActionInfo, QueryBuilderMap, ExtraActionCreators, QuerchyDefinition } from './core/interfaces';
+import { CommonConfig, ResourceModel, ModelMap, INIT_FUNC, ActionCreatorsInitFunction, ResourceModelActionTypes, ResourceModelQueryActions, QueryInfo, ActionInfo, ExtraQueryInfo, ExtraActionInfo, QueryBuilderMap, ExtraActionCreators, QuerchyDefinition, Feature, FeatureTypes } from './core/interfaces';
 import { ExtraSelectorInfosMapForModelMap } from './Cacher/interfaces';
 import { ConstructorWithFunction } from './utils/helper-functions';
 export { QuerchyTypeGroup, CacherTypeGroup, };
 export declare type FullTypeGroup<CommonConfigType extends CommonConfig = CommonConfig, ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType> = QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType> = ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>, QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType> = QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>, ExtraDependenciesType = any, StateType extends State = QcState, ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<CommonConfigType, ModelMapType, StateType> = ExtraSelectorInfosMapForModelMap<CommonConfigType, ModelMapType, StateType>> = CacherTypeGroup<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType, StateType, ExtraSelectorInfosForModelType>;
-export declare type MakeResourceModelType<CommonConfigType extends CommonConfig, QueryInfosType extends {
+export declare type QueryInfosTypeWithFeature<QueryInfosType extends {
+    [s: string]: QueryInfo<Function>;
+}, FeatureTypesType extends FeatureTypes> = QueryInfosType & Partial<FeatureTypesType['QueryInfos']>;
+export declare type ActionInfosTypeWithFeature<ActionInfosType extends {
+    [s: string]: ActionInfo<Function>;
+}, FeatureTypesType extends FeatureTypes> = ActionInfosType & Partial<FeatureTypesType['ActionInfos']>;
+export declare type MakeResourceModelTypeTypes<QueryInfosType extends {
     [s: string]: QueryInfo<Function>;
 }, ActionInfosType extends {
     [s: string]: ActionInfo<Function>;
-}> = ResourceModel<CommonConfigType> & {
-    queryInfos: QueryInfosType;
-    actionInfos: ActionInfosType;
-    actionTypes?: ResourceModelActionTypes<ResourceModelQueryActions<Required<QueryInfosType>>> & ResourceModelActionTypes<ResourceModelActions<Required<ActionInfosType>>>;
-    actions?: ResourceModelQueryActions<Required<QueryInfosType>> & ResourceModelActions<Required<ActionInfosType>>;
+}, FeatureTypesType extends FeatureTypes> = {
+    QueryInfosType: QueryInfosTypeWithFeature<QueryInfosType, FeatureTypesType>;
+    ActionInfosType: ActionInfosTypeWithFeature<ActionInfosType, FeatureTypesType>;
+};
+export declare type MakeResourceModelType<CommonConfigType extends CommonConfig, FeatureTypesType extends FeatureTypes = FeatureTypes, QueryInfosType extends {
+    [s: string]: QueryInfo<Function>;
+} = {
+    [s: string]: QueryInfo<Function>;
+}, ActionInfosType extends {
+    [s: string]: ActionInfo<Function>;
+} = {
+    [s: string]: ActionInfo<Function>;
+}, TypesType extends MakeResourceModelTypeTypes<QueryInfosType, ActionInfosType, FeatureTypesType> = MakeResourceModelTypeTypes<QueryInfosType, ActionInfosType, FeatureTypesType>> = ResourceModel<CommonConfigType> & {
+    queryInfos: TypesType['QueryInfosType'];
+    actionInfos: TypesType['ActionInfosType'];
+    actionTypes?: ResourceModelActionTypes<ResourceModelQueryActions<Required<TypesType['QueryInfosType']>>> & ResourceModelActionTypes<ResourceModelActions<Required<TypesType['ActionInfosType']>>>;
+    actions?: ResourceModelQueryActions<Required<TypesType['QueryInfosType']>> & ResourceModelActions<Required<TypesType['ActionInfosType']>>;
+    feature?: Feature<FeatureTypesType>;
+    featureDeps?: any;
 };
 export declare type MakeExtraActionCreatorsType<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfig>, ExtraQueryInfosType extends {
     [s: string]: ExtraQueryInfo<ModelMapType, Function>;

@@ -76,11 +76,14 @@ var AxiosRunner = function AxiosRunner(a) {
 
     try {
       requestConfig = queryBuilder.buildRequestConfig({
+        requestConfig: undefined,
         action: action,
         runnerType: _this.type,
         commonConfig: commonConfig,
         models: models,
         modelRootState: modelRootState
+      }, function (requestConfigArg) {
+        return requestConfigArg || null;
       });
     } catch (error) {
       return [createErrorAction(error)];
