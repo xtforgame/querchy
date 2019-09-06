@@ -331,7 +331,7 @@ export default class Cacher<
       any, ResourceStateResourceMap, ResourceStateMetadataMap
     >(
       this.selectorCreatorSet[key].selectResourceMap(),
-      s => s.metadata
+      s => s.metadata,
     );
     this.selectorCreatorSet[key].selectResourceMapValues = () => createSelector<
       any, ResourceStateResourceMap, ResourceStateValueMap
@@ -350,7 +350,7 @@ export default class Cacher<
       any, ResourceStateResourceMap, ResourceStateMetadataMap
     >(
       this.selectorCreatorSet[key].selectQueryMap(),
-      s => s.metadata
+      s => s.metadata,
     );
     this.selectorCreatorSet[key].selectQueryMapValues = () => createSelector<
       any, ResourceStateResourceMap, ResourceStateValueMap

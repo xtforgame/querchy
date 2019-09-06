@@ -42,7 +42,9 @@ export const createActionTypes = <
   return names.reduce(
     (actionTypes, actionName) => ({
       ...actionTypes,
-      [actionName]: commonConfig.getActionTypeName!(actionTypePrefix, `${actionTypePrefix2}${actionName}`),
+      [actionName]: commonConfig.getActionTypeName!(
+        actionTypePrefix, `${actionTypePrefix2}${actionName}`,
+      ),
     }),
     {},
   );
@@ -361,7 +363,7 @@ const getRawFuncWrapperForQueryAction = () => f => (...args) => {
   return result;
 };
 
-const getFinalFuncWrapper = (dispatch) => f => (...args) => {
+const getFinalFuncWrapper = dispatch => f => (...args) => {
   const result = f(...args);
   const { _pp: pp } : { _pp: PreservePromise<Action> } = result;
   delete result._pp;
@@ -448,7 +450,8 @@ export const createExtraActionCreators = <
 > & ResourceModelActions<
   Required<ExtraActionCreatorsType['actionInfos']>
 > => {
-  const actionTypes : Required<ExtraActionCreatorsType['actionTypes']> = <any>extraActionCreators.actionTypes!;
+  const actionTypes
+    : Required<ExtraActionCreatorsType['actionTypes']> = <any>extraActionCreators.actionTypes!;
   const queryInfos = extraActionCreators.queryInfos!;
   const crudNames = Object.keys(queryInfos);
 
@@ -489,7 +492,8 @@ export const createExtraPromiseModelActionCreators = <
 > & ResourceModelActions<
   Required<ExtraActionCreatorsType['actionInfos']>
 > => {
-  const actionTypes : Required<ExtraActionCreatorsType['actionTypes']> = <any>extraActionCreators.actionTypes!;
+  const actionTypes
+    : Required<ExtraActionCreatorsType['actionTypes']> = <any>extraActionCreators.actionTypes!;
   const queryInfos = extraActionCreators.queryInfos!;
   const crudNames = Object.keys(queryInfos);
 

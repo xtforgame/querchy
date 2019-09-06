@@ -35,7 +35,7 @@ import {
   createPromiseModelActionCreators,
   createExtraActionTypes,
   createExtraActionCreators,
-  createExtraPromiseModelActionCreators
+  createExtraPromiseModelActionCreators,
 } from './actionCreatorHelpers';
 
 import toBuildRequestConfigFunction from '../utils/toBuildRequestConfigFunction';
@@ -273,7 +273,9 @@ export default class Querchy<
       models[key].actionTypes = createModelActionTypes(key, commonConfig, models[key]);
       models[key].actions = createModelActionCreators(commonConfig, key, models[key]);
       (<any>this.actionCreatorSets)[key] = models[key].actions;
-      const promiseActions = createPromiseModelActionCreators(this.dispatch, commonConfig, key, models[key]);
+      const promiseActions = createPromiseModelActionCreators(
+        this.dispatch, commonConfig, key, models[key],
+      );
       (<any>this.promiseActionCreatorSets)[key] = promiseActions;
 
       const model = models[key];
@@ -308,7 +310,9 @@ export default class Querchy<
       },
       <any>{},
     );
-    const promiseActions = createExtraPromiseModelActionCreators(this.dispatch, commonConfig, extraActionCreators);
+    const promiseActions = createExtraPromiseModelActionCreators(
+      this.dispatch, commonConfig, extraActionCreators,
+    );
     this.promiseActionCreatorSets.extra = Object.keys(promiseActions)
     .reduce(
       (extra, key) => {

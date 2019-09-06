@@ -30,8 +30,8 @@ export default <
 >(namespace : string = defaultNamespaceName) => {
   let store : StoreType;
 
-  const epicMiddleware = (_store : StoreType) => {
-    store = _store;
+  const epicMiddleware = (s : StoreType) => {
+    store = s;
     namespaces[namespace] = { store, name: namespace };
     const watcherMiddleware = createWatcherMiddleware();
     const watcherMiddlewareCb = watcherMiddleware(store);
