@@ -27,6 +27,8 @@ import {
   QueryBuilderMap,
   ExtraActionCreators,
   QuerchyDefinition,
+  Feature,
+  FeatureTypes,
 } from './core/interfaces';
 
 import {
@@ -79,27 +81,71 @@ export type FullTypeGroup<
   ExtraSelectorInfosForModelType
 >;
 
-export type MakeResourceModelType<
-  CommonConfigType extends CommonConfig,
+
+export type QueryInfosTypeWithFeature<
+  QueryInfosType extends {
+    [s : string]: QueryInfo<Function>;
+  },
+  FeatureTypesType extends FeatureTypes
+> = QueryInfosType & Partial<FeatureTypesType['QueryInfos']>;
+
+export type ActionInfosTypeWithFeature<
+  ActionInfosType extends {
+    [s : string]: ActionInfo<Function>;
+  },
+  FeatureTypesType extends FeatureTypes
+> = ActionInfosType & Partial<FeatureTypesType['ActionInfos']>;
+
+export type MakeResourceModelTypeTypes<
   QueryInfosType extends {
     [s : string]: QueryInfo<Function>;
   },
   ActionInfosType extends {
     [s : string]: ActionInfo<Function>;
-  }
+  },
+  FeatureTypesType extends FeatureTypes
+> = {
+  QueryInfosType: QueryInfosTypeWithFeature<QueryInfosType, FeatureTypesType>;
+  ActionInfosType: ActionInfosTypeWithFeature<ActionInfosType, FeatureTypesType>;
+};
+
+export type MakeResourceModelType<
+  CommonConfigType extends CommonConfig,
+  FeatureTypesType extends FeatureTypes = FeatureTypes,
+  QueryInfosType extends {
+    [s : string]: QueryInfo<Function>;
+  } = {
+    [s : string]: QueryInfo<Function>;
+  },
+  ActionInfosType extends {
+    [s : string]: ActionInfo<Function>;
+  } = {
+    [s : string]: ActionInfo<Function>;
+  },
+
+  TypesType extends MakeResourceModelTypeTypes<
+    QueryInfosType,
+    ActionInfosType,
+    FeatureTypesType
+  > = MakeResourceModelTypeTypes<
+    QueryInfosType,
+    ActionInfosType,
+    FeatureTypesType
+  >
 > = ResourceModel<CommonConfigType> & {
-  queryInfos: QueryInfosType;
-  actionInfos: ActionInfosType;
+  queryInfos: TypesType['QueryInfosType'];
+  actionInfos: TypesType['ActionInfosType'];
   actionTypes?: ResourceModelActionTypes<
-    ResourceModelQueryActions<Required<QueryInfosType>>
+    ResourceModelQueryActions<Required<TypesType['QueryInfosType']>>
   > & ResourceModelActionTypes<
-    ResourceModelActions<Required<ActionInfosType>>
-  >,
+    ResourceModelActions<Required<TypesType['ActionInfosType']>>
+  >;
   actions?: ResourceModelQueryActions<
-    Required<QueryInfosType>
+    Required<TypesType['QueryInfosType']>
   > & ResourceModelActions<
-    Required<ActionInfosType>
-  >,
+    Required<TypesType['ActionInfosType']>
+  >;
+  feature?: Feature<FeatureTypesType>;
 };
 
 export type MakeExtraActionCreatorsType<

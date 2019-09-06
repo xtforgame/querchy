@@ -257,26 +257,21 @@ export default () => {
       httpBinRes: {
         url: 'https://httpbin.org',
         buildUrl: (modelBaseUrl, action) => `${modelBaseUrl}/${crudToRestMap[action.crudType]}`,
-        queryInfos: {
-          ...crudUpdateCacheT1.getQueryInfos(),
-        },
-        actionInfos: {
-          ...crudUpdateCacheT1.getActionInfos(),
-        },
+        queryInfos: {},
+        actionInfos: {},
+        feature: crudUpdateCacheT1,
       },
       httpBinRes2: {
         url: 'https://httpbin.org/get',
         queryBuilderName: 'customPath',
-        queryInfos: {
-          ...crudUpdateCacheCollectionT1.getQueryInfos(),
-        },
+        queryInfos: {},
         actionInfos: {
-          ...crudUpdateCacheCollectionT1.getActionInfos(),
           updateCache2: {
             actionCreator: cacheChange => ({ cacheChange }),
             resourceMerger: s => s,
           },
         },
+        feature: crudUpdateCacheCollectionT1,
       },
     },
     queryBuilders: {
@@ -306,8 +301,7 @@ export default () => {
       customPath: {
         queryRunner: 'customRunner',
         buildRequestConfig: [
-          crudUpdateCacheT1.getBuildRequestConfigMiddleware(),
-          collectionT1.getBuildRequestConfigMiddleware(),
+          crudUpdateCacheCollectionT1.getBuildRequestConfigMiddleware(),
         ],
       },
       forExtra: {

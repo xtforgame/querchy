@@ -8,6 +8,7 @@ import {
   SUCCESS_ACTION,
   SUCCESS_CALLBACK,
   PASS_ANYWAY,
+  createFeatureGroup,
 } from 'library';
 
 import combineReducers from 'library/redux/combineReducers';
@@ -42,6 +43,22 @@ export const collectionT1 = new CollectionT1(
     },
   }),
 );
+
+export const crudUpdateCacheT1 = createFeatureGroup(
+  crudT1,
+  updateCacheT1,
+);
+
+export const crudUpdateCacheCollectionT1 = createFeatureGroup(
+  crudUpdateCacheT1,
+  collectionT1,
+);
+// // or use this way
+// export const crudUpdateCacheCollectionT1 = createFeatureGroup(
+//   crudT1,
+//   updateCacheT1,
+//   collectionT1,
+// );
 
 export const crudToRestMap = {
   create: 'post',
@@ -270,32 +287,21 @@ export default () => {
         httpBinRes: {
           url: 'https://httpbin.org',
           buildUrl: (modelBaseUrl, action) => `${modelBaseUrl}/${crudToRestMap[action.crudType]}`,
-          queryInfos: {
-            ...crudT1.getQueryInfos(),
-            ...updateCacheT1.getQueryInfos(),
-          },
-          actionInfos: {
-            ...crudT1.getActionInfos(),
-            ...updateCacheT1.getActionInfos(),
-          },
+          queryInfos: {},
+          actionInfos: {},
+          feature: crudUpdateCacheT1,
         },
         httpBinRes2: {
           url: 'https://httpbin.org/get',
           queryBuilderName: 'customPath',
-          queryInfos: {
-            ...crudT1.getQueryInfos(),
-            ...updateCacheT1.getQueryInfos(),
-            ...collectionT1.getQueryInfos(),
-          },
+          queryInfos: {},
           actionInfos: {
-            ...crudT1.getActionInfos(),
-            ...updateCacheT1.getActionInfos(),
-            ...collectionT1.getActionInfos(),
             updateCache2: {
               actionCreator: cacheChange => ({ cacheChange }),
               resourceMerger: s => s,
             },
           },
+          feature: crudUpdateCacheCollectionT1,
         },
       },
       queryBuilders: {
@@ -319,15 +325,13 @@ export default () => {
               }
               return next();
             },
-            crudT1.getBuildRequestConfigMiddleware(),
-            updateCacheT1.getBuildRequestConfigMiddleware(),
+            crudUpdateCacheT1.getBuildRequestConfigMiddleware(),
           ],
         },
         customPath: {
           queryRunner: 'customRunner',
           buildRequestConfig: [
-            crudT1.getBuildRequestConfigMiddleware(),
-            updateCacheT1.getBuildRequestConfigMiddleware(),
+            crudUpdateCacheT1.getBuildRequestConfigMiddleware(),
             collectionT1.getBuildRequestConfigMiddleware(),
           ],
         },

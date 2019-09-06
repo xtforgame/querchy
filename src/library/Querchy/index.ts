@@ -245,6 +245,17 @@ export default class Querchy<
 
     Object.keys(models)
     .forEach((key) => {
+      if (models[key].feature) {
+        const featureForModel = models[key].feature!.getFeatureForModel(models[key]);
+        models[key].queryInfos = {
+          ...models[key].queryInfos,
+          ...featureForModel.getQueryInfos(),
+        };
+        models[key].actionInfos = {
+          ...models[key].actionInfos,
+          ...featureForModel.getActionInfos(),
+        };
+      }
       models[key].crudNames = [];
       Object.keys(models[key].queryInfos).forEach((key2) => {
         if (!models[key].crudNames!.includes(key2)) {

@@ -14,6 +14,7 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
   Feature,
+  FeatureForModel,
 } from '../../core/interfaces';
 import {
   createEmptyResourceState,
@@ -62,11 +63,7 @@ export type ResourceChange = {
 
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
-export default class CollectionT1 implements Feature<Types> {
-  static crudToRestMap(crudName) {
-    return crudToRestMap[crudName];
-  }
-
+class CollectionForModelT1 implements FeatureForModel<Types> {
   parseResource : ParseResponse;
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
@@ -152,6 +149,20 @@ export default class CollectionT1 implements Feature<Types> {
 
   getActionInfos : () => ActionInfosT1 = () => ({
   })
+}
+
+export default class CollectionT1 implements Feature<Types> {
+  parseResource?: ParseResponse;
+
+  constructor(parseResource?: ParseResponse) {
+    this.parseResource = parseResource;
+  }
+
+  Types!: Types;
+
+  getFeatureForModel = () => {
+    return new CollectionForModelT1(this.parseResource);
+  }
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,

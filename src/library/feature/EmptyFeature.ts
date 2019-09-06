@@ -14,6 +14,8 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
   Feature,
+  FeatureForModel,
+  FeatureTypes,
 } from '../core/interfaces';
 import {
   createEmptyResourceState,
@@ -30,11 +32,13 @@ export type Types = {
   QueryInfos: QueryInfosEmpty;
 };
 
-export default class EmptyFeature implements Feature<Types> {
+export class EmptyFeatureForModel<
+  TypesType extends FeatureTypes = Types
+> implements FeatureForModel<TypesType> {
   constructor(nothing?: any) {
   }
 
-  Types!: Types;
+  Types!: TypesType;
 
   resourceMerger : ResourceMerger<QcBasicAction> = (
     state = createEmptyResourceState(),
@@ -42,6 +46,28 @@ export default class EmptyFeature implements Feature<Types> {
   ) => {
     return state;
   }
+
+  getQueryInfos : () => QueryInfosEmpty = () => ({});
+
+  getActionInfos : () => ActionInfosEmpty = () => ({});
+}
+
+export default class EmptyFeature<
+  TypesType extends FeatureTypes = Types
+> implements Feature<TypesType> {
+  constructor(nothing?: any) {
+  }
+
+  Types!: TypesType;
+
+  resourceMerger : ResourceMerger<QcBasicAction> = (
+    state = createEmptyResourceState(),
+    action,
+  ) => {
+    return state;
+  }
+
+  getFeatureForModel = () => new EmptyFeatureForModel<TypesType>();
 
   getQueryInfos : () => QueryInfosEmpty = () => ({});
 

@@ -12,6 +12,7 @@ import {
   BuildRequestConfigMiddleware,
   QcBasicAction,
   Feature,
+  FeatureForModel,
 } from '../../core/interfaces';
 import {
   createEmptyResourceState,
@@ -40,7 +41,7 @@ export type Types = {
   QueryInfos: QueryInfosT1;
 };
 
-export default class UpdateCacheT1 implements Feature<Types> {
+class UpdateCacheForModelT1 implements FeatureForModel<Types> {
   Types!: Types;
 
   getQueryInfos : () => QueryInfosT1 = () => ({
@@ -51,6 +52,12 @@ export default class UpdateCacheT1 implements Feature<Types> {
       actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
     },
   })
+}
+
+export default class UpdateCacheT1 implements Feature<Types> {
+  Types!: Types;
+
+  getFeatureForModel = () => new UpdateCacheForModelT1();
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,

@@ -16,7 +16,6 @@ import {
   FeatureGroupTypes,
 } from 'library/index';
 
-
 import CrudT1 from 'library/features/CrudT1';
 import UpdateCacheT1 from 'library/features/UpdateCacheT1';
 import CollectionT1, { Types as CollectionT1Types } from 'library/features/CollectionT1';
@@ -61,16 +60,15 @@ export type RawActionCreatorUpdateCacheX1 = (
 export type ModelMapX1 = {
   httpBinRes: MakeResourceModelType<
     CommonConfigX1,
-    CrudUpdateCacheTypesT1['QueryInfos'],
-    CrudUpdateCacheTypesT1['ActionInfos']
+    CrudUpdateCacheTypesT1
   >;
   httpBinRes2: MakeResourceModelType<
     CommonConfigX1,
-    CrudUpdateCacheTypesCollectionT1['QueryInfos'],
-    CrudUpdateCacheTypesCollectionT1['ActionInfos']
-      & {
-        updateCache2: ActionInfo<RawActionCreatorUpdateCacheX1>;
-      }
+    CrudUpdateCacheTypesCollectionT1,
+    {},
+    {
+      updateCache2: ActionInfo<RawActionCreatorUpdateCacheX1>;
+    }
   >;
 };
 

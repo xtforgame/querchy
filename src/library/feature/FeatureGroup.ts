@@ -8,6 +8,7 @@ import {
 import {
   QcBasicAction,
   ResourceModelQueryActionOptions,
+  ResourceModel,
   // ActionInfo,
   QueryInfo,
   CommonConfig,
@@ -15,6 +16,7 @@ import {
   BuildRequestConfigMiddleware,
   Feature,
   FeatureTypes,
+  FeatureForModel,
 } from '../core/interfaces';
 import EmptyFeature, {
   emptyFeature,
@@ -24,6 +26,47 @@ import {
   mergeResourceState,
 } from '../utils';
 import toBuildRequestConfigFunction from '../utils/toBuildRequestConfigFunction';
+
+export class FeatureGroupForModel<
+  TypesType extends FeatureTypes
+> implements FeatureForModel<TypesType> {
+  featuresForModel : FeatureForModel[];
+
+  Types!: TypesType;
+
+  constructor (
+    ...featuresForModel: FeatureForModel[]
+  ) {
+    this.featuresForModel = featuresForModel;
+  }
+
+  // resourceMerger : ResourceMerger<QcBasicAction> = (
+  //   state = createEmptyResourceState(),
+  //   action,
+  // ) => {
+  //   return this.features.reduce<ResourceState>((s, f) => f.resourceMerger(s, action), state);
+  // }
+
+  getActionInfos : () => this['Types']['ActionInfos'] = () => {
+    return this.featuresForModel.reduce(
+      (map, featureForModel) => ({
+        ...map,
+        ...featureForModel.getActionInfos(),
+      }),
+      <any>{},
+    );
+  }
+
+  getQueryInfos : () => this['Types']['QueryInfos'] = () => {
+    return this.featuresForModel.reduce(
+      (map, featureForModel) => ({
+        ...map,
+        ...featureForModel.getQueryInfos(),
+      }),
+      <any>{},
+    );
+  }
+}
 
 export default class FeatureGroup<
   TypesType extends FeatureTypes
@@ -38,31 +81,11 @@ export default class FeatureGroup<
     this.features = features;
   }
 
-  // resourceMerger : ResourceMerger<QcBasicAction> = (
-  //   state = createEmptyResourceState(),
-  //   action,
-  // ) => {
-  //   return this.features.reduce<ResourceState>((s, f) => f.resourceMerger(s, action), state);
-  // }
-
-  getActionInfos : () => this['Types']['ActionInfos'] = () => {
-    return this.features.reduce(
-      (map, feature) => ({
-        ...map,
-        ...feature.getActionInfos(),
-      }),
-      <any>{},
+  getFeatureForModel = (resourceModel : ResourceModel) => {
+    const featuresForModel = this.features.map(
+      feature => feature.getFeatureForModel(resourceModel),
     );
-  }
-
-  getQueryInfos : () => this['Types']['QueryInfos'] = () => {
-    return this.features.reduce(
-      (map, feature) => ({
-        ...map,
-        ...feature.getQueryInfos(),
-      }),
-      <any>{},
-    );
+    return new FeatureGroupForModel<TypesType>(...featuresForModel);
   }
 
   getBuildRequestConfigMiddleware = <

@@ -12,6 +12,7 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
   Feature,
+  FeatureForModel,
 } from '../../core/interfaces';
 import {
   createEmptyResourceState,
@@ -89,11 +90,7 @@ export type GetBuildRequestConfigMiddleware<
   ModelMapType
 >;
 
-export default class CrudT1 implements Feature<Types> {
-  static crudToRestMap(crudName) {
-    return crudToRestMap[crudName];
-  }
-
+class CrudForModelT1 implements FeatureForModel<Types> {
   getResourceId : GetResourceId;
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
@@ -174,6 +171,18 @@ export default class CrudT1 implements Feature<Types> {
 
   getActionInfos : () => ActionInfosT1 = () => ({
   })
+}
+
+export default class CrudT1 implements Feature<Types> {
+  getResourceId?: GetResourceId;
+
+  constructor(getResourceId?: GetResourceId) {
+    this.getResourceId = getResourceId;
+  }
+
+  Types!: Types;
+
+  getFeatureForModel = () => new CrudForModelT1(this.getResourceId);
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,

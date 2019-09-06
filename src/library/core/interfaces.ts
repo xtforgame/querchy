@@ -94,14 +94,19 @@ export interface FeatureTypes {
   };
 }
 
-export interface Feature<TypesType extends FeatureTypes = FeatureTypes> {
+export interface FeatureForModel<TypesType extends FeatureTypes = FeatureTypes> {
   Types: TypesType;
   getQueryInfos : () => TypesType['QueryInfos'];
   getActionInfos : () => TypesType['ActionInfos'];
+}
+
+export interface Feature<TypesType extends FeatureTypes = FeatureTypes> {
+  Types: TypesType;
   getBuildRequestConfigMiddleware : <
     CommonConfigType extends CommonConfig,
     ModelMapType extends ModelMap<CommonConfigType>
   >() => BuildRequestConfigMiddleware<CommonConfigType, ModelMapType>;
+  getFeatureForModel : (resource : ResourceModel) => FeatureForModel<TypesType>;
 }
 
 // ====================
@@ -111,15 +116,15 @@ export type ResourceModelActionTypes<ModelActions> = {
 };
 
 export type ResourceModel<
-  CommonConfigType extends CommonConfig
+  CommonConfigType extends CommonConfig = CommonConfig
 > = {
   url: string;
   crudNames?: string[];
-  queryInfos: {
+  queryInfos: FeatureForModel['Types']['QueryInfos'] & {
     [s : string]: QueryInfo<Function>;
   };
   actionNames?: string[];
-  actionInfos: {
+  actionInfos: FeatureForModel['Types']['ActionInfos'] & {
     [s : string]: ActionInfo<Function>;
   };
   buildUrl?: (modelBaseUrl : string, action: QcBasicAction) => string;
