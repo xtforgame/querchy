@@ -192,8 +192,8 @@ export default class CollectionT1 implements Feature<Types> {
         overwriteQueryId,
         method: crudToRestMap[action.crudType],
         url: models[action.modelName].url,
-        headers: action.options.headers,
-        query: action.options.queryPart,
+        headers: action.options && action.options.headers,
+        query: action.options && action.options.queryPart,
         body: action.data,
       };
     };
