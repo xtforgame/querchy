@@ -374,11 +374,12 @@ export default class Querchy<
       .map<QuerchyTypeGroupType['EpicType']>((model) => {
         const queryBuilder = queryBuilders[model.queryBuilderName!];
         // console.log('model.queryBuilder :', model.queryBuilder);
+        const { queryInfos } = model;
         return combineEpics(
-          ...Object.values(model.actionTypes!)
+          ...Object.keys(queryInfos)
           .map<QuerchyTypeGroupType['EpicType']>(
-            actionType => this.getHandleQueryEpicFromQueryBuilderByActionType(
-              actionType!, queryBuilder!,
+            key => this.getHandleQueryEpicFromQueryBuilderByActionType(
+              queryInfos[key].actionType!, queryBuilder!,
             ),
           ),
         );

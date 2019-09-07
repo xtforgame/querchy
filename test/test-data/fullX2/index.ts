@@ -123,8 +123,8 @@ export class MyStore implements StoreX1 {
       // console.log('this.state[rootSliceKey] :', this.state[rootSliceKey]);
     }
 
-    const xxxx = this.cacher.selectorSet.httpBinRes.selectResourceMapValues(this.state);
-    console.log('xxxx :', xxxx);
+    // const xxxx = this.cacher.selectorSet.httpBinRes.selectResourceMapValues(this.state);
+    // console.log('xxxx :', xxxx);
 
     const selectedForHttpBinResExtra = this.cacher.selectorSet
       .httpBinRes.extraSelectorX1(this.state);
@@ -180,6 +180,9 @@ const testRun = (querchy : QuerchyX1, cacher : CacherX1) => {
   .then(() => httpBinRes.update(
     1,
     {},
+    { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
+  ))
+  .then(() => httpBinRes.updateCache(
     { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ))
   .then(() => httpBinRes.read(

@@ -393,14 +393,27 @@ export default class Cacher<
 
       const model = models[key];
       const actions = model.actions!;
-      const queryInfos = model.queryInfos! || {};
 
+      const queryInfos = model.queryInfos! || {};
       Object.keys(queryInfos).forEach((actionKey) => {
         if (queryInfos[actionKey] && queryInfos[actionKey].resourceMerger) {
           const { actionType } = actions[actionKey].creatorRefs.respond;
           const reducer = <BasicResourceMerger>this.createResourceMergerForResponse(
             actionType,
             queryInfos[actionKey].resourceMerger!,
+          );
+          reducers[actionKey] = reducer;
+          reducerArray.push(reducer);
+        }
+      });
+
+      const actionInfos = model.actionInfos! || {};
+      Object.keys(actionInfos).forEach((actionKey) => {
+        if (actionInfos[actionKey] && actionInfos[actionKey].resourceMerger) {
+          const { actionType } = actions[actionKey];
+          const reducer = <BasicResourceMerger>this.createResourceMergerForResponse(
+            actionType,
+            actionInfos[actionKey].resourceMerger!,
           );
           reducers[actionKey] = reducer;
           reducerArray.push(reducer);
@@ -423,14 +436,27 @@ export default class Cacher<
       const reducerArray : GlobalReducer<ModelMapType>[] = [];
 
       const actions = extraActionCreators.actions!;
-      const queryInfos = extraActionCreators.queryInfos! || {};
 
+      const queryInfos = extraActionCreators.queryInfos! || {};
       Object.keys(extraActionCreators.queryInfos).forEach((actionKey) => {
         if (queryInfos[actionKey] && queryInfos[actionKey].globalMerger) {
           const { actionType } = actions[actionKey].creatorRefs.respond;
           const reducer = <BasicGlobalMerger>this.createGlobalMergerForResponse(
             actionType,
             queryInfos[actionKey].globalMerger!,
+          );
+          reducers[actionKey] = reducer;
+          reducerArray.push(reducer);
+        }
+      });
+
+      const actionInfos = extraActionCreators.actionInfos! || {};
+      Object.keys(extraActionCreators.actionInfos).forEach((actionKey) => {
+        if (actionInfos[actionKey] && actionInfos[actionKey].globalMerger) {
+          const { actionType } = actions[actionKey];
+          const reducer = <BasicGlobalMerger>this.createGlobalMergerForResponse(
+            actionType,
+            actionInfos[actionKey].globalMerger!,
           );
           reducers[actionKey] = reducer;
           reducerArray.push(reducer);

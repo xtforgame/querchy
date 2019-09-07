@@ -305,21 +305,16 @@ const getRawFuncWrapperForAction = () => f => (...args) => {
       _symbol: symbol,
     },
   };
-  const getCheckFunc = (crudSubType : CrudSubType) => (action : any) => {
-    return action.crudSubType === crudSubType
-      && action.transferables
-      && action.transferables.requestAction
-      && action.transferables.requestAction._symbol === symbol;
-  };
+
   result.options.actionProps[SUCCESS_ACTION] = result.options.actionProps[SUCCESS_ACTION]
-    || getCheckFunc('respond');
+    || PASS_ANYWAY;
   const originSuccess = result.options.actionProps[SUCCESS_CALLBACK] || (() => {});
   result.options.actionProps[SUCCESS_CALLBACK] = (a) => {
     originSuccess(a);
     pp.resolve(a);
   };
   result.options.actionProps[ERROR_ACTION] = result.options.actionProps[ERROR_ACTION]
-    || getCheckFunc('respondError');
+    || PASS_ANYWAY;
   const originError = result.options.actionProps[ERROR_CALLBACK] || (() => {});
   result.options.actionProps[ERROR_CALLBACK] = (a) => {
     originError(a);

@@ -17,6 +17,9 @@ import {
 import {
   createEmptyResourceState,
 } from '../../utils';
+import {
+  ModelQueryActionCreatorUpdateCache,
+} from './interfaces';
 
 export type RawActionCreatorUpdateCacheT1 = (
   cacheChange: any, options?: ResourceModelQueryActionOptions,
@@ -31,10 +34,15 @@ export type RawActionCreatorUpdateCacheT1 = (
 export type QueryInfosT1 = {};
 
 export type ActionInfosT1 = {
-  updateCache: ActionInfo<RawActionCreatorUpdateCacheT1>;
+  updateCache: ActionInfo<ModelQueryActionCreatorUpdateCache>;
+  updateSomeCache: ActionInfo<ModelQueryActionCreatorUpdateCache>;
+  clearCache: ActionInfo<ModelQueryActionCreatorUpdateCache>;
+  clearSomeCache: ActionInfo<ModelQueryActionCreatorUpdateCache>;
+  clearAllCache: ActionInfo<ModelQueryActionCreatorUpdateCache>;
 };
 
 export type Types = {
+  ModelQueryActionCreatorUpdateCache: ModelQueryActionCreatorUpdateCache;
   RawActionCreatorUpdateCache: RawActionCreatorUpdateCacheT1;
 
   ActionInfos: ActionInfosT1;
@@ -44,12 +52,37 @@ export type Types = {
 class UpdateCacheForModelT1 implements FeatureForModel<Types> {
   Types!: Types;
 
+  resourceMerger : ResourceMerger<QcBasicAction> = (
+    state = createEmptyResourceState(),
+    action,
+  ) => {
+    console.log('action :', action);
+    return state;
+  }
+
   getQueryInfos : () => QueryInfosT1 = () => ({
   })
 
   getActionInfos : () => ActionInfosT1 = () => ({
     updateCache: {
-      actionCreator: (cacheChange, options?) => ({ cacheChange, options }),
+      actionCreator: (cacheId, newCache, options?) => ({ cacheId, newCache, options }),
+      resourceMerger: this.resourceMerger,
+    },
+    updateSomeCache: {
+      actionCreator: (cacheId, newCache, options?) => ({ cacheId, newCache, options }),
+      resourceMerger: this.resourceMerger,
+    },
+    clearCache: {
+      actionCreator: (cacheId, newCache, options?) => ({ cacheId, newCache, options }),
+      resourceMerger: this.resourceMerger,
+    },
+    clearSomeCache: {
+      actionCreator: (cacheId, newCache, options?) => ({ cacheId, newCache, options }),
+      resourceMerger: this.resourceMerger,
+    },
+    clearAllCache: {
+      actionCreator: (cacheId, newCache, options?) => ({ cacheId, newCache, options }),
+      resourceMerger: this.resourceMerger,
     },
   })
 }
