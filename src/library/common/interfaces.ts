@@ -142,3 +142,16 @@ export type ResourceModelActions<
   [P in keyof ActionInfosLike] : ModelActionCreator<ActionInfosLike[P]['actionCreator']>;
   // [s: string]: StartQueryActionCreatorWithProps<{}>;
 };
+
+// ===============================
+
+export type ResourceUpdate = {
+  [s : string] : any;
+};
+
+export type ResourceDelete = string[];
+
+export type ResourceChange = {
+  update?: ResourceUpdate,
+  delete?: ResourceDelete,
+};

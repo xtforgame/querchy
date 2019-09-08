@@ -130,7 +130,7 @@ export const wrapActionCreator = <
         actionTypes,
         actionName,
       },
-      { requestTimestamp: new Date().getTime() },
+      { actionTimestamp: new Date().getTime() },
     )),
     { actionType },
   );

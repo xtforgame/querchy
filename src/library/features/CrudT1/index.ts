@@ -125,7 +125,7 @@ class CrudForModelT1 implements FeatureForModel<Types> {
   ) => {
     const resourceId = this.getResourceId(state, action);
     if (!resourceId) {
-      this.onError(new Error('failt to parse resource id'), state, action);
+      this.onError(new Error('failed to parse resource id'), state, action);
       return state;
     }
 

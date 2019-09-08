@@ -4,6 +4,10 @@ import {
   ResourceStateResourceMap,
   ResourceMerger,
   ResourceState,
+
+  ResourceUpdate,
+  ResourceDelete,
+  ResourceChange,
 } from '../../common/interfaces';
 import {
   QcBasicAction,
@@ -21,6 +25,10 @@ import {
   createEmptyResourceState,
   mergeResourceState,
 } from '../../utils';
+import {
+  GetResourceChange,
+  changeResourceMerger,
+} from '../shared';
 
 export const crudToRestMap = {
   getCollection: 'get',
@@ -57,11 +65,6 @@ export type Types = {
   QueryInfos: QueryInfosT1;
 };
 
-export type ResourceChange = {
-  update?: { [s : string] : any },
-  delete?: string[],
-};
-
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
 class CollectionForModelT1 implements FeatureForModel<Types> {
@@ -83,82 +86,26 @@ class CollectionForModelT1 implements FeatureForModel<Types> {
 
   Types!: Types;
 
-  resourceMerger : ResourceMerger<QcBasicAction> = (
-    state = createEmptyResourceState(),
+  getResourceChange : GetResourceChange = (
+    state,
     action,
   ) => {
     const resourceChange = this.parseResponse(state, action);
     if (resourceChange.update && resourceChange.update['']) {
-      this.onError(new Error('failt to parse response'), state, action);
-      return state;
+      this.onError(new Error('failed to parse response'), state, action);
+      return null;
     }
-
-    const { queryMap, resourceMap } = state;
-
-    const extraQueryMap : ResourceStateQueryMap = {
-      metadata: {},
-      values: {},
-    };
-    const queryId = action.queryId;
-    if (queryId) {
-      extraQueryMap.metadata[queryId] = {
-        ...(queryMap[queryId] && queryMap[queryId].metadata.lastRequest),
-        queryId,
-        requestTimestamp: action.requestTimestamp,
-        responseTimestamp: action.responseTimestamp,
-      };
-      extraQueryMap.values[queryId] = action.response.data;
-    }
-
-    const extraResourceMap : ResourceStateResourceMap = {
-      metadata: {},
-      values: {},
-    };
-    if (queryId) {
-      const update = resourceChange.update || {};
-      Object.keys(update)
-      .forEach((key) => {
-        extraResourceMap.metadata[key] = {
-          ...(resourceMap[queryId] && resourceMap[queryId].metadata.lastRequest),
-          lastUpdate: {
-            updateType: 'get-collection',
-            updateData: update[key],
-            updateTimestamp: action.responseTimestamp,
-          },
-        };
-        extraResourceMap.values[key] = update[key];
-      });
-      const deleteIds = resourceChange.delete || [];
-      deleteIds.forEach((deleteId) => {
-        extraResourceMap.metadata[deleteId] = {
-          ...(resourceMap[queryId] && resourceMap[queryId].metadata.lastRequest),
-          lastUpdate: {
-            updateType: 'get-collection',
-            updateData: update[deleteId],
-            updateTimestamp: action.responseTimestamp,
-          },
-        };
-        delete extraResourceMap.values[deleteId];
-      });
-    }
-    const result = mergeResourceState(
-      state,
-      {
-        queryMap: extraQueryMap,
-        resourceMap: extraResourceMap,
-      },
-    );
-    return result;
+    return resourceChange;
   }
 
   getQueryInfos : () => QueryInfosT1 = () => ({
     getCollection: {
       actionCreator: (options?) => ({ options }),
-      resourceMerger: this.resourceMerger,
+      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange),
     },
     getByIds: {
       actionCreator: (ids, options?) => ({ ids, options }),
-      resourceMerger: this.resourceMerger,
+      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange),
     },
   })
 

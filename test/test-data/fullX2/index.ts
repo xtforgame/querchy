@@ -183,8 +183,10 @@ const testRun = (querchy : QuerchyX1, cacher : CacherX1) => {
     { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ))
   .then(() => httpBinRes.updateCache(
+    '1',
     { queryPart: { id: 1 }, headers: { Ppp: 'xxx' } },
   ))
+  .then(() => httpBinRes.clearAllCache())
   .then(() => httpBinRes.read(
     1,
     {
