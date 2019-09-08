@@ -58,17 +58,6 @@ export type Types = {
 class UpdateCacheForModelT1 implements FeatureForModel<Types> {
   Types!: Types;
 
-  getResourceChange : GetResourceChange = (
-    state,
-    action,
-  ) => {
-    const resourceChange = this.parseResponse(state, action);
-    if (resourceChange.update && resourceChange.update['']) {
-      return null;
-    }
-    return resourceChange;
-  }
-
   getQueryInfos : () => QueryInfosT1 = () => ({
   })
 

@@ -86,7 +86,7 @@ var wrapActionCreator = function wrapActionCreator(modelName, actionTypes, actio
       actionTypes: actionTypes,
       actionName: actionName
     }, {
-      requestTimestamp: new Date().getTime()
+      actionTimestamp: new Date().getTime()
     });
   }), {
     actionType: actionType
@@ -204,14 +204,7 @@ var getRawFuncWrapperForAction = function getRawFuncWrapperForAction() {
           _symbol: symbol
         })
       });
-
-      var getCheckFunc = function getCheckFunc(crudSubType) {
-        return function (action) {
-          return action.crudSubType === crudSubType && action.transferables && action.transferables.requestAction && action.transferables.requestAction._symbol === symbol;
-        };
-      };
-
-      result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] = result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] || getCheckFunc('respond');
+      result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] = result.options.actionProps[_createWatcherMiddleware.SUCCESS_ACTION] || _createWatcherMiddleware.PASS_ANYWAY;
 
       var originSuccess = result.options.actionProps[_createWatcherMiddleware.SUCCESS_CALLBACK] || function () {};
 
@@ -220,7 +213,7 @@ var getRawFuncWrapperForAction = function getRawFuncWrapperForAction() {
         pp.resolve(a);
       };
 
-      result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] = result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] || getCheckFunc('respondError');
+      result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] = result.options.actionProps[_createWatcherMiddleware.ERROR_ACTION] || _createWatcherMiddleware.PASS_ANYWAY;
 
       var originError = result.options.actionProps[_createWatcherMiddleware.ERROR_CALLBACK] || function () {};
 

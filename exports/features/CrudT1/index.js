@@ -43,7 +43,7 @@ var CrudForModelT1 = function CrudForModelT1(resourceModel) {
     var resourceId = _this.getResourceId(state, action);
 
     if (!resourceId) {
-      _this.onError(new Error('failt to parse resource id'), state, action);
+      _this.onError(new Error('failed to parse resource id'), state, action);
 
       return state;
     }

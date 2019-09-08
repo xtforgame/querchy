@@ -2,7 +2,6 @@ import { State } from 'pure-epic';
 import { SliceReducer, ResourceStateResourceMap, ResourceStateQueryMap, BaseSelector, ResourceStateMetadataMap, ResourceStateValueMap } from '../common/interfaces';
 import { CommonConfig, ModelMap } from '../core/interfaces';
 import { ReturnType } from '../utils/helper-functions';
-export * from './update-cache-action-interfaces';
 export declare type ReducerSet<T> = {
     [P in keyof T]: SliceReducer;
 } & {

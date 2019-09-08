@@ -172,6 +172,17 @@ var Cacher = function () {
             reducerArray.push(reducer);
           }
         });
+        var actionInfos = model.actionInfos || {};
+        Object.keys(actionInfos).forEach(function (actionKey) {
+          if (actionInfos[actionKey] && actionInfos[actionKey].resourceMerger) {
+            var actionType = actions[actionKey].actionType;
+
+            var reducer = _this2.createResourceMergerForResponse(actionType, actionInfos[actionKey].resourceMerger);
+
+            reducers[actionKey] = reducer;
+            reducerArray.push(reducer);
+          }
+        });
         _this2.reducerSet[key] = reducers;
 
         _this2.allResourceReducers[key] = function () {
@@ -196,6 +207,17 @@ var Cacher = function () {
             var actionType = actions[actionKey].creatorRefs.respond.actionType;
 
             var reducer = _this2.createGlobalMergerForResponse(actionType, queryInfos[actionKey].globalMerger);
+
+            reducers[actionKey] = reducer;
+            reducerArray.push(reducer);
+          }
+        });
+        var actionInfos = extraActionCreators.actionInfos || {};
+        Object.keys(extraActionCreators.actionInfos).forEach(function (actionKey) {
+          if (actionInfos[actionKey] && actionInfos[actionKey].globalMerger) {
+            var actionType = actions[actionKey].actionType;
+
+            var reducer = _this2.createGlobalMergerForResponse(actionType, actionInfos[actionKey].globalMerger);
 
             reducers[actionKey] = reducer;
             reducerArray.push(reducer);

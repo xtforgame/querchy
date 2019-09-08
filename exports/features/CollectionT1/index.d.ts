@@ -1,5 +1,6 @@
-import { ResourceMerger, ResourceState } from '../../common/interfaces';
+import { ResourceState, ResourceChange } from '../../common/interfaces';
 import { QcBasicAction, ResourceModelQueryActionOptions, ResourceModel, QueryInfo, CommonConfig, ModelMap, BuildRequestConfigMiddleware, Feature, FeatureForModel } from '../../core/interfaces';
+import { GetResourceChange } from '../shared';
 export declare const crudToRestMap: {
     getCollection: string;
 };
@@ -21,12 +22,6 @@ export declare type Types = {
     ActionInfos: ActionInfosT1;
     QueryInfos: QueryInfosT1;
 };
-export declare type ResourceChange = {
-    update?: {
-        [s: string]: any;
-    };
-    delete?: string[];
-};
 export declare type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 declare class CollectionForModelT1 implements FeatureForModel<Types> {
     resourceModel: ResourceModel;
@@ -34,7 +29,7 @@ declare class CollectionForModelT1 implements FeatureForModel<Types> {
     onError: (error: Error, state: ResourceState, action: QcBasicAction) => any;
     constructor(resourceModel: ResourceModel);
     Types: Types;
-    resourceMerger: ResourceMerger<QcBasicAction>;
+    getResourceChange: GetResourceChange;
     getQueryInfos: () => QueryInfosT1;
     getActionInfos: () => ActionInfosT1;
 }

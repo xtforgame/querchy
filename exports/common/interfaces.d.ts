@@ -89,3 +89,11 @@ export declare type ResourceModelActions<ActionInfosLike extends {
 }> = {
     [P in keyof ActionInfosLike]: ModelActionCreator<ActionInfosLike[P]['actionCreator']>;
 };
+export declare type ResourceUpdate = {
+    [s: string]: any;
+};
+export declare type ResourceDelete = string[];
+export declare type ResourceChange = {
+    update?: ResourceUpdate;
+    delete?: ResourceDelete;
+};

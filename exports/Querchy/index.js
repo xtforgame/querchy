@@ -260,8 +260,9 @@ var Querchy = function () {
           models = _this$querchyDefiniti2.models;
       return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(models).map(function (model) {
         var queryBuilder = queryBuilders[model.queryBuilderName];
-        return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.values(model.actionTypes).map(function (actionType) {
-          return _this4.getHandleQueryEpicFromQueryBuilderByActionType(actionType, queryBuilder);
+        var queryInfos = model.queryInfos;
+        return _pureEpic.combineEpics.apply(void 0, _toConsumableArray(Object.keys(queryInfos).map(function (key) {
+          return _this4.getHandleQueryEpicFromQueryBuilderByActionType(queryInfos[key].actionType, queryBuilder);
         })));
       })));
     }
