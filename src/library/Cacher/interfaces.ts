@@ -22,22 +22,41 @@ import {
 
 // ===================
 
-export type ExtraSelectorFeature = {
+export type SelectorCreators = {
+  [s : string]: Function;
+};
+
+export interface ExtraSelectorFeatureTypes
+  extends FeatureTypes
+{
+  SelectorCreators: {
+    [s : string]: Function;
+  };
+}
+
+export type ExtraSelectorFeature<
+  TypesType extends ExtraSelectorFeatureTypes = ExtraSelectorFeatureTypes
+> = {
+  Types: TypesType;
   getExtraSelectorInfos: <
     CommonConfigType extends CommonConfig,
     ModelMapType extends ModelMap<CommonConfigType>,
     ResourceModelType extends ResourceModel<CommonConfigType>,
     StateType extends State,
-  >(resourceModel : ResourceModelType) => ExtraSelectorInfosForModelMap<
-    CommonConfigType,
-    ModelMapType,
-    StateType
-  >;
+  >(resourceModel : ResourceModelType) => {
+    [P in keyof TypesType['SelectorCreators']] : {
+      creatorCreator: (
+        baseSelector : BaseSelector<ModelMapType>,
+        builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
+        builtinSelectors: BuiltinSelectors<StateType>,
+      ) => TypesType['SelectorCreators'][P];
+    };
+  };
 };
 
 export type FeatureEx<
-  TypesType extends FeatureTypes = FeatureTypes
-> = Feature<TypesType> & ExtraSelectorFeature;
+  TypesType extends ExtraSelectorFeatureTypes = ExtraSelectorFeatureTypes
+> = Feature<TypesType> & ExtraSelectorFeature<TypesType>;
 
 // ===================
 
@@ -93,13 +112,9 @@ export type SelectorCreatorsForFeatureExHelper<
   StateType extends State,
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
-  ExtraSelectorInfosForModelMapType extends ExtraSelectorInfosForModelMap<
-    CommonConfigType,
-    ModelMapType,
-    StateType
-  >
+  SelectorCreatorsType extends SelectorCreators
 > = {
-  [P in keyof ExtraSelectorInfosForModelMapType] : ReturnType<ExtraSelectorInfosForModelMapType[P]['creatorCreator']>;
+  [P in keyof SelectorCreatorsType] : SelectorCreatorsType[P];
 };
 
 export type SelectorCreatorsForFeatureEx<
@@ -111,9 +126,7 @@ export type SelectorCreatorsForFeatureEx<
   StateType,
   CommonConfigType,
   ModelMapType,
-  ReturnType<
-    FeatureExType['getExtraSelectorInfos']
-  >
+  FeatureExType['Types']['SelectorCreators']
 >;
 
 export type SelectorCreatorSets<
@@ -149,15 +162,9 @@ export type SelectorsForFeatureExHelper<
   StateType extends State,
   CommonConfigType extends CommonConfig,
   ModelMapType extends ModelMap<CommonConfigType>,
-  ExtraSelectorInfosForModelMapType extends ExtraSelectorInfosForModelMap<
-    CommonConfigType,
-    ModelMapType,
-    StateType
-  >
+  SelectorCreatorsType extends SelectorCreators
 > = {
-  [P in keyof ExtraSelectorInfosForModelMapType] : ReturnType<ReturnType<
-    ExtraSelectorInfosForModelMapType[P]['creatorCreator']
-  >>;
+  [P in keyof SelectorCreatorsType] : ReturnType<SelectorCreatorsType[P]>;
 };
 
 export type SelectorsForFeatureEx<
@@ -169,9 +176,7 @@ export type SelectorsForFeatureEx<
   StateType,
   CommonConfigType,
   ModelMapType,
-  ReturnType<
-    FeatureExType['getExtraSelectorInfos']
-  >
+  FeatureExType['Types']['SelectorCreators']
 >;
 
 export type SelectorSets<

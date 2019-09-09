@@ -79,7 +79,11 @@ export default class FeatureGroup<
 > implements Feature<TypesType> {
   features : Feature[];
 
-  Types!: TypesType;
+  Types!: TypesType & {
+    SelectorCreators: {
+      xxxx: () => (state: any) => number;
+    };
+  };
 
   constructor (
     ...features: Feature[]
