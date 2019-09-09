@@ -1,3 +1,4 @@
+import { Epic, createEpicMiddleware, combineEpics, State } from 'pure-epic';
 import {
   ResourceMetadata,
   ResourceStateQueryMap,
@@ -8,6 +9,7 @@ import {
   ResourceUpdate,
   ResourceDelete,
   ResourceChange,
+  BaseSelector,
 } from '../../common/interfaces';
 import {
   QcBasicAction,
@@ -18,9 +20,14 @@ import {
   CommonConfig,
   ModelMap,
   BuildRequestConfigMiddleware,
-  Feature,
   FeatureForModel,
 } from '../../core/interfaces';
+import {
+  FeatureEx,
+  ExtraSelectorInfosForModelMap,
+  BuiltinSelectorCreators,
+  BuiltinSelectors,
+} from '../../Cacher/interfaces';
 import {
   createEmptyResourceState,
   mergeResourceState,
@@ -113,7 +120,7 @@ class CollectionForModelT1 implements FeatureForModel<Types> {
   })
 }
 
-export default class CollectionT1 implements Feature<Types> {
+export default class CollectionT1 implements FeatureEx<Types> {
   Types!: Types;
 
   getFeatureForModel = (resourceModel : ResourceModel) => new CollectionForModelT1(resourceModel);
@@ -145,4 +152,23 @@ export default class CollectionT1 implements Feature<Types> {
       };
     };
   }
+
+  getExtraSelectorInfos = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+    StateType extends State,
+  >(resourceModel : ResourceModelType) : {
+    xxxx: {
+      creatorCreator: (
+        baseSelector : BaseSelector<ModelMapType>,
+        builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
+        builtinSelectors: BuiltinSelectors<StateType>,
+      ) => () => (state: StateType) => number;
+    },
+  } => ({
+    xxxx: {
+      creatorCreator: () => () => () => 1,
+    },
+  })
 }

@@ -1,9 +1,11 @@
+import { Epic, createEpicMiddleware, combineEpics, State } from 'pure-epic';
 import {
   ResourceMetadata,
   ResourceStateQueryMap,
   ResourceStateResourceMap,
   ResourceMerger,
   ResourceState,
+  BaseSelector,
 } from '../common/interfaces';
 import {
   QcBasicAction,
@@ -18,6 +20,10 @@ import {
   FeatureTypes,
   FeatureForModel,
 } from '../core/interfaces';
+import {
+  BuiltinSelectorCreators,
+  BuiltinSelectors,
+} from '../Cacher/interfaces';
 import EmptyFeature, {
   emptyFeature,
 } from './EmptyFeature';
@@ -88,11 +94,30 @@ export default class FeatureGroup<
     return new FeatureGroupForModel<TypesType>(...featuresForModel);
   }
 
+  getExtraSelectorInfos = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+    StateType extends State,
+  >(resourceModel : ResourceModelType) : {
+    xxxx: {
+      creatorCreator: (
+        baseSelector : BaseSelector<ModelMapType>,
+        builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
+        builtinSelectors: BuiltinSelectors<StateType>,
+      ) => () => (state: StateType) => number;
+    },
+  } => ({
+    xxxx: {
+      creatorCreator: () => () => () => 1,
+    },
+  })
+
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,
     ModelMapType extends ModelMap<CommonConfigType>
   >() : BuildRequestConfigMiddleware<CommonConfigType, ModelMapType> => {
-    return  toBuildRequestConfigFunction<CommonConfigType, ModelMapType>(
+    return toBuildRequestConfigFunction<CommonConfigType, ModelMapType>(
       this.features.map(feature => feature.getBuildRequestConfigMiddleware()),
     );
   }

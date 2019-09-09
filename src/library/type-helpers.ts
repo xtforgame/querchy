@@ -112,6 +112,7 @@ export type MakeResourceModelTypeTypes<
 export type MakeResourceModelType<
   CommonConfigType extends CommonConfig,
   FeatureTypesType extends FeatureTypes = FeatureTypes,
+  FeatureType extends Feature<FeatureTypesType> = Feature<FeatureTypesType>,
   QueryInfosType extends {
     [s : string]: QueryInfo<Function>;
   } = {
@@ -145,7 +146,7 @@ export type MakeResourceModelType<
   > & ResourceModelActions<
     Required<TypesType['ActionInfosType']>
   >;
-  feature?: Feature<FeatureTypesType>;
+  feature?: FeatureType;
   featureDeps?: any;
 };
 
