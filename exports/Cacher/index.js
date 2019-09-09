@@ -261,9 +261,7 @@ var Cacher = function () {
 
           return true;
         }), (0, _operators.mergeMap)(function (action) {
-          return [{
-            type: "".concat(actionType, "_XXX")
-          }];
+          return [];
         }));
       };
     }

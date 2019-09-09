@@ -496,8 +496,9 @@ export default class Cacher<
         }
         return true;
       }),
-      mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
-        return [{ type: `${actionType}_XXX` }];
+      mergeMap<QcAction, ObservableInput<any>>((action) => {
+        return [];
+        // return [{ type: `${actionType}_XXX` }];
       }),
     );
   }

@@ -1,7 +1,6 @@
 import { State } from 'pure-epic';
-import { Observable, ObservableInput } from 'rxjs';
-import axios, { AxiosStatic } from 'axios';
-import { mergeMap, filter } from 'rxjs/operators';
+import axios from 'axios';
+import { filter } from 'rxjs/operators';
 import {
   toNull,
 } from '../../utils/helper-functions';
@@ -25,7 +24,12 @@ import {
   QcRequestConfigNormal,
   QcRequestConfigFromCache,
   BuildRequestConfigFunction,
+  QcResponse,
 } from '../../core/interfaces';
+
+import {
+  SendRequestFunction,
+} from '../interfaces';
 
 import {
   RunnerRun,
@@ -35,7 +39,7 @@ import {
   CancelTokenSource,
 } from '../../query-runners/interfaces';
 
-import AxiosObservable, { AxiosObservableOptions } from './AxiosObservable';
+import toObservable from '../toObservable';
 
 export type AxiosRunnerConstructor<
   CommonConfigType extends CommonConfig = CommonConfig,
@@ -57,7 +61,7 @@ export type AxiosRunnerConstructor<
   ExtraDependencies = any,
 
   StateType extends State = QcState,
-> = (a?: AxiosStatic) => any;
+> = (sendRequest?: SendRequestFunction) => any;
 
 export default class AxiosRunner<
   CommonConfigType extends CommonConfig = CommonConfig,
@@ -89,15 +93,26 @@ export default class AxiosRunner<
   ExtraDependencies
 > {
   type : RunnerType;
-  axiosObservable : (
-    axiosRequestConfig : any,
-    actionCreators: Partial<QcRequestActionCreators>,
-    options : AxiosObservableOptions,
-  ) => any;
+  sendRequest : SendRequestFunction;
 
-  constructor(a?: AxiosStatic) {
+  constructor(sendRequest?: SendRequestFunction) {
     this.type = 'axios';
-    this.axiosObservable = AxiosObservable(a || axios);
+    this.sendRequest = sendRequest || (
+      (config, cancelTokenSource) => axios
+      .request({
+        ...config.rawConfigs,
+        cancelToken: cancelTokenSource.token,
+      })
+      .then(rawResponse => ({
+        ...rawResponse,
+        rawResponse,
+        config,
+      }))
+      .catch((e) => {
+        e.config = config;
+        return Promise.reject(e);
+      })
+    );
   }
 
   handleQuery : RunnerRun<
@@ -202,15 +217,16 @@ export default class AxiosRunner<
 
     const source = axios.CancelToken.source();
     const cancelActionType = action.actionCreator.creatorRefs.cancel.actionType;
-    return this.axiosObservable(
-      normalRequestConfig.rawConfigs,
+    return toObservable(
+      this.sendRequest,
+      normalRequestConfig,
       {
         success: createSuccessAction,
         error: createErrorAction,
         cancel: createCancelAction,
       },
       {
-        axiosCancelTokenSource: source,
+        cancelTokenSource: source,
         cancelStream$: action$.pipe(
           filter<QcAction>((cancelAction) => {
             if (cancelAction.type !== cancelActionType) {

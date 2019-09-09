@@ -358,7 +358,7 @@ export default class Querchy<
     const runner = (<SimpleQueryRunner>queryBuilder!.queryRunner!);
     return (action$, state$, ...args) => action$.ofType(actionType)
     .pipe(
-      mergeMap<QcAction, ObservableInput<QcAction>>((action) => {
+      mergeMap<QcAction, ObservableInput<any>>((action) => {
         const modelRootState = this.deps.querchyDef.baseSelector(state$.value);
         return runner.handleQuery(action, queryBuilder, this.deps, {
           action$, state$, args, modelRootState,

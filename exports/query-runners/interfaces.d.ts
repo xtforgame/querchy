@@ -1,7 +1,7 @@
 import { State, ActionsObservable, StateObservable } from 'pure-epic';
 import { Observable } from 'rxjs';
 import { QcAction, QcState, RunnerType, ModelRootState } from '../common/interfaces';
-import { CommonConfig, ModelMap, QueryBuilderDefinition, QueryBuilderMap, QuerchyDefinition, QcDependencies, ExtraActionCreators, QcBasicAction } from '../core/interfaces';
+import { CommonConfig, ModelMap, QueryBuilderDefinition, QueryBuilderMap, QuerchyDefinition, QcDependencies, ExtraActionCreators, QcBasicAction, QcRequestConfigNormal, QcResponse } from '../core/interfaces';
 export interface Canceler {
     (message?: string): void;
 }
@@ -9,6 +9,11 @@ export interface CancelTokenSource {
     token: any;
     cancel: Canceler;
 }
+export interface RequestObservableOptions {
+    cancelStream$?: Observable<any>;
+    cancelTokenSource: CancelTokenSource;
+}
+export declare type SendRequestFunction = (config: QcRequestConfigNormal, cancelTokenSource: CancelTokenSource) => Promise<QcResponse>;
 export declare type RunnerRunOption<StateType extends State = QcState, CommonConfigType extends CommonConfig = CommonConfig, ModelMapType extends ModelMap<CommonConfigType> = ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType> = QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType> = ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>, QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType> = QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>, ExtraDependencies = any> = {
     action$: ActionsObservable<QcAction>;
     state$: StateObservable<StateType>;

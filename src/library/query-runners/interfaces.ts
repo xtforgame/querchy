@@ -19,6 +19,8 @@ import {
 
   QcBasicAction,
   StartQueryActionCreatorWithProps,
+  QcRequestConfigNormal,
+  QcResponse,
 } from '../core/interfaces';
 
 export interface Canceler {
@@ -29,6 +31,16 @@ export interface CancelTokenSource {
   token: any;
   cancel: Canceler;
 }
+
+export interface RequestObservableOptions {
+  cancelStream$?: Observable<any>;
+  cancelTokenSource : CancelTokenSource;
+}
+
+export type SendRequestFunction = (
+  config : QcRequestConfigNormal,
+  cancelTokenSource : CancelTokenSource,
+) => Promise<QcResponse>;
 
 export type RunnerRunOption<
   StateType extends State = QcState,

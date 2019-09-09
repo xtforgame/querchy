@@ -11,11 +11,11 @@ var _operators = require("rxjs/operators");
 
 var _helperFunctions = require("../../utils/helper-functions");
 
-var _AxiosObservable = _interopRequireDefault(require("./AxiosObservable"));
+var _toObservable = _interopRequireDefault(require("../toObservable"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { keys.push.apply(keys, Object.getOwnPropertySymbols(object)); } if (enumerableOnly) keys = keys.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); return keys; }
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
@@ -23,14 +23,14 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var AxiosRunner = function AxiosRunner(a) {
+var AxiosRunner = function AxiosRunner(sendRequest) {
   var _this = this;
 
   _classCallCheck(this, AxiosRunner);
 
   _defineProperty(this, "type", void 0);
 
-  _defineProperty(this, "axiosObservable", void 0);
+  _defineProperty(this, "sendRequest", void 0);
 
   _defineProperty(this, "handleQuery", function (action, queryBuilder, dependencies, _ref) {
     var state$ = _ref.state$,
@@ -126,12 +126,12 @@ var AxiosRunner = function AxiosRunner(a) {
     var source = _axios["default"].CancelToken.source();
 
     var cancelActionType = action.actionCreator.creatorRefs.cancel.actionType;
-    return _this.axiosObservable(normalRequestConfig.rawConfigs, {
+    return (0, _toObservable["default"])(_this.sendRequest, normalRequestConfig, {
       success: createSuccessAction,
       error: createErrorAction,
       cancel: createCancelAction
     }, {
-      axiosCancelTokenSource: source,
+      cancelTokenSource: source,
       cancelStream$: action$.pipe((0, _operators.filter)(function (cancelAction) {
         if (cancelAction.type !== cancelActionType) {
           return false;
@@ -143,7 +143,20 @@ var AxiosRunner = function AxiosRunner(a) {
   });
 
   this.type = 'axios';
-  this.axiosObservable = (0, _AxiosObservable["default"])(a || _axios["default"]);
+
+  this.sendRequest = sendRequest || function (config, cancelTokenSource) {
+    return _axios["default"].request(_objectSpread({}, config.rawConfigs, {
+      cancelToken: cancelTokenSource.token
+    })).then(function (rawResponse) {
+      return _objectSpread({}, rawResponse, {
+        rawResponse: rawResponse,
+        config: config
+      });
+    })["catch"](function (e) {
+      e.config = config;
+      return Promise.reject(e);
+    });
+  };
 };
 
 exports["default"] = AxiosRunner;
