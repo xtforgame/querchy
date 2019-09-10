@@ -60,12 +60,10 @@ export type RawActionCreatorUpdateCacheX1 = (
 export type ModelMapX1 = {
   httpBinRes: MakeResourceModelType<
     CommonConfigX1,
-    CrudUpdateCacheTypesT1,
     FeatureGroup<CrudUpdateCacheTypesT1>
   >;
   httpBinRes2: MakeResourceModelType<
     CommonConfigX1,
-    CrudUpdateCacheTypesCollectionT1,
     FeatureGroup<CrudUpdateCacheTypesCollectionT1>,
     {},
     {
