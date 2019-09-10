@@ -19,7 +19,6 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
   Feature,
-  FeatureForModel,
 } from '../../core/interfaces';
 import {
   createEmptyResourceState,

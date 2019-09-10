@@ -121,11 +121,11 @@ export type ResourceModel<
 > = {
   url: string;
   crudNames?: string[];
-  queryInfos: FeatureForModel['Types']['QueryInfos'] & {
+  queryInfos: {
     [s : string]: QueryInfo<Function>;
   };
   actionNames?: string[];
-  actionInfos: FeatureForModel['Types']['ActionInfos'] & {
+  actionInfos: {
     [s : string]: ActionInfo<Function>;
   };
   buildUrl?: (modelBaseUrl : string, action: QcBasicAction) => string;

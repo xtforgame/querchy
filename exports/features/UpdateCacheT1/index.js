@@ -13,10 +13,16 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var UpdateCacheForModelT1 = function UpdateCacheForModelT1() {
-  _classCallCheck(this, UpdateCacheForModelT1);
+var UpdateCacheT1 = function UpdateCacheT1() {
+  _classCallCheck(this, UpdateCacheT1);
 
   _defineProperty(this, "Types", void 0);
+
+  _defineProperty(this, "getBuildRequestConfigMiddleware", function () {
+    return function (_, next) {
+      return next();
+    };
+  });
 
   _defineProperty(this, "getQueryInfos", function () {
     return {};
@@ -101,22 +107,6 @@ var UpdateCacheForModelT1 = function UpdateCacheForModelT1() {
           return action.change;
         })
       }
-    };
-  });
-};
-
-var UpdateCacheT1 = function UpdateCacheT1() {
-  _classCallCheck(this, UpdateCacheT1);
-
-  _defineProperty(this, "Types", void 0);
-
-  _defineProperty(this, "getFeatureForModel", function () {
-    return new UpdateCacheForModelT1();
-  });
-
-  _defineProperty(this, "getBuildRequestConfigMiddleware", function () {
-    return function (_, next) {
-      return next();
     };
   });
 };

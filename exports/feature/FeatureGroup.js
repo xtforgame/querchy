@@ -4,27 +4,13 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createFeatureGroup = createFeatureGroup;
-exports["default"] = exports.FeatureGroupForModel = void 0;
+exports["default"] = void 0;
 
 var _EmptyFeature = require("./EmptyFeature");
 
 var _toBuildRequestConfigFunction = _interopRequireDefault(require("../utils/toBuildRequestConfigFunction"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
-
-function _construct(Parent, args, Class) { if (isNativeReflectConstruct()) { _construct = Reflect.construct; } else { _construct = function _construct(Parent, args, Class) { var a = [null]; a.push.apply(a, args); var Constructor = Function.bind.apply(Parent, a); var instance = new Constructor(); if (Class) _setPrototypeOf(instance, Class.prototype); return instance; }; } return _construct.apply(null, arguments); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -34,38 +20,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var FeatureGroupForModel = function FeatureGroupForModel() {
-  var _this = this;
-
-  _classCallCheck(this, FeatureGroupForModel);
-
-  _defineProperty(this, "featuresForModel", void 0);
-
-  _defineProperty(this, "Types", void 0);
-
-  _defineProperty(this, "getActionInfos", function () {
-    return _this.featuresForModel.reduce(function (map, featureForModel) {
-      return _objectSpread({}, map, {}, featureForModel.getActionInfos());
-    }, {});
-  });
-
-  _defineProperty(this, "getQueryInfos", function () {
-    return _this.featuresForModel.reduce(function (map, featureForModel) {
-      return _objectSpread({}, map, {}, featureForModel.getQueryInfos());
-    }, {});
-  });
-
-  for (var _len = arguments.length, featuresForModel = new Array(_len), _key = 0; _key < _len; _key++) {
-    featuresForModel[_key] = arguments[_key];
-  }
-
-  this.featuresForModel = featuresForModel;
-};
-
-exports.FeatureGroupForModel = FeatureGroupForModel;
-
 var FeatureGroup = function FeatureGroup() {
-  var _this2 = this;
+  var _this = this;
 
   _classCallCheck(this, FeatureGroup);
 
@@ -73,22 +29,37 @@ var FeatureGroup = function FeatureGroup() {
 
   _defineProperty(this, "Types", void 0);
 
-  _defineProperty(this, "getFeatureForModel", function (resourceModel) {
-    var featuresForModel = _this2.features.map(function (feature) {
-      return feature.getFeatureForModel(resourceModel);
-    });
+  _defineProperty(this, "getActionInfos", function (resourceModel) {
+    return _this.features.reduce(function (map, feature) {
+      return _objectSpread({}, map, {}, feature.getActionInfos(resourceModel));
+    }, {});
+  });
 
-    return _construct(FeatureGroupForModel, _toConsumableArray(featuresForModel));
+  _defineProperty(this, "getQueryInfos", function (resourceModel) {
+    return _this.features.reduce(function (map, feature) {
+      return _objectSpread({}, map, {}, feature.getQueryInfos(resourceModel));
+    }, {});
+  });
+
+  _defineProperty(this, "getExtraSelectorInfos", function (resourceModel) {
+    return _this.features.reduce(function (m, feature) {
+      if (feature.getExtraSelectorInfos) {
+        var featureEx = feature;
+        return _objectSpread({}, m, {}, featureEx.getExtraSelectorInfos(resourceModel));
+      }
+
+      return m;
+    }, {});
   });
 
   _defineProperty(this, "getBuildRequestConfigMiddleware", function () {
-    return (0, _toBuildRequestConfigFunction["default"])(_this2.features.map(function (feature) {
+    return (0, _toBuildRequestConfigFunction["default"])(_this.features.map(function (feature) {
       return feature.getBuildRequestConfigMiddleware();
     }));
   });
 
-  for (var _len2 = arguments.length, features = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-    features[_key2] = arguments[_key2];
+  for (var _len = arguments.length, features = new Array(_len), _key = 0; _key < _len; _key++) {
+    features[_key] = arguments[_key];
   }
 
   this.features = features;

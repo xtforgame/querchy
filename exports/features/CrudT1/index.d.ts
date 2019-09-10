@@ -1,5 +1,5 @@
 import { ResourceMerger, ResourceState } from '../../common/interfaces';
-import { QcBasicAction, ResourceModelQueryActionOptions, ResourceModel, QueryInfo, CommonConfig, ModelMap, BuildRequestConfigMiddleware, Feature, FeatureForModel } from '../../core/interfaces';
+import { QcBasicAction, ResourceModelQueryActionOptions, ResourceModel, QueryInfo, CommonConfig, ModelMap, BuildRequestConfigMiddleware, Feature } from '../../core/interfaces';
 export declare const crudToRestMap: {
     create: string;
     read: string;
@@ -44,19 +44,13 @@ export declare type Types = {
 };
 export declare type GetResourceId = (state: ResourceState, action: QcBasicAction) => string | void;
 export declare type GetBuildRequestConfigMiddleware<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>> = () => BuildRequestConfigMiddleware<CommonConfigType, ModelMapType>;
-declare class CrudForModelT1 implements FeatureForModel<Types> {
-    resourceModel: ResourceModel;
-    getResourceId: GetResourceId;
-    onError: (error: Error, state: ResourceState, action: QcBasicAction) => any;
-    constructor(resourceModel: ResourceModel);
-    Types: Types;
-    resourceMerger: ResourceMerger<QcBasicAction>;
-    getQueryInfos: () => QueryInfosT1;
-    getActionInfos: () => ActionInfosT1;
-}
 export default class CrudT1 implements Feature<Types> {
     Types: Types;
-    getFeatureForModel: (resourceModel: ResourceModel<CommonConfig>) => CrudForModelT1;
+    onError: (error: Error, state: ResourceState, action: QcBasicAction) => any;
+    constructor();
+    getResourceId: <CommonConfigType extends CommonConfig, ResourceModelType extends ResourceModel<CommonConfigType>>(resourceModel: ResourceModelType) => GetResourceId;
+    resourceMerger: <CommonConfigType extends CommonConfig, ResourceModelType extends ResourceModel<CommonConfigType>>(resourceModel: ResourceModelType) => ResourceMerger<QcBasicAction>;
     getBuildRequestConfigMiddleware: <CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>>() => BuildRequestConfigMiddleware<CommonConfigType, ModelMapType>;
+    getQueryInfos: <CommonConfigType extends CommonConfig, ResourceModelType extends ResourceModel<CommonConfigType>>(resourceModel: ResourceModelType) => QueryInfosT1;
+    getActionInfos: <CommonConfigType extends CommonConfig, ResourceModelType extends ResourceModel<CommonConfigType>>(resourceModel: ResourceModelType) => ActionInfosT1;
 }
-export {};

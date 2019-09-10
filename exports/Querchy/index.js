@@ -160,9 +160,8 @@ var Querchy = function () {
       });
       Object.keys(models).forEach(function (key) {
         if (models[key].feature) {
-          var featureForModel = models[key].feature.getFeatureForModel(models[key]);
-          models[key].queryInfos = _objectSpread({}, models[key].queryInfos, {}, featureForModel.getQueryInfos());
-          models[key].actionInfos = _objectSpread({}, models[key].actionInfos, {}, featureForModel.getActionInfos());
+          models[key].queryInfos = _objectSpread({}, models[key].queryInfos, {}, models[key].feature.getQueryInfos(models[key]));
+          models[key].actionInfos = _objectSpread({}, models[key].actionInfos, {}, models[key].feature.getActionInfos(models[key]));
         }
 
         models[key].crudNames = [];

@@ -95,7 +95,7 @@ var Cacher = function () {
 
   _createClass(Cacher, [{
     key: "createSelectorAndSectorCreatorForResource",
-    value: function createSelectorAndSectorCreatorForResource(key, extraSelectorInfosForModelMap) {
+    value: function createSelectorAndSectorCreatorForResource(key, resourceModel, extraSelectorInfosForModelMap) {
       var _this = this;
 
       this.selectorCreatorSet[key] = {};
@@ -148,6 +148,18 @@ var Cacher = function () {
       }).forEach(function (selectorName) {
         _this.selectorSet[key][selectorName] = _this.selectorCreatorSet[key][selectorName]();
       });
+
+      if (resourceModel && resourceModel.feature.getExtraSelectorInfos) {
+        var feature = resourceModel.feature;
+        var esf = resourceModel.feature;
+        var esfInfos = esf.getExtraSelectorInfos(resourceModel);
+        Object.keys(esfInfos).forEach(function (selectorName) {
+          _this.selectorCreatorSet[key][selectorName] = esfInfos[selectorName].creatorCreator(_this.querchy.querchyDefinition.baseSelector, _this.selectorCreatorSet[key], _this.selectorSet[key]);
+        });
+        Object.keys(esfInfos).forEach(function (selectorName) {
+          _this.selectorSet[key][selectorName] = _this.selectorCreatorSet[key][selectorName]();
+        });
+      }
     }
   }, {
     key: "init",
@@ -195,7 +207,7 @@ var Cacher = function () {
 
         var extraSelectorInfoForModel = _this2.extraSelectorInfosForModel[key] || {};
 
-        _this2.createSelectorAndSectorCreatorForResource(key, extraSelectorInfoForModel);
+        _this2.createSelectorAndSectorCreatorForResource(key, model, extraSelectorInfoForModel);
       });
       {
         var reducers = {};
@@ -234,7 +246,7 @@ var Cacher = function () {
         };
 
         var extraSelectorInfoForModel = this.extraSelectorInfosForModel.extra || {};
-        this.createSelectorAndSectorCreatorForResource('extra', extraSelectorInfoForModel);
+        this.createSelectorAndSectorCreatorForResource('extra', null, extraSelectorInfoForModel);
       }
 
       this.allResourceReducers.extra = function () {
