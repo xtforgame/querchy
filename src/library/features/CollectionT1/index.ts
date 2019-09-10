@@ -1,4 +1,5 @@
 import { Epic, createEpicMiddleware, combineEpics, State } from 'pure-epic';
+import { createSelector } from 'reselect';
 import {
   ResourceMetadata,
   ResourceStateQueryMap,
@@ -10,6 +11,7 @@ import {
   ResourceDelete,
   ResourceChange,
   BaseSelector,
+  ResourceStateValueMap,
 } from '../../common/interfaces';
 import {
   QcBasicAction,
@@ -65,7 +67,7 @@ export type QueryInfosT1 = {
 export type ActionInfosT1 = {};
 
 export type SelectorCreatorsT1 = {
-  oooo: () => (state: any) => number;
+  selectCollenctionItems: () => (state: any) => any;
 };
 
 export type Types = {
@@ -79,6 +81,7 @@ export type Types = {
 
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
+export const NOT_IN_RESOURCE_MAP = Symbol('NOT_IN_RESOURCE_MAP');
 export default class CollectionT1 implements FeatureEx<Types> {
   Types!: Types;
 
@@ -164,16 +167,55 @@ export default class CollectionT1 implements FeatureEx<Types> {
     ResourceModelType extends ResourceModel<CommonConfigType>,
     StateType extends State,
   >(resourceModel : ResourceModelType) : {
-    oooo: {
+    selectCollenctionItems: {
       creatorCreator: (
         baseSelector : BaseSelector<ModelMapType>,
         builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
         builtinSelectors: BuiltinSelectors<StateType>,
-      ) => () => (state: StateType) => number;
+      ) => () => (state: StateType) => any;
     },
-  } => ({
-    oooo: {
-      creatorCreator: () => () => () => 1,
-    },
-  })
+  } => {
+    let getIdFromCollectionItem : (item : any) => string | null | undefined = (item) => item && item.id;
+    const featureDeps = resourceModel.featureDeps || {};
+    if (featureDeps.getIdFromCollectionItem) {
+      getIdFromCollectionItem = featureDeps.getIdFromCollectionItem;
+    }
+
+    let getItemArrayFromCollection : (collection : any, resourceMap: ResourceStateValueMap) => any[] = (
+      collection, resourceMap,
+    ) => {
+      if (!Array.isArray(collection)) {
+        return [];
+      }
+      return collection.map((item) => {
+        const id  = getIdFromCollectionItem(item);
+        if (id != null) {
+          return resourceMap[item.id];
+        }
+        return NOT_IN_RESOURCE_MAP;
+      });
+    };
+    if (featureDeps.getItemArrayFromCollection) {
+      getItemArrayFromCollection = featureDeps.getItemArrayFromCollection;
+    }
+
+    return {
+      selectCollenctionItems: {
+        creatorCreator: (baseSelector, builtinSelectorCreators) => {
+          return () => createSelector(
+            builtinSelectorCreators.selectQueryMapValues(),
+            builtinSelectorCreators.selectResourceMapValues(),
+            (queryMap, resourceMap) => {
+              if (!queryMap
+                || !queryMap.getCollection
+              ) {
+                return [];
+              }
+              return getItemArrayFromCollection(queryMap.getCollection, resourceMap);
+            },
+          );
+        },
+      },
+    };
+  }
 }
