@@ -24,7 +24,7 @@ export declare type MakeResourceModelTypeTypes<QueryInfosType extends {
     QueryInfosType: QueryInfosTypeWithFeature<QueryInfosType, FeatureTypesType>;
     ActionInfosType: ActionInfosTypeWithFeature<ActionInfosType, FeatureTypesType>;
 };
-export declare type MakeResourceModelType<CommonConfigType extends CommonConfig, FeatureTypesType extends FeatureTypes = FeatureTypes, QueryInfosType extends {
+export declare type MakeResourceModelType<CommonConfigType extends CommonConfig, FeatureType extends Feature = Feature, QueryInfosType extends {
     [s: string]: QueryInfo<Function>;
 } = {
     [s: string]: QueryInfo<Function>;
@@ -32,12 +32,12 @@ export declare type MakeResourceModelType<CommonConfigType extends CommonConfig,
     [s: string]: ActionInfo<Function>;
 } = {
     [s: string]: ActionInfo<Function>;
-}, TypesType extends MakeResourceModelTypeTypes<QueryInfosType, ActionInfosType, FeatureTypesType> = MakeResourceModelTypeTypes<QueryInfosType, ActionInfosType, FeatureTypesType>> = ResourceModel<CommonConfigType> & {
+}, TypesType extends MakeResourceModelTypeTypes<QueryInfosType, ActionInfosType, FeatureType['Types']> = MakeResourceModelTypeTypes<QueryInfosType, ActionInfosType, FeatureType['Types']>> = ResourceModel<CommonConfigType> & {
     queryInfos: TypesType['QueryInfosType'];
     actionInfos: TypesType['ActionInfosType'];
     actionTypes?: ResourceModelActionTypes<ResourceModelQueryActions<Required<TypesType['QueryInfosType']>>> & ResourceModelActionTypes<ResourceModelActions<Required<TypesType['ActionInfosType']>>>;
     actions?: ResourceModelQueryActions<Required<TypesType['QueryInfosType']>> & ResourceModelActions<Required<TypesType['ActionInfosType']>>;
-    feature?: Feature<FeatureTypesType>;
+    feature?: FeatureType;
     featureDeps?: any;
 };
 export declare type MakeExtraActionCreatorsType<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfig>, ExtraQueryInfosType extends {

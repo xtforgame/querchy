@@ -1,6 +1,6 @@
 import { State } from 'pure-epic';
 import { QcState, SliceReducer, GlobalReducer, ResourceMerger, GlobalMerger } from '../common/interfaces';
-import { QcBasicAction, CommonConfig, ModelMap, QueryBuilderMap, ExtraActionCreators, QuerchyDefinition, QcResponseAction } from '../core/interfaces';
+import { QcBasicAction, CommonConfig, ModelMap, QueryBuilderMap, ExtraActionCreators, QuerchyDefinition, QcResponseAction, ResourceModel } from '../core/interfaces';
 import { ReducerSets, SelectorCreatorSets, SelectorSets, ExtraSelectorInfosMapForModelMap, ExtraModelSelectorCreators, ExtraModelSelectors, SelectorCreatorCreatorForModelMap, ExtraSelectorInfosForModelMap } from './interfaces';
 import Querchy, { QuerchyTypeGroup } from '../Querchy';
 export declare type CacherTypeGroup<CommonConfigType extends CommonConfig, ModelMapType extends ModelMap<CommonConfigType>, QueryBuilderMapType extends QueryBuilderMap<CommonConfigType, ModelMapType>, ExtraActionCreatorsType extends ExtraActionCreators<CommonConfigType, ModelMapType, QueryBuilderMapType>, QuerchyDefinitionType extends QuerchyDefinition<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType>, ExtraDependenciesType, StateType extends State, ExtraSelectorInfosForModelType extends ExtraSelectorInfosMapForModelMap<CommonConfigType, ModelMapType, StateType>> = QuerchyTypeGroup<CommonConfigType, ModelMapType, QueryBuilderMapType, ExtraActionCreatorsType, QuerchyDefinitionType, ExtraDependenciesType> & {
@@ -29,7 +29,7 @@ export default class Cacher<CommonConfigType extends CommonConfig, ModelMapType 
     constructor(querchy: CacherTypeGroupType['QuerchyType'], extraSelectorInfosForModel: CacherTypeGroupType['ExtraSelectorInfosForModelType']);
     createResourceMergerForResponse: (actionType: string, merger: ResourceMerger<QcBasicAction>) => ResourceMerger<QcResponseAction>;
     createGlobalMergerForResponse: (actionType: string, merger: CacherTypeGroupType["GlobalMerger"]) => CacherTypeGroupType["GlobalMerger"];
-    createSelectorAndSectorCreatorForResource(key: string, extraSelectorInfosForModelMap: CacherTypeGroupType['ExtraSelectorInfosForModelMapType']): void;
+    createSelectorAndSectorCreatorForResource(key: string, resourceModel: ResourceModel<CommonConfigType> | null, extraSelectorInfosForModelMap: CacherTypeGroupType['ExtraSelectorInfosForModelMapType']): void;
     init(): void;
     getEpicByActionType(actionType: string): CacherTypeGroupType['EpicType'];
     getRootEpic(): CacherTypeGroupType['EpicType'];

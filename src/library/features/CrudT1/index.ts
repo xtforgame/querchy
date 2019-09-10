@@ -13,7 +13,6 @@ import {
   ModelMap,
   BuildRequestConfigMiddleware,
   Feature,
-  FeatureForModel,
 } from '../../core/interfaces';
 import {
   createEmptyResourceState,
@@ -90,109 +89,87 @@ export type GetBuildRequestConfigMiddleware<
   CommonConfigType ,
   ModelMapType
 >;
-
-class CrudForModelT1 implements FeatureForModel<Types> {
-  resourceModel : ResourceModel;
-  getResourceId : GetResourceId;
+export default class CrudT1 implements Feature<Types> {
+  Types!: Types;
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
-  constructor(resourceModel : ResourceModel) {
-    this.resourceModel = resourceModel;
-    this.getResourceId = (
-      (s, action) => {
-        if (
-          action.transferables
-          && action.transferables.requestAction
-          && action.transferables.requestAction.resourceId
-        ) {
-          return action.transferables.requestAction.resourceId;
-        }
-        const featureDeps = this.resourceModel.featureDeps || {};
-        if (featureDeps.getId) {
-          return featureDeps.getId(action);
-        }
-        return null;
-      }
-    );
+  constructor() {
     this.onError = (error) => {};
   }
 
-  Types!: Types;
-
-  resourceMerger : ResourceMerger<QcBasicAction> = (
-    state = createEmptyResourceState(),
+  getResourceId : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => GetResourceId = resourceModel => (
+    state,
     action,
   ) => {
-    const resourceId = this.getResourceId(state, action);
-    if (!resourceId) {
-      this.onError(new Error('failed to parse resource id'), state, action);
-      return state;
+    if (
+      action.transferables
+      && action.transferables.requestAction
+      && action.transferables.requestAction.resourceId
+    ) {
+      return action.transferables.requestAction.resourceId;
     }
-
-    const { queryMap } = state;
-
-    const metadata : ResourceMetadata = {
-      lastRequest: {
-        ...(queryMap[resourceId] && queryMap[resourceId].metadata.lastRequest),
-        requestTimestamp: action.requestTimestamp,
-        responseTimestamp: action.responseTimestamp,
-      },
-      lastUpdate: {
-        updateType: 'crud',
-        updateData: action.response.data,
-        updateTimestamp: action.responseTimestamp,
-      },
-    };
-    if (action.queryId) {
-      metadata.lastRequest!.queryId = action.queryId;
+    const featureDeps = resourceModel.featureDeps || {};
+    if (featureDeps.getId) {
+      return featureDeps.getId(action);
     }
-    if (action.response) {
-      metadata.lastRequest!.lastResponse = action.response;
-    }
-    const result = mergeResourceState(state, {
-      resourceMap: {
-        metadata: {
-          [resourceId]: metadata,
-        },
-        values: {
-          [resourceId]: action.response.data,
-        },
-      },
-    });
-    if (action.crudType === 'delete') {
-      delete result.resourceMap.values[resourceId];
-      // delete result.resourceMap.metadata[resourceId];
-    }
-    return result;
+    return null;
   }
 
-  getQueryInfos : () => QueryInfosT1 = () => ({
-    create: {
-      actionCreator: (data, options?) => ({ data, options }),
-      resourceMerger: this.resourceMerger,
-    },
-    read: {
-      actionCreator: (resourceId, options?) => ({ resourceId, options }),
-      resourceMerger: this.resourceMerger,
-    },
-    update: {
-      actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
-      resourceMerger: this.resourceMerger,
-    },
-    delete: {
-      actionCreator: (resourceId, options?) => ({ resourceId, options }),
-      resourceMerger: this.resourceMerger,
-    },
-  })
+  resourceMerger : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => ResourceMerger<QcBasicAction> = resourceModel => {
+    const getResourceId = this.getResourceId(resourceModel);
+    return (
+      state = createEmptyResourceState(),
+      action,
+    ) => {
+      const resourceId = getResourceId(state, action);
+      if (!resourceId) {
+        this.onError(new Error('failed to parse resource id'), state, action);
+        return state;
+      }
 
-  getActionInfos : () => ActionInfosT1 = () => ({
-  })
-}
+      const { queryMap } = state;
 
-export default class CrudT1 implements Feature<Types> {
-  Types!: Types;
-
-  getFeatureForModel = (resourceModel : ResourceModel) => new CrudForModelT1(resourceModel);
+      const metadata : ResourceMetadata = {
+        lastRequest: {
+          ...(queryMap[resourceId] && queryMap[resourceId].metadata.lastRequest),
+          requestTimestamp: action.requestTimestamp,
+          responseTimestamp: action.responseTimestamp,
+        },
+        lastUpdate: {
+          updateType: 'crud',
+          updateData: action.response.data,
+          updateTimestamp: action.responseTimestamp,
+        },
+      };
+      if (action.queryId) {
+        metadata.lastRequest!.queryId = action.queryId;
+      }
+      if (action.response) {
+        metadata.lastRequest!.lastResponse = action.response;
+      }
+      const result = mergeResourceState(state, {
+        resourceMap: {
+          metadata: {
+            [resourceId]: metadata,
+          },
+          values: {
+            [resourceId]: action.response.data,
+          },
+        },
+      });
+      if (action.crudType === 'delete') {
+        delete result.resourceMap.values[resourceId];
+        // delete result.resourceMap.metadata[resourceId];
+      }
+      return result;
+    };
+  }
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,
@@ -222,4 +199,32 @@ export default class CrudT1 implements Feature<Types> {
       };
     };
   }
+
+  getQueryInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => QueryInfosT1 = resourceModel => ({
+    create: {
+      actionCreator: (data, options?) => ({ data, options }),
+      resourceMerger: this.resourceMerger(resourceModel),
+    },
+    read: {
+      actionCreator: (resourceId, options?) => ({ resourceId, options }),
+      resourceMerger: this.resourceMerger(resourceModel),
+    },
+    update: {
+      actionCreator: (resourceId, data, options?) => ({ resourceId, data, options }),
+      resourceMerger: this.resourceMerger(resourceModel),
+    },
+    delete: {
+      actionCreator: (resourceId, options?) => ({ resourceId, options }),
+      resourceMerger: this.resourceMerger(resourceModel),
+    },
+  })
+
+  getActionInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => ActionInfosT1 = () => ({
+  })
 }

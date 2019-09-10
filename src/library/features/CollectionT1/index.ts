@@ -1,3 +1,5 @@
+import { Epic, createEpicMiddleware, combineEpics, State } from 'pure-epic';
+import { createSelector } from 'reselect';
 import {
   ResourceMetadata,
   ResourceStateQueryMap,
@@ -8,6 +10,8 @@ import {
   ResourceUpdate,
   ResourceDelete,
   ResourceChange,
+  BaseSelector,
+  ResourceStateValueMap,
 } from '../../common/interfaces';
 import {
   QcBasicAction,
@@ -18,9 +22,13 @@ import {
   CommonConfig,
   ModelMap,
   BuildRequestConfigMiddleware,
-  Feature,
-  FeatureForModel,
 } from '../../core/interfaces';
+import {
+  FeatureEx,
+  ExtraSelectorInfosForModelMap,
+  BuiltinSelectorCreators,
+  BuiltinSelectors,
+} from '../../Cacher/interfaces';
 import {
   createEmptyResourceState,
   mergeResourceState,
@@ -58,65 +66,52 @@ export type QueryInfosT1 = {
 
 export type ActionInfosT1 = {};
 
+export type SelectorCreatorsT1 = {
+  selectCollenctionItems: () => (state: any) => any;
+};
+
 export type Types = {
   RawActionCreatorGetCollection: RawActionCreatorGetCollectionT1;
 
   ActionInfos: ActionInfosT1;
   QueryInfos: QueryInfosT1;
+
+  SelectorCreators: SelectorCreatorsT1;
 };
 
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
-class CollectionForModelT1 implements FeatureForModel<Types> {
-  resourceModel : ResourceModel;
-  parseResponse : ParseResponse;
+export const NOT_IN_RESOURCE_MAP = Symbol('NOT_IN_RESOURCE_MAP');
+export default class CollectionT1 implements FeatureEx<Types> {
+  Types!: Types;
+
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
-  constructor(resourceModel : ResourceModel) {
-    this.resourceModel = resourceModel;
-    this.parseResponse = (s, action) => {
-      const featureDeps = this.resourceModel.featureDeps || {};
+  constructor() {
+    this.onError = (error) => {};
+  }
+
+  getResourceChange : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => GetResourceChange = resourceModel => (
+    state,
+    action,
+  ) => {
+    const parseResponse = (s, action) => {
+      const featureDeps = resourceModel.featureDeps || {};
       if (featureDeps.parseResponse) {
         return featureDeps.parseResponse(s, action);
       }
       return {};
     };
-    this.onError = (error) => {};
-  }
-
-  Types!: Types;
-
-  getResourceChange : GetResourceChange = (
-    state,
-    action,
-  ) => {
-    const resourceChange = this.parseResponse(state, action);
+    const resourceChange = parseResponse(state, action);
     if (resourceChange.update && resourceChange.update['']) {
       this.onError(new Error('failed to parse response'), state, action);
       return null;
     }
     return resourceChange;
   }
-
-  getQueryInfos : () => QueryInfosT1 = () => ({
-    getCollection: {
-      actionCreator: (options?) => ({ options }),
-      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange),
-    },
-    getByIds: {
-      actionCreator: (ids, options?) => ({ ids, options }),
-      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange),
-    },
-  })
-
-  getActionInfos : () => ActionInfosT1 = () => ({
-  })
-}
-
-export default class CollectionT1 implements Feature<Types> {
-  Types!: Types;
-
-  getFeatureForModel = (resourceModel : ResourceModel) => new CollectionForModelT1(resourceModel);
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,
@@ -143,6 +138,84 @@ export default class CollectionT1 implements Feature<Types> {
         query: action.options && action.options.queryPart,
         body: action.data,
       };
+    };
+  }
+
+  getQueryInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => QueryInfosT1 = resourceModel => ({
+    getCollection: {
+      actionCreator: (options?) => ({ options }),
+      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange(resourceModel)),
+    },
+    getByIds: {
+      actionCreator: (ids, options?) => ({ ids, options }),
+      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange(resourceModel)),
+    },
+  })
+
+  getActionInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => ActionInfosT1 = () => ({
+  })
+
+  getExtraSelectorInfos = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+    StateType extends State,
+  >(resourceModel : ResourceModelType) : {
+    selectCollenctionItems: {
+      creatorCreator: (
+        baseSelector : BaseSelector<ModelMapType>,
+        builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
+        builtinSelectors: BuiltinSelectors<StateType>,
+      ) => () => (state: StateType) => any;
+    },
+  } => {
+    let getIdFromCollectionItem : (item : any) => string | null | undefined = (item) => item && item.id;
+    const featureDeps = resourceModel.featureDeps || {};
+    if (featureDeps.getIdFromCollectionItem) {
+      getIdFromCollectionItem = featureDeps.getIdFromCollectionItem;
+    }
+
+    let getItemArrayFromCollection : (collection : any, resourceMap: ResourceStateValueMap) => any[] = (
+      collection, resourceMap,
+    ) => {
+      if (!Array.isArray(collection)) {
+        return [];
+      }
+      return collection.map((item) => {
+        const id  = getIdFromCollectionItem(item);
+        if (id != null) {
+          return resourceMap[item.id];
+        }
+        return NOT_IN_RESOURCE_MAP;
+      });
+    };
+    if (featureDeps.getItemArrayFromCollection) {
+      getItemArrayFromCollection = featureDeps.getItemArrayFromCollection;
+    }
+
+    return {
+      selectCollenctionItems: {
+        creatorCreator: (baseSelector, builtinSelectorCreators) => {
+          return () => createSelector(
+            builtinSelectorCreators.selectQueryMapValues(),
+            builtinSelectorCreators.selectResourceMapValues(),
+            (queryMap, resourceMap) => {
+              if (!queryMap
+                || !queryMap.getCollection
+              ) {
+                return [];
+              }
+              return getItemArrayFromCollection(queryMap.getCollection, resourceMap);
+            },
+          );
+        },
+      },
     };
   }
 }

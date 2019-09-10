@@ -12,7 +12,7 @@ import {
   BuildRequestConfigMiddleware,
   QcBasicAction,
   Feature,
-  FeatureForModel,
+  ResourceModel,
 } from '../../core/interfaces';
 import {
   createEmptyResourceState,
@@ -55,13 +55,26 @@ export type Types = {
   QueryInfos: QueryInfosT1;
 };
 
-class UpdateCacheForModelT1 implements FeatureForModel<Types> {
+export default class UpdateCacheT1 implements Feature<Types> {
   Types!: Types;
 
-  getQueryInfos : () => QueryInfosT1 = () => ({
+  getBuildRequestConfigMiddleware = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>
+  >() : BuildRequestConfigMiddleware<CommonConfigType, ModelMapType> => {
+    return (_, next) => next();
+  }
+
+  getQueryInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => QueryInfosT1 = () => ({
   })
 
-  getActionInfos : () => ActionInfosT1 = () => ({
+    getActionInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => ActionInfosT1 = () => ({
     updateCache: {
       actionCreator: (resourceId, value, options?) => ({ resourceId, value, options }),
       resourceMerger: changeResourceMerger('update-cache', (
@@ -117,17 +130,4 @@ class UpdateCacheForModelT1 implements FeatureForModel<Types> {
       ) => action.change),
     },
   })
-}
-
-export default class UpdateCacheT1 implements Feature<Types> {
-  Types!: Types;
-
-  getFeatureForModel = () => new UpdateCacheForModelT1();
-
-  getBuildRequestConfigMiddleware = <
-    CommonConfigType extends CommonConfig,
-    ModelMapType extends ModelMap<CommonConfigType>
-  >() : BuildRequestConfigMiddleware<CommonConfigType, ModelMapType> => {
-    return (_, next) => next();
-  }
 }

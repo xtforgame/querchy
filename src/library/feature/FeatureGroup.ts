@@ -1,9 +1,11 @@
+import { Epic, createEpicMiddleware, combineEpics, State } from 'pure-epic';
 import {
   ResourceMetadata,
   ResourceStateQueryMap,
   ResourceStateResourceMap,
   ResourceMerger,
   ResourceState,
+  BaseSelector,
 } from '../common/interfaces';
 import {
   QcBasicAction,
@@ -16,8 +18,14 @@ import {
   BuildRequestConfigMiddleware,
   Feature,
   FeatureTypes,
-  FeatureForModel,
 } from '../core/interfaces';
+import {
+  BuiltinSelectorCreators,
+  BuiltinSelectors,
+  ExtraSelectorFeatureTypes,
+  FeatureEx,
+  ReturnTypeOfGetExtraSelectorInfos,
+} from '../Cacher/interfaces';
 import EmptyFeature, {
   emptyFeature,
 } from './EmptyFeature';
@@ -27,50 +35,9 @@ import {
 } from '../utils';
 import toBuildRequestConfigFunction from '../utils/toBuildRequestConfigFunction';
 
-export class FeatureGroupForModel<
-  TypesType extends FeatureTypes
-> implements FeatureForModel<TypesType> {
-  featuresForModel : FeatureForModel[];
-
-  Types!: TypesType;
-
-  constructor (
-    ...featuresForModel: FeatureForModel[]
-  ) {
-    this.featuresForModel = featuresForModel;
-  }
-
-  // resourceMerger : ResourceMerger<QcBasicAction> = (
-  //   state = createEmptyResourceState(),
-  //   action,
-  // ) => {
-  //   return this.features.reduce<ResourceState>((s, f) => f.resourceMerger(s, action), state);
-  // }
-
-  getActionInfos : () => this['Types']['ActionInfos'] = () => {
-    return this.featuresForModel.reduce(
-      (map, featureForModel) => ({
-        ...map,
-        ...featureForModel.getActionInfos(),
-      }),
-      <any>{},
-    );
-  }
-
-  getQueryInfos : () => this['Types']['QueryInfos'] = () => {
-    return this.featuresForModel.reduce(
-      (map, featureForModel) => ({
-        ...map,
-        ...featureForModel.getQueryInfos(),
-      }),
-      <any>{},
-    );
-  }
-}
-
 export default class FeatureGroup<
-  TypesType extends FeatureTypes
-> implements Feature<TypesType> {
+  TypesType extends ExtraSelectorFeatureTypes
+> implements FeatureEx<TypesType> {
   features : Feature[];
 
   Types!: TypesType;
@@ -81,22 +48,78 @@ export default class FeatureGroup<
     this.features = features;
   }
 
-  getFeatureForModel = (resourceModel : ResourceModel) => {
-    const featuresForModel = this.features.map(
-      feature => feature.getFeatureForModel(resourceModel),
+  getActionInfos = <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) : this['Types']['ActionInfos'] => {
+    return this.features.reduce(
+      (map, feature) => ({
+        ...map,
+        ...feature.getActionInfos(resourceModel),
+      }),
+      <any>{},
     );
-    return new FeatureGroupForModel<TypesType>(...featuresForModel);
+  }
+
+  getQueryInfos = <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) : this['Types']['QueryInfos'] => {
+    return this.features.reduce(
+      (map, feature) => ({
+        ...map,
+        ...feature.getQueryInfos(resourceModel),
+      }),
+      <any>{},
+    );
+  }
+
+  getExtraSelectorInfos = <
+    CommonConfigType extends CommonConfig,
+    ModelMapType extends ModelMap<CommonConfigType>,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+    StateType extends State,
+  >(resourceModel : ResourceModelType)
+    : ReturnTypeOfGetExtraSelectorInfos<
+    CommonConfigType,
+    ModelMapType,
+    ResourceModelType,
+    StateType,
+    TypesType
+  > => {
+    return this.features.reduce(
+      (m, feature) => {
+        if ((<any>feature).getExtraSelectorInfos) {
+          const featureEx : FeatureEx = <any>feature;
+          return {
+            ...m,
+            ...featureEx.getExtraSelectorInfos<
+              CommonConfigType,
+              ModelMapType,
+              ResourceModelType,
+              StateType
+            >(resourceModel),
+          };
+        }
+        return m;
+      },
+      <any>{},
+    );
   }
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,
     ModelMapType extends ModelMap<CommonConfigType>
   >() : BuildRequestConfigMiddleware<CommonConfigType, ModelMapType> => {
-    return  toBuildRequestConfigFunction<CommonConfigType, ModelMapType>(
+    return toBuildRequestConfigFunction<CommonConfigType, ModelMapType>(
       this.features.map(feature => feature.getBuildRequestConfigMiddleware()),
     );
   }
 }
+
+export type SelectorCreatorsFromFeature<
+  FeatureType extends Feature,
+> = FeatureType extends FeatureEx ? FeatureType['Types']['SelectorCreators'] : {};
 
 export type FeatureGroupTypes<
   Feature1 extends Feature,
@@ -132,6 +155,14 @@ export type FeatureGroupTypes<
       & Feature6['Types']['QueryInfos']
       & Feature7['Types']['QueryInfos']
       & Feature8['Types']['QueryInfos'];
+    SelectorCreators:  SelectorCreatorsFromFeature<Feature1>
+      & SelectorCreatorsFromFeature<Feature2>
+      & SelectorCreatorsFromFeature<Feature3>
+      & SelectorCreatorsFromFeature<Feature4>
+      & SelectorCreatorsFromFeature<Feature5>
+      & SelectorCreatorsFromFeature<Feature6>
+      & SelectorCreatorsFromFeature<Feature7>
+      & SelectorCreatorsFromFeature<Feature8>;
   };
 
 export function createFeatureGroup<

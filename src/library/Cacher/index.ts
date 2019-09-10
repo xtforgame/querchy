@@ -33,6 +33,7 @@ import {
   QuerchyDefinition,
 
   QcResponseAction,
+  ResourceModel,
 } from '../core/interfaces';
 
 import combineReducers from '../redux/combineReducers';
@@ -47,6 +48,7 @@ import {
   ExtraModelSelectors,
   SelectorCreatorCreatorForModelMap,
   ExtraSelectorInfosForModelMap,
+  ExtraSelectorFeature,
 } from './interfaces';
 
 import {
@@ -318,6 +320,7 @@ export default class Cacher<
 
   createSelectorAndSectorCreatorForResource(
     key : string,
+    resourceModel : ResourceModel<CommonConfigType> | null,
     extraSelectorInfosForModelMap: CacherTypeGroupType['ExtraSelectorInfosForModelMapType'],
   ) {
     (<any>this.selectorCreatorSet)[key] = {};
@@ -380,6 +383,26 @@ export default class Cacher<
     .forEach((selectorName) => {
       (<any>this.selectorSet[key])[selectorName] = this.selectorCreatorSet[key][selectorName]();
     });
+
+    if (resourceModel && (<any>resourceModel.feature).getExtraSelectorInfos) {
+      const { feature } = resourceModel;
+      const esf : ExtraSelectorFeature = (<any>resourceModel.feature);
+      const esfInfos = esf.getExtraSelectorInfos(resourceModel);
+      Object.keys(esfInfos)
+      .forEach((selectorName) => {
+        (<any>this.selectorCreatorSet[key])[selectorName] = esfInfos[selectorName]
+        .creatorCreator(
+          this.querchy.querchyDefinition.baseSelector,
+          this.selectorCreatorSet[key],
+          this.selectorSet[key],
+        );
+      });
+
+      Object.keys(esfInfos)
+      .forEach((selectorName) => {
+        (<any>this.selectorSet[key])[selectorName] = this.selectorCreatorSet[key][selectorName]();
+      });
+    }
   }
 
   init() {
@@ -428,7 +451,7 @@ export default class Cacher<
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
       const extraSelectorInfoForModel : any = this.extraSelectorInfosForModel[key] || {};
-      this.createSelectorAndSectorCreatorForResource(key, extraSelectorInfoForModel);
+      this.createSelectorAndSectorCreatorForResource(key, model, extraSelectorInfoForModel);
     });
 
     {
@@ -470,7 +493,7 @@ export default class Cacher<
         return reducerArray.reduce((s, r) => r(s, action), state);
       };
       const extraSelectorInfoForModel : any = this.extraSelectorInfosForModel.extra || {};
-      this.createSelectorAndSectorCreatorForResource('extra', extraSelectorInfoForModel);
+      this.createSelectorAndSectorCreatorForResource('extra', null, extraSelectorInfoForModel);
     }
     this.allResourceReducers.extra = (
       state = createEmptyResourceState(),
