@@ -20,7 +20,6 @@ import {
   CommonConfig,
   ModelMap,
   BuildRequestConfigMiddleware,
-  FeatureForModel,
 } from '../../core/interfaces';
 import {
   FeatureEx,
@@ -80,56 +79,36 @@ export type Types = {
 
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
 
-class CollectionForModelT1 implements FeatureForModel<Types> {
-  resourceModel : ResourceModel;
-  parseResponse : ParseResponse;
+export default class CollectionT1 implements FeatureEx<Types> {
+  Types!: Types;
+
   onError: (error : Error, state: ResourceState, action: QcBasicAction) => any;
 
-  constructor(resourceModel : ResourceModel) {
-    this.resourceModel = resourceModel;
-    this.parseResponse = (s, action) => {
-      const featureDeps = this.resourceModel.featureDeps || {};
+  constructor() {
+    this.onError = (error) => {};
+  }
+
+  getResourceChange : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => GetResourceChange = resourceModel => (
+    state,
+    action,
+  ) => {
+    const parseResponse = (s, action) => {
+      const featureDeps = resourceModel.featureDeps || {};
       if (featureDeps.parseResponse) {
         return featureDeps.parseResponse(s, action);
       }
       return {};
     };
-    this.onError = (error) => {};
-  }
-
-  Types!: Types;
-
-  getResourceChange : GetResourceChange = (
-    state,
-    action,
-  ) => {
-    const resourceChange = this.parseResponse(state, action);
+    const resourceChange = parseResponse(state, action);
     if (resourceChange.update && resourceChange.update['']) {
       this.onError(new Error('failed to parse response'), state, action);
       return null;
     }
     return resourceChange;
   }
-
-  getQueryInfos : () => QueryInfosT1 = () => ({
-    getCollection: {
-      actionCreator: (options?) => ({ options }),
-      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange),
-    },
-    getByIds: {
-      actionCreator: (ids, options?) => ({ ids, options }),
-      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange),
-    },
-  })
-
-  getActionInfos : () => ActionInfosT1 = () => ({
-  })
-}
-
-export default class CollectionT1 implements FeatureEx<Types> {
-  Types!: Types;
-
-  getFeatureForModel = (resourceModel : ResourceModel) => new CollectionForModelT1(resourceModel);
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,
@@ -158,6 +137,26 @@ export default class CollectionT1 implements FeatureEx<Types> {
       };
     };
   }
+
+  getQueryInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => QueryInfosT1 = resourceModel => ({
+    getCollection: {
+      actionCreator: (options?) => ({ options }),
+      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange(resourceModel)),
+    },
+    getByIds: {
+      actionCreator: (ids, options?) => ({ ids, options }),
+      resourceMerger: changeResourceMerger('get-collection', this.getResourceChange(resourceModel)),
+    },
+  })
+
+  getActionInfos : <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) => ActionInfosT1 = () => ({
+  })
 
   getExtraSelectorInfos = <
     CommonConfigType extends CommonConfig,

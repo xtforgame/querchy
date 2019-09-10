@@ -18,7 +18,6 @@ import {
   BuildRequestConfigMiddleware,
   Feature,
   FeatureTypes,
-  FeatureForModel,
 } from '../core/interfaces';
 import {
   BuiltinSelectorCreators,
@@ -36,47 +35,6 @@ import {
 } from '../utils';
 import toBuildRequestConfigFunction from '../utils/toBuildRequestConfigFunction';
 
-export class FeatureGroupForModel<
-  TypesType extends ExtraSelectorFeatureTypes
-> implements FeatureForModel<TypesType> {
-  featuresForModel : FeatureForModel[];
-
-  Types!: TypesType;
-
-  constructor (
-    ...featuresForModel: FeatureForModel[]
-  ) {
-    this.featuresForModel = featuresForModel;
-  }
-
-  // resourceMerger : ResourceMerger<QcBasicAction> = (
-  //   state = createEmptyResourceState(),
-  //   action,
-  // ) => {
-  //   return this.features.reduce<ResourceState>((s, f) => f.resourceMerger(s, action), state);
-  // }
-
-  getActionInfos : () => this['Types']['ActionInfos'] = () => {
-    return this.featuresForModel.reduce(
-      (map, featureForModel) => ({
-        ...map,
-        ...featureForModel.getActionInfos(),
-      }),
-      <any>{},
-    );
-  }
-
-  getQueryInfos : () => this['Types']['QueryInfos'] = () => {
-    return this.featuresForModel.reduce(
-      (map, featureForModel) => ({
-        ...map,
-        ...featureForModel.getQueryInfos(),
-      }),
-      <any>{},
-    );
-  }
-}
-
 export default class FeatureGroup<
   TypesType extends ExtraSelectorFeatureTypes
 > implements FeatureEx<TypesType> {
@@ -90,11 +48,30 @@ export default class FeatureGroup<
     this.features = features;
   }
 
-  getFeatureForModel = (resourceModel : ResourceModel) => {
-    const featuresForModel = this.features.map(
-      feature => feature.getFeatureForModel(resourceModel),
+  getActionInfos = <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) : this['Types']['ActionInfos'] => {
+    return this.features.reduce(
+      (map, feature) => ({
+        ...map,
+        ...feature.getActionInfos(resourceModel),
+      }),
+      <any>{},
     );
-    return new FeatureGroupForModel<TypesType>(...featuresForModel);
+  }
+
+  getQueryInfos = <
+    CommonConfigType extends CommonConfig,
+    ResourceModelType extends ResourceModel<CommonConfigType>,
+  >(resourceModel : ResourceModelType) : this['Types']['QueryInfos'] => {
+    return this.features.reduce(
+      (map, feature) => ({
+        ...map,
+        ...feature.getQueryInfos(resourceModel),
+      }),
+      <any>{},
+    );
   }
 
   getExtraSelectorInfos = <
