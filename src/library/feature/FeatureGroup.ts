@@ -110,11 +110,24 @@ export default class FeatureGroup<
     StateType,
     TypesType
   > => {
-    return <any>{
-      xxxx: {
-        creatorCreator: () => () => () => 1,
+    return this.features.reduce(
+      (m, feature) => {
+        if ((<any>feature).getExtraSelectorInfos) {
+          const featureEx : FeatureEx = <any>feature;
+          return {
+            ...m,
+            ...featureEx.getExtraSelectorInfos<
+              CommonConfigType,
+              ModelMapType,
+              ResourceModelType,
+              StateType
+            >(resourceModel),
+          };
+        }
+        return m;
       },
-    };
+      <any>{},
+    );
   }
 
   getBuildRequestConfigMiddleware = <
@@ -127,7 +140,9 @@ export default class FeatureGroup<
   }
 }
 
-// export 
+export type SelectorCreatorsFromFeature<
+  FeatureType extends Feature,
+> = FeatureType extends FeatureEx ? FeatureType['Types']['SelectorCreators'] : {};
 
 export type FeatureGroupTypes<
   Feature1 extends Feature,
@@ -163,9 +178,14 @@ export type FeatureGroupTypes<
       & Feature6['Types']['QueryInfos']
       & Feature7['Types']['QueryInfos']
       & Feature8['Types']['QueryInfos'];
-    SelectorCreators: {
-      xxxx: () => (state: any) => number;
-    };
+    SelectorCreators:  SelectorCreatorsFromFeature<Feature1>
+      & SelectorCreatorsFromFeature<Feature2>
+      & SelectorCreatorsFromFeature<Feature3>
+      & SelectorCreatorsFromFeature<Feature4>
+      & SelectorCreatorsFromFeature<Feature5>
+      & SelectorCreatorsFromFeature<Feature6>
+      & SelectorCreatorsFromFeature<Feature7>
+      & SelectorCreatorsFromFeature<Feature8>;
   };
 
 export function createFeatureGroup<

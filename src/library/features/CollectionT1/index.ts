@@ -65,11 +65,17 @@ export type QueryInfosT1 = {
 
 export type ActionInfosT1 = {};
 
+export type SelectorCreatorsT1 = {
+  oooo: () => (state: any) => number;
+};
+
 export type Types = {
   RawActionCreatorGetCollection: RawActionCreatorGetCollectionT1;
 
   ActionInfos: ActionInfosT1;
   QueryInfos: QueryInfosT1;
+
+  SelectorCreators: SelectorCreatorsT1;
 };
 
 export type ParseResponse = (state: ResourceState, action: QcBasicAction) => ResourceChange;
@@ -159,7 +165,7 @@ export default class CollectionT1 implements FeatureEx<Types> {
     ResourceModelType extends ResourceModel<CommonConfigType>,
     StateType extends State,
   >(resourceModel : ResourceModelType) : {
-    xxxx: {
+    oooo: {
       creatorCreator: (
         baseSelector : BaseSelector<ModelMapType>,
         builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
@@ -167,7 +173,7 @@ export default class CollectionT1 implements FeatureEx<Types> {
       ) => () => (state: StateType) => number;
     },
   } => ({
-    xxxx: {
+    oooo: {
       creatorCreator: () => () => () => 1,
     },
   })

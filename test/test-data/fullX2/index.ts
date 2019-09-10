@@ -126,8 +126,11 @@ export class MyStore implements StoreX1 {
     // const xxxx = this.cacher.selectorSet.httpBinRes.selectResourceMapValues(this.state);
     // console.log('xxxx :', xxxx);
 
-    const xxxxx = this.cacher.selectorSet.httpBinRes2.xxxx(this.state);
-    console.log('xxxxx :', xxxxx);
+    // const xxxx = this.cacher.selectorSet.httpBinRes2.xxxx(this.state);
+    // console.log('xxxx :', xxxx);
+
+    const oooo = this.cacher.selectorSet.httpBinRes2.oooo(this.state);
+    console.log('oooo :', oooo);
 
     const selectedForHttpBinResExtra = this.cacher.selectorSet
       .httpBinRes.extraSelectorX1(this.state);
