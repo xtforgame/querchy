@@ -23,6 +23,9 @@ import {
 import {
   BuiltinSelectorCreators,
   BuiltinSelectors,
+  ExtraSelectorFeatureTypes,
+  FeatureEx,
+  ReturnTypeOfGetExtraSelectorInfos,
 } from '../Cacher/interfaces';
 import EmptyFeature, {
   emptyFeature,
@@ -34,7 +37,7 @@ import {
 import toBuildRequestConfigFunction from '../utils/toBuildRequestConfigFunction';
 
 export class FeatureGroupForModel<
-  TypesType extends FeatureTypes
+  TypesType extends ExtraSelectorFeatureTypes
 > implements FeatureForModel<TypesType> {
   featuresForModel : FeatureForModel[];
 
@@ -75,15 +78,11 @@ export class FeatureGroupForModel<
 }
 
 export default class FeatureGroup<
-  TypesType extends FeatureTypes
-> implements Feature<TypesType> {
+  TypesType extends ExtraSelectorFeatureTypes
+> implements FeatureEx<TypesType> {
   features : Feature[];
 
-  Types!: TypesType & {
-    SelectorCreators: {
-      xxxx: () => (state: any) => number;
-    };
-  };
+  Types!: TypesType;
 
   constructor (
     ...features: Feature[]
@@ -103,19 +102,20 @@ export default class FeatureGroup<
     ModelMapType extends ModelMap<CommonConfigType>,
     ResourceModelType extends ResourceModel<CommonConfigType>,
     StateType extends State,
-  >(resourceModel : ResourceModelType) : {
-    xxxx: {
-      creatorCreator: (
-        baseSelector : BaseSelector<ModelMapType>,
-        builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
-        builtinSelectors: BuiltinSelectors<StateType>,
-      ) => () => (state: StateType) => number;
-    },
-  } => ({
-    xxxx: {
-      creatorCreator: () => () => () => 1,
-    },
-  })
+  >(resourceModel : ResourceModelType)
+    : ReturnTypeOfGetExtraSelectorInfos<
+    CommonConfigType,
+    ModelMapType,
+    ResourceModelType,
+    StateType,
+    TypesType
+  > => {
+    return <any>{
+      xxxx: {
+        creatorCreator: () => () => () => 1,
+      },
+    };
+  }
 
   getBuildRequestConfigMiddleware = <
     CommonConfigType extends CommonConfig,
@@ -126,6 +126,8 @@ export default class FeatureGroup<
     );
   }
 }
+
+// export 
 
 export type FeatureGroupTypes<
   Feature1 extends Feature,
@@ -161,6 +163,9 @@ export type FeatureGroupTypes<
       & Feature6['Types']['QueryInfos']
       & Feature7['Types']['QueryInfos']
       & Feature8['Types']['QueryInfos'];
+    SelectorCreators: {
+      xxxx: () => (state: any) => number;
+    };
   };
 
 export function createFeatureGroup<

@@ -34,6 +34,22 @@ export interface ExtraSelectorFeatureTypes
   };
 }
 
+export type ReturnTypeOfGetExtraSelectorInfos<
+  CommonConfigType extends CommonConfig,
+  ModelMapType extends ModelMap<CommonConfigType>,
+  ResourceModelType extends ResourceModel<CommonConfigType>,
+  StateType extends State,
+  TypesType extends ExtraSelectorFeatureTypes = ExtraSelectorFeatureTypes,
+> = {
+  [P in keyof TypesType['SelectorCreators']] : {
+    creatorCreator: (
+      baseSelector : BaseSelector<ModelMapType>,
+      builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
+      builtinSelectors: BuiltinSelectors<StateType>,
+    ) => TypesType['SelectorCreators'][P];
+  };
+};
+
 export type ExtraSelectorFeature<
   TypesType extends ExtraSelectorFeatureTypes = ExtraSelectorFeatureTypes
 > = {
@@ -43,15 +59,13 @@ export type ExtraSelectorFeature<
     ModelMapType extends ModelMap<CommonConfigType>,
     ResourceModelType extends ResourceModel<CommonConfigType>,
     StateType extends State,
-  >(resourceModel : ResourceModelType) => {
-    [P in keyof TypesType['SelectorCreators']] : {
-      creatorCreator: (
-        baseSelector : BaseSelector<ModelMapType>,
-        builtinSelectorCreators: BuiltinSelectorCreators<StateType>,
-        builtinSelectors: BuiltinSelectors<StateType>,
-      ) => TypesType['SelectorCreators'][P];
-    };
-  };
+  >(resourceModel : ResourceModelType) => ReturnTypeOfGetExtraSelectorInfos<
+    CommonConfigType,
+    ModelMapType,
+    ResourceModelType,
+    StateType,
+    TypesType
+  >;
 };
 
 export type FeatureEx<
