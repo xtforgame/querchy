@@ -77,7 +77,7 @@ var CollectionT1 = function CollectionT1() {
       return {
         overwriteQueryId: overwriteQueryId,
         method: crudToRestMap[action.crudType],
-        url: models[action.modelName].url,
+        url: models[action.modelName].buildUrl(models[action.modelName].url, action),
         headers: action.options && action.options.headers,
         query: action.options && action.options.queryPart,
         body: action.data

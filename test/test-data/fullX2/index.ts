@@ -240,7 +240,12 @@ export default () => {
       defaultBuildUrl: (
         modelBaseUrl,
         action,
-      ) => `${modelBaseUrl}/${crudToRestMap[action.crudType]}`,
+      ) => {
+        if (action.crudType === 'getCollection') {
+          return modelBaseUrl;
+        }
+        return `${modelBaseUrl}/${crudToRestMap[action.crudType]}`;
+      },
       defaultQueryRunner: new AxiosRunnerX1(),
       queryRunners: {
         customRunner: new AxiosRunnerX1(),
