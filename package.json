@@ -38,7 +38,7 @@
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-typescript": "^7.3.3",
     "@babel/register": "^7.4.0",
-    "axios": "^0.17.1",
+    "axios": "^0.21.1",
     "axios-mock-adapter": "^1.15.0",
     "az-gulp-env-lite": "git+https://github.com/xtforgame/az-gulp-env-lite.git#v2.0.0-alpha.1",
     "babel-eslint": "^8.2.6",
